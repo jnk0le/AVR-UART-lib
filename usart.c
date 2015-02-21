@@ -4,7 +4,7 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 
-#include "uart.h"
+#include "usart.h"
 
 #ifndef NO_TX0_INTERRUPT
 	volatile uint8_t tx0_first_byte, tx0_last_byte, interrupt_semaphore0;
