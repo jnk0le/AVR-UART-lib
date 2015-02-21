@@ -7,7 +7,7 @@
 
 int main(void)
 {
-	uart0_init(BAUD_CALC(19200)); // 8n1 transmission is set as default
+	uart_init(BAUD_CALC(19200)); // 8n1 transmission is set as default // same as uart0_init
 	uart1_init(BAUD_CALC(115200));
 	sei(); // enable interrupts, library wouldn't work without this
 	
