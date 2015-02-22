@@ -2,7 +2,7 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-#include "usart.hpp"
+#include "usart.h"
 
 
 int main(void)
