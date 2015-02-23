@@ -38,12 +38,12 @@
 #error F_CPU is undefined, USART cannot work correctly without this parametr
 #endif
 
+#define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1) // macro calculating UBBR value
+#define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1) // macro calculating UBBR value for double speed
+
 #ifdef DEBUG
 #warning defined DEBUG mode flag, if you want to reduce code size, switch to release mode instead
 #endif
-
-#define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1) // macro calculating UBBR value
-#define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1) // macro calculating UBBR value for double speed
 
 #ifndef RX_BUFFER_SIZE
 #define RX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
@@ -125,7 +125,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #endif
 
 #if defined(__AVR_ATmega8__)||defined(__AVR_ATmega8P__)||defined(__AVR_ATmega16__)\
-||defined(__AVR_ATmega32__)||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__) //8L and 8A not tested
+||defined(__AVR_ATmega32__)||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)
 #define RX0_INTERRUPT		USART_RXC_vect
 #define TX0_INTERRUPT		USART_TXC_vect
 #define UDR0_REGISTER		UDR
@@ -141,7 +141,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define U2X0_BIT    		U2X
 #endif
 #if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)||defined(__AVR_ATmega644PA__)\
-||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)||defined(__AVR_ATmega64__) // (__AVR_ATmega2560__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega640__) // defined(__AVR_ATmega162__) //  defined(__AVR_ATmega164P__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega644P__) //644 one usart // 162 164 
+||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)||defined(__AVR_ATmega64__) 
 
 #define RX0_INTERRUPT		USART0_RX_vect
 #define TX0_INTERRUPT		USART0_TX_vect
