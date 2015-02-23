@@ -125,7 +125,8 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #endif
 
 #if defined(__AVR_ATmega8__)||defined(__AVR_ATmega8P__)||defined(__AVR_ATmega16__)\
-||defined(__AVR_ATmega32__)||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)
+||defined(__AVR_ATmega16L__)||defined(__AVR_ATmega32__)||defined(__AVR_ATmega32L__)\
+||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)
 #define RX0_INTERRUPT		USART_RXC_vect
 #define TX0_INTERRUPT		USART_TXC_vect
 #define UDR0_REGISTER		UDR
@@ -141,7 +142,8 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define U2X0_BIT    		U2X
 #endif
 #if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)||defined(__AVR_ATmega644PA__)\
-||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)||defined(__AVR_ATmega64__) 
+||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)||defined(__AVR_ATmega128L__)\
+||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__) 
 
 #define RX0_INTERRUPT		USART0_RX_vect
 #define TX0_INTERRUPT		USART0_TX_vect
@@ -157,7 +159,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define RXEN0_BIT   		RXEN0
 #define U2X0_BIT    		U2X0
 
-#ifndef NO_USART1
+#if undefined(NO_USART1) && undefined(__AVR_ATmega644__)
 #define USE_USART1
 
 #define RX1_INTERRUPT		USART1_RX_vect
@@ -173,7 +175,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define TXEN1_BIT   		TXEN1
 #define RXEN1_BIT   		RXEN1
 #define U2X1_BIT    		U2X1
-#endif // NO_USART1
+#endif // NO_USART1 && 644
 
 #endif // MCU
 
