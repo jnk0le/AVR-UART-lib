@@ -106,17 +106,16 @@ void uart1_init_C(uint8_t UCSRC_reg, uint16_t baudRate)
 void uart0_putc(char data)
 {
 	register uint8_t tmp_tx_last_byte = tx0_last_byte;
-	register uint8_t tmp_tx_first_byte = tx0_first_byte;
 	
 	tx0_buffer[tmp_tx_last_byte] = data;
-	tx0_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX tail in buffer
+	tmp_tx_last_byte = tx0_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX tail in buffer
 	
-	while(tmp_tx_first_byte == tx0_last_byte); // wait for free space in buffer
+	while(tx_first_byte == tmp_tx_last_byte); // wait for free space in buffer
 	
 	if(interrupt_semaphore0 == unlocked) // if transmitter interrupt is disabled
 	{
 		interrupt_semaphore0 = locked;
-		UDR0_REGISTER = tx0_buffer[tmp_tx_first_byte]; // enable transmitter interrupt
+		UDR0_REGISTER = tx0_buffer[tx_first_byte]; // enable transmitter interrupt
 	}
 }
 
@@ -216,12 +215,11 @@ uint8_t uart0_getbin(uint8_t *data)
 void uart1_putc(char data)
 {
 	register uint8_t tmp_tx_last_byte = tx1_last_byte;
-	register uint8_t tmp_tx_first_byte = tx1_first_byte;
 	
 	tx1_buffer[tmp_tx_last_byte] = data;
-	tx1_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX tail in buffer
+	tmp_tx_last_byte = tx1_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX tail in buffer
 	
-	while(tmp_tx_first_byte == tx1_last_byte); // wait for free space in buffer
+	while(tmp_tx_first_byte == tmp_tx_last_byte); // wait for free space in buffer
 	
 	if(interrupt_semaphore1 == unlocked) // if transmitter interrupt is disabled
 	{

@@ -143,7 +143,9 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #endif
 #if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)||defined(__AVR_ATmega644PA__)\
 ||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)||defined(__AVR_ATmega128L__)\
-||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__) 
+||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__)||defined(__AVR_ATmega640__)\
+||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)||defined(__AVR_ATmega1281__)\
+||defined(__AVR_ATmega2561__)
 
 #define RX0_INTERRUPT		USART0_RX_vect
 #define TX0_INTERRUPT		USART0_TX_vect
@@ -176,6 +178,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define RXEN1_BIT   		RXEN1
 #define U2X1_BIT    		U2X1
 #endif // NO_USART1 && 644
+
 
 #endif // MCU
 
