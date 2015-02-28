@@ -110,12 +110,12 @@ void uart0_putc(char data)
 	tx0_buffer[tmp_tx_last_byte] = data;
 	tmp_tx_last_byte = tx0_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX tail in buffer
 	
-	while(tx_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+	while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
 	
 	if(interrupt_semaphore0 == unlocked) // if transmitter interrupt is disabled
 	{
 		interrupt_semaphore0 = locked;
-		UDR0_REGISTER = tx0_buffer[tx_first_byte]; // enable transmitter interrupt
+		UDR0_REGISTER = tx0_buffer[tx0_first_byte]; // enable transmitter interrupt
 	}
 }
 
@@ -219,12 +219,12 @@ void uart1_putc(char data)
 	tx1_buffer[tmp_tx_last_byte] = data;
 	tmp_tx_last_byte = tx1_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX tail in buffer
 	
-	while(tmp_tx_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+	while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
 	
 	if(interrupt_semaphore1 == unlocked) // if transmitter interrupt is disabled
 	{
 		interrupt_semaphore1 = locked;
-		UDR1_REGISTER = tx1_buffer[tmp_tx_first_byte]; // enable transmitter interrupt
+		UDR1_REGISTER = tx1_buffer[tx1_first_byte]; // enable transmitter interrupt
 	}
 }
 

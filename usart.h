@@ -161,7 +161,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define RXEN0_BIT   		RXEN0
 #define U2X0_BIT    		U2X0
 
-#if undefined(NO_USART1) && undefined(__AVR_ATmega644__)
+#if !defined(NO_USART1) && !defined(__AVR_ATmega644__)
 #define USE_USART1
 
 #define RX1_INTERRUPT		USART1_RX_vect
@@ -179,8 +179,14 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define U2X1_BIT    		U2X1
 #endif // NO_USART1 && 644
 
-
 #endif // MCU
+
+#if (defined(__AVR_ATmega640__)||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__))&&!defined(NO_WARN_ABOUT_LIBRARIES)
+	#warning AT 640/1280/2560 have only partial support in this library
+	#warning if you want to use usart 2 & 3 try out C++ library
+	#warning https://github.com/jnk0le/Easy-AVR-USART-Class-Library
+	#warning !def[NO_WARN_ABOUT_LIBRARIES]
+#endif
 
 #ifndef USART0_CONFIG_B // set config bytes for UCSR0B_REGISTER
 	
