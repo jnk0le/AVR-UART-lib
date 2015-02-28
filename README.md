@@ -1,6 +1,8 @@
 # Easy-AVR-USART-C-Library
 easy to use C avr uart library
 
+# Features
+-todo
 
 int main(void)
 {
@@ -16,15 +18,15 @@ int main(void)
 gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    468	     14	     69	    551	    227	avrt.elf
+		    454	     14	     69	    537	    219	avrt.elf
 
-Program Memory Usage 	:	482 bytes   1,5 % Full
+Program Memory Usage 	:	468 bytes   1,5 % Full
 Data Memory Usage 		:	83 bytes   4,1 % Full
 
 defined  NO_USART_RX flag gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    390	     14	     35	    439	    1b7	avrt.elf
+		    376	     14	     35	    425	    1a9	avrt.elf
 
-Program Memory Usage 	:	404 bytes   1,2 % Full
+Program Memory Usage 	:	390 bytes   1,2 % Full
 Data Memory Usage 		:	49 bytes   2,4 % Full
