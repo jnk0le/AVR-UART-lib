@@ -207,6 +207,11 @@ uint8_t uart0_getbin(uint8_t *data)
 	else
 		return BUFFER_EMPTY; // in this case data value is a trash // result = 1
 }
+
+uint8_t uart0_AvailableBytes(void)
+{
+	return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
+}
 #endif // NO_RX0_INTERRUPT
 
 #ifdef USE_USART1
@@ -315,6 +320,11 @@ uint8_t uart1_getbin(uint8_t *data)
 	}
 	else
 		return BUFFER_EMPTY; // in this case data value is a trash // result = 1
+}
+
+uint8_t uart1_AvailableBytes(void)
+{
+	return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK;
 }
 #endif // NO_RX1_INTERRUPT
 

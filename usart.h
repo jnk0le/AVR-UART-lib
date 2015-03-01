@@ -285,6 +285,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	uint8_t uart0_getbin(uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1) 
 	// don't forget to set RX0_BINARY_MODE flag
+	uint8_t uart0_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
 #endif // NO_RX0_INTERRUPT
 
 #ifdef USE_USART1
@@ -298,6 +299,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	uint8_t uart1_getbin(uint8_t &data); // reads binary data from a buffer and loads it into &data byte
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1)
 	// don't forget to set RX1_BINARY_MODE flag
+	uint8_t uart1_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
 
 #endif // NO_RX1_INTERRUPT
 #endif // USE_USART1
@@ -317,6 +319,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define uart_gets uart0_gets
 #define uart_getsl uart0_getsl
 #define uart_getbin uart0_getbin
+#define uart_AvailableBytes uart0_AvailableBytes
 
 
 #endif // USART_HPP
