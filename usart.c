@@ -160,6 +160,30 @@ void uart0_putlong(int32_t data)
 	
 	uart0_putstr(buffer);
 }
+
+void uart0_putfloat(float data)
+{
+	char buffer[16];
+	dtostrf(data, 15, 6, buffer);
+	
+	char *p = buffer;
+	while(*p == ' ') // remove all unwanted spaces
+	p++;
+	
+	uart0_putstr(p);
+}
+
+void uart0_fputfloat(float data, uint8_t size, uint8_t precision)
+{
+	char buffer[size+1];
+	dtostrf(data, size, precision, buffer);
+	
+	char *p = buffer;
+	while(*p == ' ') // remove all unwanted spaces
+	p++;
+	
+	uart0_putstr(p);
+}
 #endif // NO_TX0_INTERRUPT
 
 #ifndef NO_RX0_INTERRUPT
@@ -273,6 +297,30 @@ void uart1_putlong(int32_t data)
 	ltoa(data, buffer, 10);
 	
 	uart1_putstr(buffer);
+}
+
+void uart1_putfloat(float data)
+{
+	char buffer[16];
+	dtostrf(data, 15, 6, buffer);
+	
+	char *p = buffer;
+	while(*p == ' ') // remove all unwanted spaces
+	p++;
+	
+	uart1_putstr(p);
+}
+
+void uart1_fputfloat(float data, uint8_t size, uint8_t precision)
+{
+	char buffer[size+1];
+	dtostrf(data, size, precision, buffer);
+	
+	char *p = buffer;
+	while(*p == ' ') // remove all unwanted spaces
+	p++;
+	
+	uart1_putstr(p);
 }
 #endif // NO_TX1_INTERRUPT
 

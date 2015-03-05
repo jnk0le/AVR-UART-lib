@@ -247,6 +247,8 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	void uart0_putint(int16_t data);
 	void uart0_put_hex(int16_t data);
 	void uart0_putlong(int32_t data);
+	void uart0_putfloat(float data);
+	void uart0_fputfloat(float data, uint8_t size, uint8_t precision);
 #endif // NO_TX0_INTERRUPT
 
 #ifdef USE_USART1
@@ -270,6 +272,8 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	void uart1_putint(int16_t data);
 	void uart1_put_hex(int16_t data);
 	void uart1_putlong(int32_t data);
+	void uart1_putfloat(float data);
+	void uart1_fputfloat(float data, uint8_t size, uint8_t precision);
 #endif // NO_TX1_INTERRUPT
 #endif // USE_USART1
 /************************************************************************************
@@ -315,6 +319,8 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define uart_putint uart0_putint
 #define uart_put_hex uart0_put_hex
 #define uart_putlong uart0_putlong
+#define uart_putfloat uart0_putfloat
+#define uart_fputfloat uart0_fputfloat
 #define uart_getc uart0_getc
 #define uart_gets uart0_gets
 #define uart_getsl uart0_getsl
