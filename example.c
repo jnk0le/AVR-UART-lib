@@ -19,8 +19,14 @@ int main(void)
 	
 	while(1)
     {
+		uart_puts("bytes waiting in buffer : ");
+		uart_putint(uart_AvailableBytes()); // ask for bytes waiting in receiver buffer
 		uart_gets(buffer, 13); // read 13 bytes or one line from usart buffer // same as uart0_gets
+		uart_puts("/r/n");
+		
+		uart1_putfloat(0.1337f);
+		uart1_puts("/r/n");
 		uart1_putstr(buffer); // write dynamic string to usart buffer
-		_delay_ms(1000);
+		_delay_ms(5000);
     }
 }

@@ -58,7 +58,7 @@ void uart0_init_C(uint8_t UCSRC_reg, uint16_t baudRate)
 	UCSR0B_REGISTER = USART0_CONFIG_B;
 	// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
 	// 8n1 is set by default, setting UCSRC is not needed
-	UCSR0C_REGISTER = UCSRC_reg;
+	UCSR0C_REGISTER |= UCSRC_reg;
 	
 #ifndef NO_TX0_INTERRUPT
 	interrupt_semaphore0 = unlocked;
@@ -94,7 +94,7 @@ void uart1_init_C(uint8_t UCSRC_reg, uint16_t baudRate)
 	UCSR1B_REGISTER = USART1_CONFIG_B;
 	// (1<<TXCIE1_BIT)|(1<<RXCIE1_BIT)|(1<<TXEN1_BIT)|(1<<RXEN1_BIT);
 	// 8n1 is set by default, setting UCSRC is not needed
-	UCSR0C_REGISTER = UCSRC_reg;
+	UCSR0C_REGISTER |= UCSRC_reg;
 
 #ifndef NO_TX1_INTERRUPT
 	interrupt_semaphore1 = unlocked;
@@ -168,7 +168,7 @@ void uart0_putfloat(float data)
 	
 	char *p = buffer;
 	while(*p == ' ') // remove all unwanted spaces
-	p++;
+		p++;
 	
 	uart0_putstr(p);
 }
@@ -180,7 +180,7 @@ void uart0_fputfloat(float data, uint8_t size, uint8_t precision)
 	
 	char *p = buffer;
 	while(*p == ' ') // remove all unwanted spaces
-	p++;
+		p++;
 	
 	uart0_putstr(p);
 }
@@ -306,7 +306,7 @@ void uart1_putfloat(float data)
 	
 	char *p = buffer;
 	while(*p == ' ') // remove all unwanted spaces
-	p++;
+		p++;
 	
 	uart1_putstr(p);
 }
@@ -318,7 +318,7 @@ void uart1_fputfloat(float data, uint8_t size, uint8_t precision)
 	
 	char *p = buffer;
 	while(*p == ' ') // remove all unwanted spaces
-	p++;
+		p++;
 	
 	uart1_putstr(p);
 }
