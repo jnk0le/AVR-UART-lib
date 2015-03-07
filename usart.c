@@ -57,7 +57,6 @@ void uart0_init_C(uint8_t UCSRC_reg, uint16_t baudRate)
 #endif
 	UCSR0B_REGISTER = USART0_CONFIG_B;
 	// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
-	// 8n1 is set by default, setting UCSRC is not needed
 	UCSR0C_REGISTER |= UCSRC_reg;
 	
 #ifndef NO_TX0_INTERRUPT
@@ -93,7 +92,6 @@ void uart1_init_C(uint8_t UCSRC_reg, uint16_t baudRate)
 #endif
 	UCSR1B_REGISTER = USART1_CONFIG_B;
 	// (1<<TXCIE1_BIT)|(1<<RXCIE1_BIT)|(1<<TXEN1_BIT)|(1<<RXEN1_BIT);
-	// 8n1 is set by default, setting UCSRC is not needed
 	UCSR0C_REGISTER |= UCSRC_reg;
 
 #ifndef NO_TX1_INTERRUPT
