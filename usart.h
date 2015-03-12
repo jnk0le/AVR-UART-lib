@@ -11,22 +11,39 @@
 // DO NOT DEFINE BUFFERS SIZES OR ANY SHARED MACROS IN 'main.cpp' CODE
 // instead of this, define it in "Project Properties -> AVR C++ Compiler -> Symbols" or try to use -D gcc flag (eg. -DF_CPU=8000000)
 
-//#define NO_USART_RX // disable all receiver code and dependencies // saves ca. 78 bytes
-//#define NO_USART_TX // disable all transmitter code and dependencies // saves ca. 76 bytes
-//#define NO_USART1 // disable usage of uart1 on MCU's supporting it (eg. ATmega128)
-
-//#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary 
-//#define NO_RX1_INTERRUPT // disables interrupt handling and frees RX1 gpio port // combining with NO_USART_RX is not necessary
-//#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
-//#define NO_TX1_INTERRUPT // disables interrupt handling and frees TX1 gpio port // combining with NO_USART_TX is not necessary
-
-//#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission 
-//#define RX1_BINARY_MODE // prepare RX1 interrupt to binary transmission 
+//#define NO_USART_RX // disable all receiver code and dependencies // saves some bytes
+//#define NO_USART_TX // disable all transmitter code and dependencies // saves some bytes
 
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces 
 
+//#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary 
+//#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
+
+//#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission 
+
+/*****************************multiple USART mcu's***********************************/
+
+//#define NO_USART0 // disable usage of uart0
+//#define NO_USART1 // disable usage of uart1 
+//#define NO_USART2 // disable usage of uart2 
+//#define NO_USART3 // disable usage of uart3
+
+//#define NO_RX1_INTERRUPT // disables interrupt handling and frees RX1 gpio port // combining with NO_USART_RX is not necessary
+//#define NO_RX2_INTERRUPT // disables interrupt handling and frees RX2 gpio port // combining with NO_USART_RX is not necessary
+//#define NO_RX3_INTERRUPT // disables interrupt handling and frees RX3 gpio port // combining with NO_USART_RX is not necessary
+
+//#define NO_TX1_INTERRUPT // disables interrupt handling and frees TX1 gpio port // combining with NO_USART_TX is not necessary
+//#define NO_TX2_INTERRUPT // disables interrupt handling and frees TX2 gpio port // combining with NO_USART_TX is not necessary
+//#define NO_TX3_INTERRUPT // disables interrupt handling and frees TX3 gpio port // combining with NO_USART_TX is not necessary
+
+//#define RX1_BINARY_MODE // prepare RX1 interrupt to binary transmission 
+//#define RX2_BINARY_MODE // prepare RX2 interrupt to binary transmission 
+//#define RX3_BINARY_MODE // prepare RX3 interrupt to binary transmission 
+
 //#define USART0_U2X_SPEED // enables double speed for USART0 // combining with USE_DOUBLE_SPEED is not necessary
 //#define USART1_U2X_SPEED // enables double speed for USART1 // combining with USE_DOUBLE_SPEED is not necessary
+//#define USART2_U2X_SPEED // enables double speed for USART2 // combining with USE_DOUBLE_SPEED is not necessary
+//#define USART3_U2X_SPEED // enables double speed for USART3 // combining with USE_DOUBLE_SPEED is not necessary
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -42,28 +59,40 @@
 #define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1) // macro calculating UBBR value for double speed
 
 #ifdef DEBUG
-#warning defined DEBUG mode flag, if you want to reduce code size, switch to release mode instead
+	#warning defined DEBUG mode flag, if you want to reduce code size, switch to release mode instead
 #endif
 
-#ifndef RX_BUFFER_SIZE
-#define RX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
+#ifndef DEFAULT_RX_BUFFER_SIZE
+	#define DEFAULT_RX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
 #endif
 
-#ifndef TX_BUFFER_SIZE
-#define TX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
+#ifndef DEFAULT_TX_BUFFER_SIZE
+	#define DEFAULT_TX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
 #endif
 
 #ifndef TX0_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define TX0_BUFFER_SIZE TX_BUFFER_SIZE
+	#define TX0_BUFFER_SIZE DEFAULT_TX_BUFFER_SIZE
 #endif
 #ifndef RX0_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define RX0_BUFFER_SIZE RX_BUFFER_SIZE
+	#define RX0_BUFFER_SIZE DEFAULT_RX_BUFFER_SIZE
 #endif
 #ifndef TX1_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define TX1_BUFFER_SIZE TX_BUFFER_SIZE
+	#define TX1_BUFFER_SIZE DEFAULT_TX_BUFFER_SIZE
 #endif
 #ifndef RX1_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define RX1_BUFFER_SIZE RX_BUFFER_SIZE
+	#define RX1_BUFFER_SIZE DEFAULT_RX_BUFFER_SIZE
+#endif
+#ifndef TX2_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+	#define TX2_BUFFER_SIZE DEFAULT_TX_BUFFER_SIZE
+#endif
+#ifndef RX2_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+	#define RX2_BUFFER_SIZE DEFAULT_RX_BUFFER_SIZE
+#endif
+#ifndef TX3_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+	#define TX3_BUFFER_SIZE DEFAULT_TX_BUFFER_SIZE
+#endif
+#ifndef RX3_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+	#define RX3_BUFFER_SIZE DEFAULT_RX_BUFFER_SIZE
 #endif
 
 #define TX0_BUFFER_MASK (TX0_BUFFER_SIZE - 1)
@@ -72,22 +101,35 @@
 #define TX1_BUFFER_MASK (TX1_BUFFER_SIZE - 1)
 #define RX1_BUFFER_MASK (RX1_BUFFER_SIZE - 1)
 
+#define TX2_BUFFER_MASK (TX2_BUFFER_SIZE - 1)
+#define RX2_BUFFER_MASK (RX2_BUFFER_SIZE - 1)
+
+#define TX3_BUFFER_MASK (TX3_BUFFER_SIZE - 1)
+#define RX3_BUFFER_MASK (RX3_BUFFER_SIZE - 1)
+
 enum {locked, unlocked};
 enum {COMPLETED = 0, BUFFER_EMPTY = 1};	
 
 #ifdef NO_USART_RX // remove all RX interrupts
 	#define NO_RX0_INTERRUPT
 	#define NO_RX1_INTERRUPT
+	#define NO_RX2_INTERRUPT
+	#define NO_RX3_INTERRUPT
 #endif
 
 #ifdef NO_USART_TX // remove all TX interrupts
 	#define NO_TX0_INTERRUPT
 	#define NO_TX1_INTERRUPT
+	#define NO_TX2_INTERRUPT
+	#define NO_TX3_INTERRUPT
+	
 #endif
 
-#ifdef USE_DOUBLE_SPEED
+#ifdef USE_DOUBLE_SPEED 
 	#define USART0_U2X_SPEED
 	#define USART1_U2X_SPEED
+	#define USART2_U2X_SPEED
+	#define USART3_U2X_SPEED
 #endif
 
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
@@ -144,9 +186,11 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 
 #if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)||defined(__AVR_ATmega644PA__)\
 ||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)||defined(__AVR_ATmega128L__)\
-||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__)||defined(__AVR_ATmega640__)\
-||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)||defined(__AVR_ATmega1281__)\
-||defined(__AVR_ATmega2561__)
+||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__)||defined(__AVR_ATmega1281__)\
+||defined(__AVR_ATmega2561__)||defined(__AVR_ATmega640__)||defined(__AVR_ATmega1280__)\
+||defined(__AVR_ATmega2560__)
+
+#define USE_USART0
 
 #define RX0_INTERRUPT		USART0_RX_vect
 #define TX0_INTERRUPT		USART0_TX_vect
@@ -180,13 +224,65 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #define U2X1_BIT    		U2X1
 #endif // NO_USART1 && 644
 
-#endif // double uarted mcu's
+#if defined(__AVR_ATmega640__)||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)
 
-#if (defined(__AVR_ATmega640__)||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__))&&!defined(NO_WARN_ABOUT_LIBRARIES)
-	#warning AT 640/1280/2560 have only partial support in this library
-	#warning if you want to use usart 2 & 3 try out C++ library
-	#warning https://github.com/jnk0le/Easy-AVR-USART-Class-Library
-	#warning !def[NO_WARN_ABOUT_LIBRARIES]
+#ifndef NO_USART2
+#define USE_USART2
+
+#define RX2_INTERRUPT		USART2_RX_vect
+#define TX2_INTERRUPT		USART2_TX_vect
+#define UDR2_REGISTER		UDR2
+#define UBRR2L_REGISTER		UBRR2L
+#define UBRR2H_REGISTER		UBRR2H
+#define UCSR2A_REGISTER		UCSR2A
+#define UCSR2B_REGISTER		UCSR2B
+#define UCSR2C_REGISTER		UCSR2C
+#define TXCIE2_BIT  		TXCIE2
+#define RXCIE2_BIT  		RXCIE2
+#define TXEN2_BIT   		TXEN2
+#define RXEN2_BIT   		RXEN2
+#define U2X2_BIT    		U2X2
+#endif // NO_USART2
+
+#ifndef NO_USART3
+#define USE_USART3
+
+#define RX3_INTERRUPT		USART3_RX_vect
+#define TX3_INTERRUPT		USART3_TX_vect
+#define UDR3_REGISTER		UDR3
+#define UBRR3L_REGISTER 	UBRR3L
+#define UBRR3H_REGISTER		UBRR3H
+#define UCSR3A_REGISTER		UCSR3A
+#define UCSR3B_REGISTER		UCSR3B
+#define UCSR3C_REGISTER		UCSR3C
+#define TXCIE3_BIT  		TXCIE3
+#define RXCIE3_BIT  		RXCIE3
+#define TXEN3_BIT   		TXEN3
+#define RXEN3_BIT   		RXEN3
+#define U2X3_BIT    		U2X3
+#endif // NO_USART3
+
+#endif // 640/1280/2560 usart 2 & 3 
+#endif // all double usarted mcu's
+
+#if !defined(USE_USART0) && (defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3))
+	#define NO_TX1_INTERRUPT
+	#define NO_RX1_INTERRUPT
+#endif
+
+#ifndef USE_USART1
+	#define NO_TX1_INTERRUPT
+	#define NO_RX1_INTERRUPT
+#endif
+
+#ifndef USE_USART2
+	#define NO_TX2_INTERRUPT
+	#define NO_RX2_INTERRUPT
+#endif
+
+#ifndef USE_USART3
+	#define NO_TX3_INTERRUPT
+	#define NO_RX3_INTERRUPT
 #endif
 
 #ifndef USART0_CONFIG_B // set config bytes for UCSR0B_REGISTER
@@ -213,119 +309,139 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	#endif
 #endif // USART1_CONFIG
 
+#ifndef USART2_CONFIG_B // set config bytes for UCSR2B_REGISTER
+
+	#if defined(NO_RX2_INTERRUPT)
+		#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<TXCIE2_BIT)
+
+	#elif defined(NO_TX2_INTERRUPT)
+		#define USART2_CONFIG_B (1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+	#else
+		#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+	#endif
+#endif // USART2_CONFIG
+
+#ifndef USART3_CONFIG_B // set config bytes for UCSR3B_REGISTER
+
+#if defined(NO_RX3_INTERRUPT)
+	#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<TXCIE3_BIT)
+
+	#elif defined(NO_TX3_INTERRUPT)
+		#define USART3_CONFIG_B (1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+	#else
+		#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+	#endif
+#endif // USART3_CONFIG
+
 /************************************************************************************
  *                            Initializers                                          *
  ************************************************************************************/
-	void uart0_init(uint16_t baudRate);
-	void uart0_init_C(uint8_t UCSRC_reg, uint16_t baudRate);
-	// UCSRC_reg can be used to set other than 8n1 transmission
-#ifdef USE_USART1
-	void uart1_init(uint16_t baudRate); 
-	void uart1_init_C(uint8_t UCSRC_reg, uint16_t baudRate);
-	// UCSRC_reg can be used to set other than 8n1 transmission
-#endif
+#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
+	
+	void uart_init(uint8_t usartct, uint16_t baudRate);
+	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg);
+		// UCSRC_reg can be used to set other than 8n1 transmission
+	void uart_set_U2X(uint8_t usartct); // function instead of macro
+
+#else // single USART mcu
+	
+	void uart_init(uint16_t baudRate);
+	void uart_set_UCSRC(uint8_t UCSRC_reg);
+		// UCSRC_reg can be used to set other than 8n1 transmission
+	void uart_set_U2X(void); // function instead of macro
+
+#endif // single/multi USART
+	
 /************************************************************************************
  *                          Transmitter functions                                   *
  ************************************************************************************/
-#ifndef NO_TX0_INTERRUPT
-	void uart0_putc(char data); // put character/data into transmitter ring buffer
+#ifndef NO_USART_TX
+
+#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 	
-	void uart0_putstrl(char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
-	void uart0_putstr(char *string); // send string from the dynamic buffer 
+	void uart_putc(uint8_t usartct, char data); // put character/data into transmitter ring buffer
+	
+	void uart_putstrl(uint8_t usartct, char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
+	void uart_putstr(uint8_t usartct, char *string); // send string from the dynamic buffer 
 	// stops when NULL byte is hit (NULL byte is not included into transmission)
 	#ifdef __cplusplus
-		#define uart0_puts(str) uart0_putstr(const_cast<char*>(str))// macro to avoid const *char conversion restrictions 
+		#define uart_puts(_usartct,str) uart_putstr(_usartct,const_cast<char*>(str))// macro to avoid const *char conversion restrictions 
 	#else
-		#define uart0_puts(str) uart0_putstr(str)
+		#define uart_puts(_usartct,str) uart_putstr(_usartct,str)
 	#endif
 		// for deprecated usage only (wastes ram data memory to keep all string constants), instead of this try to use puts_P
 
-	void uart0_puts_p(const char *string); // send string from flash memory 
-		#define uart0_puts_P(__s)    uart0_puts_p(PSTR(__s)) 
+	void uart_puts_p(uint8_t usartct, const char *string); // send string from flash memory 
+		#define uart_puts_P(_usartct,__s)    uart_puts_p(_usartct,PSTR(__s)) 
 		// macro to automatically put a string constant into flash
 	
-	void uart0_putint(int16_t data);
-	void uart0_put_hex(int16_t data);
-	void uart0_putlong(int32_t data);
-	void uart0_putfloat(float data);
-	void uart0_fputfloat(float data, uint8_t size, uint8_t precision);
-#endif // NO_TX0_INTERRUPT
+	void uart_putint(uint8_t usartct, int16_t data);
+	void uart_put_hex(uint8_t usartct, int16_t data);
+	void uart_putlong(uint8_t usartct, int32_t data);
+	void uart_putfloat(uint8_t usartct, float data);
+	void uart_fputfloat(uint8_t usartct, float data, uint8_t size, uint8_t precision);
 
-#ifdef USE_USART1
-#ifndef NO_TX1_INTERRUPT
-	void uart1_putc(char data); // put character/data into transmitter ring buffer
+#else // single USART mcu
 
-	void uart1_putstrl(char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
-	void uart1_putstr(char *string); // send string from the dynamic buffer
-	// stops when NULL byte is hit (NULL byte is not included into transmission)
+	void uart_putc(char data); // put character/data into transmitter ring buffer
+	
+	void uart_putstrl(char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
+	void uart_putstr(char *string); // send string from the dynamic buffer
+		// stops when NULL byte is hit (NULL byte is not included into transmission)
 	#ifdef __cplusplus
-		#define uart1_puts(str) uart1_putstr(const_cast<char*>(str)) // macro to avoid const *char conversion restrictions
+		#define uart_puts(str) uart_putstr(const_cast<char*>(str))// macro to avoid const *char conversion restrictions
 	#else
-		#define uart1_puts(str) uart1_putstr(str)
+		#define uart_puts(str) uart_putstr(str)
 	#endif
-	// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
+		// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-	void uart1_puts_p(const char *string); // send string from flash memory
-		#define uart1_puts_P(__s)    uart1_puts_p(PSTR(__s))
+	void uart_puts_p(const char *string); // send string from flash memory
+		#define uart_puts_P(__s)    uart_puts_p(PSTR(__s))
 		// macro to automatically put a string constant into flash
+	
+	void uart_putint(int16_t data);
+	void uart_put_hex(int16_t data);
+	void uart_putlong(int32_t data);
+	void uart_putfloat(float data);
+	void uart_fputfloat(float data, uint8_t size, uint8_t precision);
 
-	void uart1_putint(int16_t data);
-	void uart1_put_hex(int16_t data);
-	void uart1_putlong(int32_t data);
-	void uart1_putfloat(float data);
-	void uart1_fputfloat(float data, uint8_t size, uint8_t precision);
-#endif // NO_TX1_INTERRUPT
-#endif // USE_USART1
+#endif // single/multi USART
+
+#endif // NO_USART_TX
+
 /************************************************************************************
  *                           Receiver functions                                     *
  ************************************************************************************/
-#ifndef NO_RX0_INTERRUPT
-	char uart0_getc(void); // get character from receiver ring buffer
-	void uart0_gets(char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited gets
+#ifndef NO_USART_RX
+
+#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
+	
+	char uart_getc(uint8_t usartct); // get character from receiver ring buffer
+	void uart_gets(uint8_t usartct, char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited gets
 	// to avoid stack/buffer overflows, temp buffer size have to be the same as ring buffer or bigger 
 	// adds NULL byte at the end of string
-	void uart0_getsl(char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit 
+	void uart_getsl(uint8_t usartct, char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit 
 	// adds NULL byte at the end of string (positioned at bufferlimit-1)
-	uint8_t uart0_getbin(uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
+	uint8_t uart_getbin(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1) 
 	// don't forget to set RX0_BINARY_MODE flag
-	uint8_t uart0_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
-#endif // NO_RX0_INTERRUPT
+	uint8_t uart_AvailableBytes(uint8_t usartct); // returns number of bytes waiting in the receiver buffer
 
-#ifdef USE_USART1
-#ifndef NO_RX1_INTERRUPT
-	char uart1_getc(void); // get character from receiver ring buffer
-	void uart1_gets(char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited gets
+#else // single USART mcu
+
+	char uart_getc(void); // get character from receiver ring buffer
+	void uart_gets(char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited gets
 	// to avoid stack/buffer overflows, temp buffer size have to be the same as ring buffer or bigger
 	// adds NULL byte at the end of string
-	void uart1_getsl(char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit
+	void uart_getsl(char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit
 	// adds NULL byte at the end of string (positioned at bufferlimit-1)
-	uint8_t uart1_getbin(uint8_t &data); // reads binary data from a buffer and loads it into &data byte
+	uint8_t uart_getbin(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1)
-	// don't forget to set RX1_BINARY_MODE flag
-	uint8_t uart1_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
+	// don't forget to set RX0_BINARY_MODE flag
+	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
 
-#endif // NO_RX1_INTERRUPT
-#endif // USE_USART1
+#endif // single/multi USART
 
-#define uart_init uart0_init
-#define uart_init_C uart0_init_C 
-#define uart_putc uart0_putc
-#define uart_putstrl uart0_putstrl
-#define uart_putstr uart0_putstr
-#define uart_puts uart0_puts
-#define uart_puts_p uart0_puts_p
-#define uart_puts_P uart0_puts_P
-#define uart_putint uart0_putint
-#define uart_put_hex uart0_put_hex
-#define uart_putlong uart0_putlong
-#define uart_putfloat uart0_putfloat
-#define uart_fputfloat uart0_fputfloat
-#define uart_getc uart0_getc
-#define uart_gets uart0_gets
-#define uart_getsl uart0_getsl
-#define uart_getbin uart0_getbin
-#define uart_AvailableBytes uart0_AvailableBytes
-
+#endif // NO_USART_RX
 
 #endif // USART_HPP
