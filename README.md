@@ -1,8 +1,13 @@
 # Easy-AVR-USART-C-Library
-easy to use C avr uart library
+An interrupt-driven USART (UART) library for AVR microcontrollers, with support for multiple UARTs, using ring
+buffers for receive/transmit. Designed to be easy to use, especially like arduino libraries (with less overload).
 
 # Features
--todo
+- easy to use
+- support for up to 4 USART's
+- allow for binary transmission
+- optimized as much as possible to reduce code size
+- and much more
 
 int main(void)
 {
