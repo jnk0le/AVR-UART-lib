@@ -132,6 +132,11 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 	#define USART3_U2X_SPEED
 #endif
 
+#if defined(STDIO) && defined(STDIO_BAUDRATE) && defined(STDIO_RX_BUFSIZE) && defined(HW_TIMER) && defined(LED_PORT) && defined(LED_PIN)
+#define NO_USART0
+	#warning arduino compatibility for this library is undefined, if you have one, let me know if library is working on it :)
+#endif
+
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
 #define RX0_INTERRUPT		USART_RX_vect
 #define TX0_INTERRUPT		USART_TX_vect
