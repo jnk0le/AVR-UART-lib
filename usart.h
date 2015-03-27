@@ -343,14 +343,14 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
  ************************************************************************************/
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 	
-	void uart_init(uint8_t usartct, uint16_t baudRate);
+	void uart_init(uint8_t usartct, uint16_t ubbr_value);
 	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg);
 		// UCSRC_reg can be used to set other than 8n1 transmission
 	void uart_set_U2X(uint8_t usartct); // function instead of macro
 
 #else // single USART mcu
 	
-	void uart_init(uint16_t baudRate);
+	void uart_init(uint16_t ubbr_value);
 	void uart_set_UCSRC(uint8_t UCSRC_reg);
 		// UCSRC_reg can be used to set other than 8n1 transmission
 	void uart_set_U2X(void); // function instead of macro
@@ -442,7 +442,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	// adds NULL byte at the end of string (positioned at bufferlimit-1)
 	uint8_t uart_getbin(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1)
-	// don't forget to set RX0_BINARY_MODE flag
+	// don't forget to set RXn_BINARY_MODE flag
 	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
 
 #endif // single/multi USART
