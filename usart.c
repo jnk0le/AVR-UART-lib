@@ -516,7 +516,7 @@
 		*buffer = 0;
 	}
 
-	uint8_t uart_getbin(uint8_t usartct, uint8_t *data)
+	uint8_t uart_get_data(uint8_t usartct, uint8_t *data)
 	{
 		register uint8_t tmp_rx_first_byte;
 		
@@ -627,7 +627,7 @@
 		*buffer = 0;
 	}
 
-	uint8_t uart_getbin(uint8_t *data)
+	uint8_t uart_get_data(uint8_t *data)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
 		

@@ -134,7 +134,7 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 
 #if defined(STDIO) && defined(STDIO_BAUDRATE) && defined(STDIO_RX_BUFSIZE) && defined(HW_TIMER) && defined(LED_PORT) && defined(LED_PIN)
 #define NO_USART0
-	#warning arduino compatibility for this library is undefined, if you have one, let me know if library is working on it :)
+	#warning arduino compatibility for this library is undefined
 #endif
 
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
@@ -427,10 +427,11 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	// adds NULL byte at the end of string
 	void uart_getsl(uint8_t usartct, char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit 
 	// adds NULL byte at the end of string (positioned at bufferlimit-1)
-	uint8_t uart_getbin(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
+	uint8_t uart_get_data(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1) 
 	// don't forget to set RX0_BINARY_MODE flag
 	uint8_t uart_AvailableBytes(uint8_t usartct); // returns number of bytes waiting in the receiver buffer
+	//uint8_t uart_peek(uint8_t usartct); CSIIWWTMMFA
 
 #else // single USART mcu
 
@@ -440,10 +441,11 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	// adds NULL byte at the end of string
 	void uart_getsl(char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit
 	// adds NULL byte at the end of string (positioned at bufferlimit-1)
-	uint8_t uart_getbin(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
+	uint8_t uart_get_data(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1)
 	// don't forget to set RXn_BINARY_MODE flag
 	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
+	//uint8_t uart_peek(void); CSIIWWTMMFA
 
 #endif // single/multi USART
 
