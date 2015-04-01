@@ -427,7 +427,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	// adds NULL byte at the end of string
 	void uart_getsl(uint8_t usartct, char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit 
 	// adds NULL byte at the end of string (positioned at bufferlimit-1)
-	uint8_t uart_get_data(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
+	uint8_t uart_getData(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1) 
 	// don't forget to set RX0_BINARY_MODE flag
 	uint8_t uart_AvailableBytes(uint8_t usartct); // returns number of bytes waiting in the receiver buffer
@@ -441,7 +441,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	// adds NULL byte at the end of string
 	void uart_getsl(char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit
 	// adds NULL byte at the end of string (positioned at bufferlimit-1)
-	uint8_t uart_get_data(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
+	uint8_t uart_getData(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1)
 	// don't forget to set RXn_BINARY_MODE flag
 	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
