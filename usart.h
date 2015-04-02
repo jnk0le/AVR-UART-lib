@@ -52,7 +52,7 @@
 #include <stdlib.h>
 
 #ifndef F_CPU
-#error F_CPU is undefined, USART cannot work correctly without this parametr
+	#error F_CPU is undefined, USART cannot work correctly without this parametr
 #endif
 
 #define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1) // macro calculating UBBR value
@@ -450,5 +450,34 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #endif // single/multi USART
 
 #endif // NO_USART_RX
+
+#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
+// macros to allow using usart0 as a single usart in multiple configuration
+	
+	#define uart_putc(_d) uart_putc(0,_d)
+	#define uart_putstrl(_str,_n) uart_putstrl(0,_str,_n)
+	#define uart_putstr(_str) uart_putstr(0,_str)
+
+	#ifdef __cplusplus
+		#define uart_puts(_cstr) uart_putstr(0,const_cast<char*>(_cstr))
+	#else
+		#define uart_puts(_cstr) uart_putstr(0,_cstr)
+	#endif
+	
+	#define uart_puts_p(_cstr) uart_puts_p(0,_cstr)
+		#define uart_puts_P(_cstr) uart_puts_p(0,PSTR(_cstr))
+
+	#define uart_putint(_d) uart_putint(0,_d)
+	#define uart_put_hex(_d) uart_put_hex(0,_d)
+	#define uart_putlong(_d) uart_putlong(0,_d)
+	#define uart_putfloat(_d) uart_putfloat(0,_d)
+	#define uart_fputfloat(_d,_s,_p); uart_fputfloat(0,_d,_s,_p);
+	
+	#define uart_getc() uart_getc(0) 
+	#define uart_gets(_buff) uart_gets(0,_buff)
+	#define uart_getsl(_buff,_n) uart_getsl(0,_buff,_n)
+	#define uart_AvailableBytes() uart_AvailableBytes(0)
+
+#endif
 
 #endif // USART_HPP
