@@ -55,8 +55,8 @@
 	#error F_CPU is undefined, USART cannot work correctly without this parametr
 #endif
 
-#define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1) // macro calculating UBBR value
-#define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1) // macro calculating UBBR value for double speed
+#define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating UBBR value
+#define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBBR value for double speed
 
 #ifdef DEBUG
 	#warning defined DEBUG mode flag, if you want to reduce code size, switch to release mode instead
@@ -133,146 +133,226 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 #endif
 
 #if defined(STDIO) && defined(STDIO_BAUDRATE) && defined(STDIO_RX_BUFSIZE) && defined(HW_TIMER) && defined(LED_PORT) && defined(LED_PIN)
-#define NO_USART0
+	#define NO_USART0
 	#warning arduino compatibility for this library is undefined
 #endif
 
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
-#define RX0_INTERRUPT		USART_RX_vect
-#define TX0_INTERRUPT		USART_TX_vect
-#define UDR0_REGISTER		UDR
-#define UBRR0L_REGISTER		UBRRL
-#define UBRR0H_REGISTER		UBRRH
-#define UCSR0A_REGISTER		UCSRA
-#define UCSR0B_REGISTER		UCSRB
-#define UCSR0C_REGISTER		UCSRC
-#define TXCIE0_BIT  		TXCIE
-#define RXCIE0_BIT  		RXCIE
-#define TXEN0_BIT   		TXEN
-#define RXEN0_BIT   		RXEN
-#define U2X0_BIT    		U2X
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART_RX_vect
+	#define TX0_INTERRUPT		USART_TX_vect
+	#define UDR0_REGISTER		UDR
+	#define UBRR0L_REGISTER		UBRRL
+	#define UBRR0H_REGISTER		UBRRH
+	#define UCSR0A_REGISTER		UCSRA
+	#define UCSR0B_REGISTER		UCSRB
+	#define UCSR0C_REGISTER		UCSRC
+	#define TXCIE0_BIT  		TXCIE
+	#define RXCIE0_BIT  		RXCIE
+	#define TXEN0_BIT   		TXEN
+	#define RXEN0_BIT   		RXEN
+	#define U2X0_BIT    		U2X
+	
 #endif
 
 #if defined(__AVR_ATmega48__) ||defined(__AVR_ATmega88__) || defined(__AVR_ATmega168__) || \
 defined(__AVR_ATmega48P__) ||defined(__AVR_ATmega88P__) || defined(__AVR_ATmega168P__) || \
 defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
-#define RX0_INTERRUPT		USART_RX_vect
-#define TX0_INTERRUPT		USART_TX_vect
-#define UDR0_REGISTER		UDR0
-#define UBRR0L_REGISTER		UBRR0L
-#define UBRR0H_REGISTER		UBRR0H
-#define UCSR0A_REGISTER		UCSR0A
-#define UCSR0B_REGISTER		UCSR0B
-#define UCSR0C_REGISTER		UCSR0C
-#define TXCIE0_BIT  		TXCIE0
-#define RXCIE0_BIT   		RXCIE0
-#define TXEN0_BIT   		TXEN0
-#define RXEN0_BIT   		RXEN0
-#define U2X0_BIT    		U2X0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART_RX_vect
+	#define TX0_INTERRUPT		USART_TX_vect
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT  		TXCIE0
+	#define RXCIE0_BIT   		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define U2X0_BIT    		U2X0
+	
 #endif
 
 #if defined(__AVR_ATmega8__)||defined(__AVR_ATmega8P__)||defined(__AVR_ATmega16__)\
 ||defined(__AVR_ATmega16L__)||defined(__AVR_ATmega32__)||defined(__AVR_ATmega32L__)\
 ||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)
-#define RX0_INTERRUPT		USART_RXC_vect
-#define TX0_INTERRUPT		USART_TXC_vect
-#define UDR0_REGISTER		UDR
-#define UBRR0L_REGISTER		UBRRL
-#define UBRR0H_REGISTER		UBRRH
-#define UCSR0A_REGISTER		UCSRA
-#define UCSR0B_REGISTER		UCSRB
-#define UCSR0C_REGISTER		UCSRC
-#define TXCIE0_BIT  		TXCIE
-#define RXCIE0_BIT  		RXCIE
-#define TXEN0_BIT   		TXEN
-#define RXEN0_BIT   		RXEN
-#define U2X0_BIT    		U2X
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART_RXC_vect
+	#define TX0_INTERRUPT		USART_TXC_vect
+	#define UDR0_REGISTER		UDR
+	#define UBRR0L_REGISTER		UBRRL
+	#define UBRR0H_REGISTER		UBRRH
+	#define UCSR0A_REGISTER		UCSRA
+	#define UCSR0B_REGISTER		UCSRB
+	#define UCSR0C_REGISTER		UCSRC
+	#define TXCIE0_BIT  		TXCIE
+	#define RXCIE0_BIT  		RXCIE
+	#define TXEN0_BIT   		TXEN
+	#define RXEN0_BIT   		RXEN
+	#define U2X0_BIT    		U2X
+	
+#endif
+
+#if defined(__AVR_ATmega8515__)||defined(__AVR_ATmega8515L__)
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART_RX_vect
+	#define TX0_INTERRUPT		USART_TX_vect
+	#define UDR0_REGISTER		UDR
+	#define UBRR0L_REGISTER		UBRRL
+	#define UBRR0H_REGISTER		UBRRH
+	#define UCSR0A_REGISTER		UCSRA
+	#define UCSR0B_REGISTER		UCSRB
+	#define UCSR0C_REGISTER		UCSRC
+	#define TXCIE0_BIT  		TXCIE
+	#define RXCIE0_BIT  		RXCIE
+	#define TXEN0_BIT   		TXEN
+	#define RXEN0_BIT   		RXEN
+	#define U2X0_BIT    		U2X
+	
+#endif
+
+#if defined(__AVR_ATmega162__)
+
+#ifndef NO_USART0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART0_RXC_vect
+	#define TX0_INTERRUPT		USART0_TXC_vect
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT  		TXCIE0
+	#define RXCIE0_BIT  		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define U2X0_BIT    		U2X0
+
+#endif //NO_USART0
+
+#ifndef NO_USART1
+#define USE_USART1
+
+	#define RX1_INTERRUPT		USART1_RXC_vect
+	#define TX1_INTERRUPT		USART1_TXC_vect
+	#define UDR1_REGISTER		UDR1
+	#define UBRR1L_REGISTER		UBRR1L
+	#define UBRR1H_REGISTER		UBRR1H
+	#define UCSR1A_REGISTER		UCSR1A
+	#define UCSR1B_REGISTER		UCSR1B
+	#define UCSR1C_REGISTER		UCSR1C
+	#define TXCIE1_BIT  		TXCIE1
+	#define RXCIE1_BIT  		RXCIE1
+	#define TXEN1_BIT   		TXEN1
+	#define RXEN1_BIT   		RXEN1
+	#define U2X1_BIT    		U2X1
+
+#endif //NO_USART1
 #endif
 
 #if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)||defined(__AVR_ATmega644PA__)\
-||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)||defined(__AVR_ATmega128L__)\
-||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__)||defined(__AVR_ATmega1281__)\
-||defined(__AVR_ATmega2561__)||defined(__AVR_ATmega640__)||defined(__AVR_ATmega1280__)\
-||defined(__AVR_ATmega2560__)
+||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)\
+||defined(__AVR_ATmega128L__)||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__)\
+||defined(__AVR_ATmega1281__)||defined(__AVR_ATmega2561__)||defined(__AVR_ATmega640__)\
+||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)
 
+#ifndef NO_USART0
 #define USE_USART0
 
-#define RX0_INTERRUPT		USART0_RX_vect
-#define TX0_INTERRUPT		USART0_TX_vect
-#define UDR0_REGISTER		UDR0
-#define UBRR0L_REGISTER		UBRR0L
-#define UBRR0H_REGISTER		UBRR0H
-#define UCSR0A_REGISTER		UCSR0A
-#define UCSR0B_REGISTER		UCSR0B
-#define UCSR0C_REGISTER		UCSR0C
-#define TXCIE0_BIT  		TXCIE0
-#define RXCIE0_BIT  		RXCIE0
-#define TXEN0_BIT   		TXEN0
-#define RXEN0_BIT   		RXEN0
-#define U2X0_BIT    		U2X0
+	#define RX0_INTERRUPT		USART0_RX_vect
+	#define TX0_INTERRUPT		USART0_TX_vect
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT  		TXCIE0
+	#define RXCIE0_BIT  		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define U2X0_BIT    		U2X0
+
+#endif
 
 #if !defined(NO_USART1) && !defined(__AVR_ATmega644__)
 #define USE_USART1
 
-#define RX1_INTERRUPT		USART1_RX_vect
-#define TX1_INTERRUPT		USART1_TX_vect
-#define UDR1_REGISTER		UDR1
-#define UBRR1L_REGISTER		UBRR1L
-#define UBRR1H_REGISTER		UBRR1H
-#define UCSR1A_REGISTER		UCSR1A
-#define UCSR1B_REGISTER		UCSR1B
-#define UCSR1C_REGISTER		UCSR1C
-#define TXCIE1_BIT  		TXCIE1
-#define RXCIE1_BIT  		RXCIE1
-#define TXEN1_BIT   		TXEN1
-#define RXEN1_BIT   		RXEN1
-#define U2X1_BIT    		U2X1
+	#define RX1_INTERRUPT		USART1_RX_vect
+	#define TX1_INTERRUPT		USART1_TX_vect
+	#define UDR1_REGISTER		UDR1
+	#define UBRR1L_REGISTER		UBRR1L
+	#define UBRR1H_REGISTER		UBRR1H
+	#define UCSR1A_REGISTER		UCSR1A
+	#define UCSR1B_REGISTER		UCSR1B
+	#define UCSR1C_REGISTER		UCSR1C
+	#define TXCIE1_BIT  		TXCIE1
+	#define RXCIE1_BIT  		RXCIE1
+	#define TXEN1_BIT   		TXEN1
+	#define RXEN1_BIT   		RXEN1
+	#define U2X1_BIT    		U2X1
+	
 #endif // NO_USART1 && 644
+
+#endif
 
 #if defined(__AVR_ATmega640__)||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)
 
 #ifndef NO_USART2
 #define USE_USART2
 
-#define RX2_INTERRUPT		USART2_RX_vect
-#define TX2_INTERRUPT		USART2_TX_vect
-#define UDR2_REGISTER		UDR2
-#define UBRR2L_REGISTER		UBRR2L
-#define UBRR2H_REGISTER		UBRR2H
-#define UCSR2A_REGISTER		UCSR2A
-#define UCSR2B_REGISTER		UCSR2B
-#define UCSR2C_REGISTER		UCSR2C
-#define TXCIE2_BIT  		TXCIE2
-#define RXCIE2_BIT  		RXCIE2
-#define TXEN2_BIT   		TXEN2
-#define RXEN2_BIT   		RXEN2
-#define U2X2_BIT    		U2X2
+	#define RX2_INTERRUPT		USART2_RX_vect
+	#define TX2_INTERRUPT		USART2_TX_vect
+	#define UDR2_REGISTER		UDR2
+	#define UBRR2L_REGISTER		UBRR2L
+	#define UBRR2H_REGISTER		UBRR2H
+	#define UCSR2A_REGISTER		UCSR2A
+	#define UCSR2B_REGISTER		UCSR2B
+	#define UCSR2C_REGISTER		UCSR2C
+	#define TXCIE2_BIT  		TXCIE2
+	#define RXCIE2_BIT  		RXCIE2
+	#define TXEN2_BIT   		TXEN2
+	#define RXEN2_BIT   		RXEN2
+	#define U2X2_BIT    		U2X2
+	
 #endif // NO_USART2
 
 #ifndef NO_USART3
 #define USE_USART3
 
-#define RX3_INTERRUPT		USART3_RX_vect
-#define TX3_INTERRUPT		USART3_TX_vect
-#define UDR3_REGISTER		UDR3
-#define UBRR3L_REGISTER 	UBRR3L
-#define UBRR3H_REGISTER		UBRR3H
-#define UCSR3A_REGISTER		UCSR3A
-#define UCSR3B_REGISTER		UCSR3B
-#define UCSR3C_REGISTER		UCSR3C
-#define TXCIE3_BIT  		TXCIE3
-#define RXCIE3_BIT  		RXCIE3
-#define TXEN3_BIT   		TXEN3
-#define RXEN3_BIT   		RXEN3
-#define U2X3_BIT    		U2X3
+	#define RX3_INTERRUPT		USART3_RX_vect
+	#define TX3_INTERRUPT		USART3_TX_vect
+	#define UDR3_REGISTER		UDR3
+	#define UBRR3L_REGISTER 	UBRR3L
+	#define UBRR3H_REGISTER		UBRR3H
+	#define UCSR3A_REGISTER		UCSR3A
+	#define UCSR3B_REGISTER		UCSR3B
+	#define UCSR3C_REGISTER		UCSR3C
+	#define TXCIE3_BIT  		TXCIE3
+	#define RXCIE3_BIT  		RXCIE3
+	#define TXEN3_BIT   		TXEN3
+	#define RXEN3_BIT   		RXEN3
+	#define U2X3_BIT    		U2X3
+	
 #endif // NO_USART3
 
 #endif // 640/1280/2560 usart 2 & 3 
-#endif // all double usarted mcu's
 
-#if !defined(USE_USART0) && (defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3))
-	#define NO_TX1_INTERRUPT
-	#define NO_RX1_INTERRUPT
+#if !defined(USE_USART0) && !defined(USE_USART1) && !defined(USE_USART2) && !defined(USE_USART3)
+	#error USART not available or unknown mcu
+#endif
+
+#ifndef USE_USART0 
+	#define NO_TX0_INTERRUPT
+	#define NO_RX0_INTERRUPT
 #endif
 
 #ifndef USE_USART1

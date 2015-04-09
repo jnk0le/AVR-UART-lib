@@ -622,7 +622,7 @@
 		{
 			*buffer = uart_getc();
 			if(*buffer++ == 0)
-			return;
+				return;
 		}
 		*buffer = 0;
 	}
