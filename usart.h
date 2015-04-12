@@ -138,6 +138,8 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 #endif
 
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
+
+#ifndef NO_USART0
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RX_vect
@@ -154,11 +156,15 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
 	
+#endif //NO_USART0
 #endif
 
-#if defined(__AVR_ATmega48__) ||defined(__AVR_ATmega88__) || defined(__AVR_ATmega168__) || \
-defined(__AVR_ATmega48P__) ||defined(__AVR_ATmega88P__) || defined(__AVR_ATmega168P__) || \
-defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
+#if defined(__AVR_ATmega48__)||defined(__AVR_ATmega88__)|| defined(__AVR_ATmega168__)\
+||defined(__AVR_ATmega48P__) ||defined(__AVR_ATmega88P__)|| defined(__AVR_ATmega168P__)\
+||defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)||defined(__AVR_ATmega48PA__)\
+||defined(__AVR_ATmega88PA__)|| defined(__AVR_ATmega168PA__)
+
+#ifndef NO_USART0
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RX_vect
@@ -174,12 +180,15 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
-	
+
+#endif //NO_USART0
 #endif
 
 #if defined(__AVR_ATmega8__)||defined(__AVR_ATmega8P__)||defined(__AVR_ATmega16__)\
 ||defined(__AVR_ATmega16L__)||defined(__AVR_ATmega32__)||defined(__AVR_ATmega32L__)\
 ||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)
+
+#ifndef NO_USART0
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RXC_vect
@@ -196,9 +205,12 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
 	
+#endif //NO_USART0
 #endif
 
 #if defined(__AVR_ATmega8515__)||defined(__AVR_ATmega8515L__)
+
+#ifndef NO_USART0
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RX_vect
@@ -214,7 +226,8 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
-	
+
+#endif //NO_USART0
 #endif
 
 #if defined(__AVR_ATmega162__)
