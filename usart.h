@@ -259,7 +259,7 @@ defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)
 #endif
 
 #if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)||defined(__AVR_ATmega644PA__)\
-||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)\
+||defined(__AVR_ATmega1284__)||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)\
 ||defined(__AVR_ATmega128L__)||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__)\
 ||defined(__AVR_ATmega1281__)||defined(__AVR_ATmega2561__)||defined(__AVR_ATmega640__)\
 ||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)
