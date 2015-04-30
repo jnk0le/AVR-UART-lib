@@ -186,7 +186,7 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 
 #if defined(__AVR_ATmega8__)||defined(__AVR_ATmega8P__)||defined(__AVR_ATmega16__)\
 ||defined(__AVR_ATmega16L__)||defined(__AVR_ATmega32__)||defined(__AVR_ATmega32L__)\
-||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)
+||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)||defined(__AVR_ATmega32A__)
 
 #ifndef NO_USART0
 #define USE_USART0
