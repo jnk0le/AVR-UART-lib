@@ -444,9 +444,16 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 #else // single USART mcu
 	
 	void uart_init(uint16_t ubbr_value);
-	void uart_set_UCSRC(uint8_t UCSRC_reg);
-		// UCSRC_reg can be used to set other than 8n1 transmission
-	void uart_set_U2X(void); // function instead of macro
+	
+	static inline void uart_set_UCSRC(uint8_t UCSRC_reg)
+	{ 
+		UCSR0C_REGISTER |= UCSRC_reg;
+	} // UCSRC_reg can be used to set other than 8n1 transmission
+	
+	static inline void uart_set_U2X(void) // function instead of macro
+	{
+		UCSR0A_REGISTER |= (1<<U2X0_BIT);
+	} 
 
 #endif // single/multi USART
 	

@@ -175,7 +175,6 @@
 	
 	void uart_init(uint16_t ubbr_value)
 	{
-		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		UBRR0H_REGISTER = (ubbr_value>>8);
 			
@@ -192,15 +191,16 @@
 	#endif
 	}
 
-	void uart_set_UCSRC(uint8_t UCSRC_reg)
-	{
-		UCSR0C_REGISTER |= UCSRC_reg; 
-	}
-	
-	void uart_set_U2X(void)
-	{
-		UCSR0A_REGISTER |= (1<<U2X0_BIT); 
-	}
+//  these functions are static inline in header file
+// 	void uart_set_UCSRC(uint8_t UCSRC_reg)
+// 	{
+// 		UCSR0C_REGISTER |= UCSRC_reg; 
+// 	}
+// 	
+// 	void uart_set_U2X(void)
+// 	{
+// 		UCSR0A_REGISTER |= (1<<U2X0_BIT); 
+// 	}
 
 #endif // single/multi USART
 	
@@ -358,13 +358,13 @@
 		tmp_tx_last_byte = tx0_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX tail in buffer
 			
 		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-			
+		
 		if(interrupt_semaphore0 == unlocked) // if transmitter interrupt is disabled
 		{
 			interrupt_semaphore0 = locked;
 			UDR0_REGISTER = tx0_buffer[tx0_first_byte]; // enable transmitter interrupt
 		}
-	
+		
 	}
 
 	void uart_putstr(char *string)
@@ -655,14 +655,14 @@
 	{
 		register uint8_t tmp_tx_first_byte = tx0_first_byte = (tx0_first_byte + 1) & TX0_BUFFER_MASK;
 		// calculate new position of TX head in buffer, write back and use it as register variable 
-	
+		
 		if(tmp_tx_first_byte != tx0_last_byte)
 		{
 			UDR0_REGISTER = tx0_buffer[tmp_tx_first_byte]; // transmit character from the buffer
 		}
 		else
 		{
-			interrupt_semaphore0 = unlocked;
+			interrupt_semaphore0 = unlocked; 
 		}
 		
 	}
