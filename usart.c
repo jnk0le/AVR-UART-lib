@@ -6,46 +6,6 @@
 
 #include "usart.h"
 
-#ifndef NO_TX0_INTERRUPT
-	volatile uint8_t tx0_first_byte, tx0_last_byte, interrupt_semaphore0;
-	char tx0_buffer[TX0_BUFFER_SIZE];
-#endif
-
-#ifndef NO_RX0_INTERRUPT
-	volatile uint8_t rx0_first_byte, rx0_last_byte;
-	char rx0_buffer[RX0_BUFFER_SIZE];
-#endif
-
-#ifndef NO_TX1_INTERRUPT
-	volatile uint8_t tx1_first_byte, tx1_last_byte, interrupt_semaphore1;
-	char tx1_buffer[TX1_BUFFER_SIZE];
-#endif
-
-#ifndef NO_RX1_INTERRUPT
-	volatile uint8_t rx1_first_byte, rx1_last_byte;
-	char rx1_buffer[RX1_BUFFER_SIZE];
-#endif
-
-#ifndef NO_TX2_INTERRUPT
-	volatile uint8_t tx2_first_byte, tx2_last_byte, interrupt_semaphore2;
-	char tx2_buffer[TX2_BUFFER_SIZE];
-#endif
-
-#ifndef NO_RX2_INTERRUPT
-	volatile uint8_t rx2_first_byte, rx2_last_byte;
-	char rx2_buffer[RX2_BUFFER_SIZE];
-#endif
-
-#ifndef NO_TX3_INTERRUPT
-	volatile uint8_t tx3_first_byte, tx3_last_byte, interrupt_semaphore3;
-	char tx3_buffer[TX3_BUFFER_SIZE];
-#endif
-
-#ifndef NO_RX3_INTERRUPT
-	volatile uint8_t rx3_first_byte, rx3_last_byte;
-	char rx3_buffer[RX3_BUFFER_SIZE];
-#endif
-
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
 	void uart_init(uint8_t usartct, uint16_t ubbr_value)
@@ -172,26 +132,26 @@
 	}
 
 #else // single USART mcu
-	
-	void uart_init(uint16_t ubbr_value)
-	{
-		UBRR0L_REGISTER = (uint8_t) ubbr_value;
-		UBRR0H_REGISTER = (ubbr_value>>8);
-			
-	#ifdef USART0_U2X_SPEED
-		UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
-	#endif
-			
-		UCSR0B_REGISTER = USART0_CONFIG_B;
-			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
-			// 8n1 is set by default, setting UCSRC is not needed
-			
-	#ifndef NO_TX0_INTERRUPT
-		interrupt_semaphore0 = unlocked;
-	#endif
-	}
 
-//  these functions are static inline in header file
+//	//  these functions are now static inline in header file
+// 	void uart_init(uint16_t ubbr_value)
+// 	{
+// 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
+//		UBRR0H_REGISTER = (ubbr_value>>8);
+// 			
+// 	#ifdef USART0_U2X_SPEED
+// 		UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
+// 	#endif
+// 			
+// 		UCSR0B_REGISTER = USART0_CONFIG_B;
+// 			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
+// 			// 8n1 is set by default, setting UCSRC is not needed
+// 			
+// 	#ifndef NO_TX0_INTERRUPT
+// 		interrupt_semaphore0 = unlocked;
+// 	#endif
+// 	}
+
 // 	void uart_set_UCSRC(uint8_t UCSRC_reg)
 // 	{
 // 		UCSR0C_REGISTER |= UCSRC_reg; 
