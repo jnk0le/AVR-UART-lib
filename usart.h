@@ -576,6 +576,7 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 	#define uart_getc() uart_getc(0) 
 	#define uart_gets(_buff) uart_gets(0,_buff)
 	#define uart_getsl(_buff,_n) uart_getsl(0,_buff,_n)
+	#define uart_getData(_d) uart_getData(0,_d)
 	#define uart_AvailableBytes() uart_AvailableBytes(0)
 
 #endif
