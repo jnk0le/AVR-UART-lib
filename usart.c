@@ -8,7 +8,8 @@
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
-	void uart_init(uint8_t usartct, uint16_t ubbr_value)
+	//  these functions are now static inline in header file
+	/*void uart_init(uint8_t usartct, uint16_t ubbr_value)
 	{
 		switch(usartct)
 		{
@@ -89,9 +90,9 @@
 		#endif // USE_USART3
 		}
 		
-	}
+	}*/
 
-	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg)
+	/*void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg) 
 	{
 		switch(usartct)
 		{
@@ -109,9 +110,9 @@
 		#endif // USE_USART3
 		}
 		
-	}
+	}*/
 	
-	void uart_set_U2X(uint8_t usartct)
+	/*void uart_set_U2X(uint8_t usartct)
 	{
 		switch(usartct)
 		{
@@ -129,41 +130,41 @@
 		#endif // USE_USART3
 		}
 		
-	}
+	}*/
 
 #else // single USART mcu
 
-//	//  these functions are now static inline in header file
-// 	void uart_init(uint16_t ubbr_value)
-// 	{
-// 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
-//		UBRR0H_REGISTER = (ubbr_value>>8);
-// 			
-// 	#ifdef USART0_U2X_SPEED
-// 		UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
-// 	#endif
-// 			
-// 		UCSR0B_REGISTER = USART0_CONFIG_B;
-// 			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
-// 			// 8n1 is set by default, setting UCSRC is not needed
-// 			
-// 	#ifndef NO_TX0_INTERRUPT
-// 		interrupt_semaphore0 = unlocked;
-// 	#endif
-// 	}
+	// these functions are now static inline in header file
+	/*void uart_init(uint16_t ubbr_value)
+	{
+		UBRR0L_REGISTER = (uint8_t) ubbr_value;
+		UBRR0H_REGISTER = (ubbr_value>>8);
+			
+	#ifdef USART0_U2X_SPEED
+		UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
+	#endif
+			
+		UCSR0B_REGISTER = USART0_CONFIG_B;
+			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
+			// 8n1 is set by default, setting UCSRC is not needed
+			
+	#ifndef NO_TX0_INTERRUPT
+		interrupt_semaphore0 = unlocked;
+	#endif
+	}*/
 
-// 	void uart_set_UCSRC(uint8_t UCSRC_reg)
-// 	{
-// 		UCSR0C_REGISTER |= UCSRC_reg; 
-// 	}
-// 	
-// 	void uart_set_U2X(void)
-// 	{
-// 		UCSR0A_REGISTER |= (1<<U2X0_BIT); 
-// 	}
+	/*void uart_set_UCSRC(uint8_t UCSRC_reg)
+	{
+		UCSR0C_REGISTER |= UCSRC_reg; 
+	}
+	
+	void uart_set_U2X(void)
+	{
+		UCSR0A_REGISTER |= (1<<U2X0_BIT); 
+	}*/
 
 #endif // single/multi USART
-	
+
 #ifndef NO_USART_TX
 	
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)

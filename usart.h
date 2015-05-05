@@ -476,14 +476,139 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
  ************************************************************************************/
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 	
-	void uart_init(uint8_t usartct, uint16_t ubbr_value);
-	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg);
-		// UCSRC_reg can be used to set other than 8n1 transmission
-	void uart_set_U2X(uint8_t usartct); // function instead of macro
+	// functions smaller then calling routines or executed once are inline for reducing
+	// flash memory usage (eg. switch routines can be executed during compilation)
+	
+	static inline void uart_init(uint8_t usartct, uint16_t ubbr_value)
+	{
+		switch(usartct)
+		{
+		#ifdef USE_USART0
+			case 0:
+			UBRR0L_REGISTER = (uint8_t) ubbr_value;
+			UBRR0H_REGISTER = (ubbr_value>>8);
+			
+		#ifdef USART0_U2X_SPEED
+			UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
+		#endif
+			
+			UCSR0B_REGISTER = USART0_CONFIG_B;
+			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
+			// 8n1 is set by default, setting UCSRC is not needed
+			
+		#ifndef NO_TX0_INTERRUPT
+			interrupt_semaphore0 = unlocked;
+		#endif
+			
+			break;
+		#endif // NO_USART0
+		#ifdef USE_USART1
+			case 1:
+			UBRR1L_REGISTER = (uint8_t) ubbr_value;
+			UBRR1H_REGISTER = (ubbr_value>>8);
+			
+		#ifdef USART1_U2X_SPEED
+			UCSR1A_REGISTER |= (1<<U2X1_BIT); // enable double speed
+		#endif
+			
+			UCSR1B_REGISTER = USART1_CONFIG_B;
+			// (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<TXCIE1_BIT)|(1<<RXCIE1_BIT);
+			// 8n1 is set by default, setting UCSRC is not needed
+			
+		#ifndef NO_TX1_INTERRUPT
+			interrupt_semaphore1 = unlocked;
+		#endif
+			
+			break;
+		#endif // USE_USART1
+		#ifdef USE_USART2
+			case 2:
+			UBRR2L_REGISTER = (uint8_t) ubbr_value;
+			UBRR2H_REGISTER = (ubbr_value>>8);
+			
+		#ifdef USART2_U2X_SPEED
+			UCSR2A_REGISTER |= (1<<U2X2_BIT); // enable double speed
+		#endif
+			
+			UCSR2B_REGISTER = USART2_CONFIG_B;
+			// (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXCIE2_BIT);
+			// 8n1 is set by default, setting UCSRC is not needed
+			
+		#ifndef NO_TX2_INTERRUPT
+			interrupt_semaphore2 = unlocked;
+		#endif
+			
+			break;
+		#endif // USE_USART2
+		#ifdef USE_USART3
+			case 3:
+			UBRR3L_REGISTER = (uint8_t) ubbr_value;
+			UBRR3H_REGISTER = (ubbr_value>>8);
+			
+		#ifdef USART3_U2X_SPEED
+			UCSR3A_REGISTER |= (1<<U2X3_BIT); // enable double speed
+		#endif
+			
+			UCSR3B_REGISTER = USART3_CONFIG_B;
+			// (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXCIE3_BIT);
+			// 8n1 is set by default, setting UCSRC is not needed
+			
+		#ifndef NO_TX3_INTERRUPT
+			interrupt_semaphore3 = unlocked;
+		#endif
+			//break;
+		#endif // USE_USART3
+		}
+		
+	}
+	
+	// UCSRC_reg can be used to set other than 8n1 transmission
+	static inline void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg)
+	{
+		switch(usartct)
+		{
+		#ifdef USE_USART0
+			case 0: UCSR0C_REGISTER |= UCSRC_reg; break;
+		#endif // USE_USART0
+		#ifdef USE_USART1
+			case 1: UCSR1C_REGISTER |= UCSRC_reg; break;
+		#endif // USE_USART1
+		#ifdef USE_USART2
+			case 2: UCSR2C_REGISTER |= UCSRC_reg; break;
+		#endif // USE_USART2
+		#ifdef USE_USART3
+			case 3: UCSR3C_REGISTER |= UCSRC_reg; //break;
+		#endif // USE_USART3
+		}
+		
+	}
+	
+	static inline void uart_set_U2X(uint8_t usartct) // use instead of USE_DOUBLE_SPEED
+	{
+		switch(usartct)
+		{
+		#ifdef USE_USART0
+			case 0: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
+		#endif // USE_USART0
+		#ifdef USE_USART1
+			case 1: UCSR1A_REGISTER |= (1<<U2X1_BIT); break;
+		#endif // USE_USART1
+		#ifdef USE_USART2
+			case 2: UCSR2A_REGISTER |= (1<<U2X2_BIT); break;
+		#endif // USE_USART2
+		#ifdef USE_USART3
+			case 3: UCSR3A_REGISTER |= (1<<U2X3_BIT); //break;
+		#endif // USE_USART3
+		}
+		
+	}
 
 #else // single USART mcu
 	
-	static inline void uart_init(uint16_t ubbr_value)
+	// functions smaller then calling routines or executed once are inline for reducing 
+	// flash memory usage (eg. switch routines can be executed during compilation)
+	
+	static inline void uart_init(uint16_t ubbr_value) // function called once
 	{
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		UBRR0H_REGISTER = (ubbr_value>>8);
@@ -501,12 +626,13 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 	#endif
 	}
 	
-	static inline void uart_set_UCSRC(uint8_t UCSRC_reg)
-	{ 
+	// UCSRC_reg can be used to set other than 8n1 transmission
+	static inline void uart_set_UCSRC(uint8_t UCSRC_reg) 
+	{
 		UCSR0C_REGISTER |= UCSRC_reg;
-	} // UCSRC_reg can be used to set other than 8n1 transmission
+	} 
 	
-	static inline void uart_set_U2X(void) // function instead of macro
+	static inline void uart_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
 	{
 		UCSR0A_REGISTER |= (1<<U2X0_BIT);
 	} 
@@ -607,34 +733,5 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 
 #endif // NO_USART_RX
 
-#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
-// macros to allow using usart0 as a single usart in multiple configuration
-	
-	#define uart_putc(_d) uart_putc(0,_d)
-	#define uart_putstrl(_str,_n) uart_putstrl(0,_str,_n)
-	#define uart_putstr(_str) uart_putstr(0,_str)
-
-	#ifdef __cplusplus
-		#define uart_puts(_cstr) uart_putstr(0,const_cast<char*>(_cstr))
-	#else
-		#define uart_puts(_cstr) uart_putstr(0,_cstr)
-	#endif
-	
-	#define uart_puts_p(_cstr) uart_puts_p(0,_cstr)
-		#define uart_puts_P(_cstr) uart_puts_p(0,PSTR(_cstr))
-
-	#define uart_putint(_d) uart_putint(0,_d)
-	#define uart_put_hex(_d) uart_put_hex(0,_d)
-	#define uart_putlong(_d) uart_putlong(0,_d)
-	#define uart_putfloat(_d) uart_putfloat(0,_d)
-	#define uart_fputfloat(_d,_s,_p); uart_fputfloat(0,_d,_s,_p);
-	
-	#define uart_getc() uart_getc(0) 
-	#define uart_gets(_buff) uart_gets(0,_buff)
-	#define uart_getsl(_buff,_n) uart_getsl(0,_buff,_n)
-	#define uart_getData(_d) uart_getData(0,_d)
-	#define uart_AvailableBytes() uart_AvailableBytes(0)
-
-#endif
 
 #endif // USART_HPP
