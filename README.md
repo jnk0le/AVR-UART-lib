@@ -23,15 +23,15 @@ int main(void)
 gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    446	     14	     69	    529	    211	avrt.elf
+		    448	     14	     69	    531	    213	avrt.elf
 
-Program Memory Usage 	:	460 bytes   1,4 % Full
+Program Memory Usage 	:	462 bytes   1,4 % Full
 Data Memory Usage 		:	83 bytes   4,1 % Full
 
 defined  NO_USART_RX flag gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    368	     14	     35	    417	    1a1	avrt.elf
+		    370	     14	     35	    419	    1a3	avrt.elf
 
-Program Memory Usage 	:	382 bytes   1,2 % Full
+Program Memory Usage 	:	384 bytes   1,2 % Full
 Data Memory Usage 		:	49 bytes   2,4 % Full
