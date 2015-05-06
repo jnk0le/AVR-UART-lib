@@ -8,13 +8,13 @@
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
-	//  these functions are now static inline in header file
-	/*void uart_init(uint8_t usartct, uint16_t ubbr_value)
+#ifdef USART_DO_NOT_INLINE
+	void uart_init(uint8_t usartct, uint16_t ubbr_value)
 	{
 		switch(usartct)
 		{
 		#ifdef USE_USART0
-			case 0:
+			default:
 				UBRR0L_REGISTER = (uint8_t) ubbr_value;
 				UBRR0H_REGISTER = (ubbr_value>>8);
 			
@@ -90,14 +90,14 @@
 		#endif // USE_USART3
 		}
 		
-	}*/
+	}
 
-	/*void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg) 
+	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg) 
 	{
 		switch(usartct)
 		{
 		#ifdef USE_USART0
-			case 0: UCSR0C_REGISTER |= UCSRC_reg; break;
+			default: UCSR0C_REGISTER |= UCSRC_reg; break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
 			case 1: UCSR1C_REGISTER |= UCSRC_reg; break;
@@ -110,14 +110,14 @@
 		#endif // USE_USART3
 		}
 		
-	}*/
+	}
 	
-	/*void uart_set_U2X(uint8_t usartct)
+	void uart_set_U2X(uint8_t usartct)
 	{
 		switch(usartct)
 		{
 		#ifdef USE_USART0
-			case 0: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
+			default: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
 			case 1: UCSR1A_REGISTER |= (1<<U2X1_BIT); break;
@@ -130,12 +130,15 @@
 		#endif // USE_USART3
 		}
 		
-	}*/
+	}
+	
+#endif // USART_DO_NOT_INLINE
 
 #else // single USART mcu
 
-	// these functions are now static inline in header file
-	/*void uart_init(uint16_t ubbr_value)
+#ifdef USART_DO_NOT_INLINE
+
+	void uart_init(uint16_t ubbr_value)
 	{
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		UBRR0H_REGISTER = (ubbr_value>>8);
@@ -151,17 +154,20 @@
 	#ifndef NO_TX0_INTERRUPT
 		interrupt_semaphore0 = unlocked;
 	#endif
-	}*/
-
-	/*void uart_set_UCSRC(uint8_t UCSRC_reg)
-	{
-		UCSR0C_REGISTER |= UCSRC_reg; 
 	}
 	
-	void uart_set_U2X(void)
-	{
-		UCSR0A_REGISTER |= (1<<U2X0_BIT); 
-	}*/
+#endif // USART_DO_NOT_INLINE
+
+// functions smaller than their callers
+// 	void uart_set_UCSRC(uint8_t UCSRC_reg)
+// 	{
+// 		UCSR0C_REGISTER |= UCSRC_reg; 
+// 	}
+// 	
+// 	void uart_set_U2X(void)
+// 	{
+// 		UCSR0A_REGISTER |= (1<<U2X0_BIT); 
+// 	}
 
 #endif // single/multi USART
 
@@ -176,7 +182,7 @@
 		switch(usartct)
 		{
 		#ifndef NO_TX0_INTERRUPT 
-			case 0:
+			default: // case 0:
 				tmp_tx_last_byte = tx0_last_byte;
 			
 				tx0_buffer[tmp_tx_last_byte] = data;
@@ -484,7 +490,7 @@
 		switch(usartct)
 		{
 		#ifndef NO_RX0_INTERRUPT
-			case 0:
+			default: //case 0:
 				tmp_rx_first_byte = rx0_first_byte;
 			
 				*data = rx0_buffer[tmp_rx_first_byte];
@@ -729,7 +735,7 @@
 #ifndef NO_TX3_INTERRUPT
 	ISR(TX3_INTERRUPT)
 	{
-		register uint8_t tmp_tx_first_byte = tx2_first_byte = (tx3_first_byte + 1) & TX3_BUFFER_MASK;
+		register uint8_t tmp_tx_first_byte = tx3_first_byte = (tx3_first_byte + 1) & TX3_BUFFER_MASK;
 	
 		if(tmp_tx_first_byte != tx3_last_byte)
 		{

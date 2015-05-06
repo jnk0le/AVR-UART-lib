@@ -8,10 +8,16 @@
  *  This library is distributed under MIT license terms                             *
  ************************************************************************************/
 
+// NOTE that this library is optimized for -Os optimization level (release build in IDEs)
+// in any other case, it can generate larger code than neutral libraries
+
+// for function calls that are twice smaller than normal, you can use -mrelax
+// if any other uart library produces better code than this, you can contact me to fix this issue
+
 // DO NOT DEFINE BUFFERS SIZES OR ANY SHARED MACROS IN 'main.cpp' CODE
 // instead of this, define it in "Project Properties -> AVR C++ Compiler -> Symbols" or try to use -D gcc flag (eg. -DF_CPU=8000000)
 
-//#define NO_USART_RX // disable all receiver code and dependencies 
+//#define NO_USART_RX // disable all receiver code and dependencies
 //#define NO_USART_TX // disable all transmitter code and dependencies
 
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces 
@@ -20,6 +26,8 @@
 //#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
 
 //#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission
+
+//#define USART_DO_NOT_INLINE // disables inlining code typically executed once, that is heavily dependent of optimize flags
 
 /*****************************multiple USART mcu's***********************************/
 
@@ -476,17 +484,20 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
  ************************************************************************************/
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 	
+#ifndef USART_DO_NOT_INLINE
 	// functions smaller then calling routines or executed once are inline for reducing
-	// flash memory usage (eg. switch routines can be executed during compilation)
-	
+	// flash memory usage (eg. switch and if routines can be executed during compilation)
+
 	static inline void uart_init(uint8_t usartct, uint16_t ubbr_value)
 	{
 		switch(usartct)
 		{
 		#ifdef USE_USART0
-			case 0:
+			default:
 			UBRR0L_REGISTER = (uint8_t) ubbr_value;
-			UBRR0H_REGISTER = (ubbr_value>>8);
+			
+			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+				UBRR0H_REGISTER = (ubbr_value>>8);
 			
 		#ifdef USART0_U2X_SPEED
 			UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
@@ -505,7 +516,9 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 		#ifdef USE_USART1
 			case 1:
 			UBRR1L_REGISTER = (uint8_t) ubbr_value;
-			UBRR1H_REGISTER = (ubbr_value>>8);
+			
+			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+				UBRR1H_REGISTER = (ubbr_value>>8);
 			
 		#ifdef USART1_U2X_SPEED
 			UCSR1A_REGISTER |= (1<<U2X1_BIT); // enable double speed
@@ -524,7 +537,9 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 		#ifdef USE_USART2
 			case 2:
 			UBRR2L_REGISTER = (uint8_t) ubbr_value;
-			UBRR2H_REGISTER = (ubbr_value>>8);
+			
+			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+				UBRR2H_REGISTER = (ubbr_value>>8);
 			
 		#ifdef USART2_U2X_SPEED
 			UCSR2A_REGISTER |= (1<<U2X2_BIT); // enable double speed
@@ -543,7 +558,9 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 		#ifdef USE_USART3
 			case 3:
 			UBRR3L_REGISTER = (uint8_t) ubbr_value;
-			UBRR3H_REGISTER = (ubbr_value>>8);
+			
+			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+				UBRR3H_REGISTER = (ubbr_value>>8);
 			
 		#ifdef USART3_U2X_SPEED
 			UCSR3A_REGISTER |= (1<<U2X3_BIT); // enable double speed
@@ -568,7 +585,7 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 		switch(usartct)
 		{
 		#ifdef USE_USART0
-			case 0: UCSR0C_REGISTER |= UCSRC_reg; break;
+			default: UCSR0C_REGISTER |= UCSRC_reg; break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
 			case 1: UCSR1C_REGISTER |= UCSRC_reg; break;
@@ -583,12 +600,12 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 		
 	}
 	
-	static inline void uart_set_U2X(uint8_t usartct) // use instead of USE_DOUBLE_SPEED
+	static inline void uart_set_U2X(uint8_t usartct) // use instead of USE_U2Xn_SPEED
 	{
 		switch(usartct)
 		{
 		#ifdef USE_USART0
-			case 0: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
+			default: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
 			case 1: UCSR1A_REGISTER |= (1<<U2X1_BIT); break;
@@ -602,16 +619,26 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 		}
 		
 	}
+#else // USART_DO_NOT_INLINE
+	
+	void uart_init(uint8_t usartct, uint16_t ubbr_value);
+	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg);
+	void uart_set_U2X(uint8_t usartct); // use instead of USE_U2Xn_SPEED
+	
+#endif
 
 #else // single USART mcu
 	
+#ifndef USART_DO_NOT_INLINE
 	// functions smaller then calling routines or executed once are inline for reducing 
-	// flash memory usage (eg. switch routines can be executed during compilation)
+	// flash memory usage (eg. switch and if routines can be executed during compilation)
 	
 	static inline void uart_init(uint16_t ubbr_value) // function called once
 	{
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
-		UBRR0H_REGISTER = (ubbr_value>>8);
+		
+		if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+			UBRR0H_REGISTER = (ubbr_value>>8);
 		
 	#ifdef USART0_U2X_SPEED
 		UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
@@ -626,6 +653,12 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 	#endif
 	}
 	
+#else // USART_DO_NOT_INLINE
+
+	void uart_init(uint16_t ubbr_value);
+
+#endif
+
 	// UCSRC_reg can be used to set other than 8n1 transmission
 	static inline void uart_set_UCSRC(uint8_t UCSRC_reg) 
 	{
