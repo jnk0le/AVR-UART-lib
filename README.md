@@ -23,15 +23,17 @@ int main(void)
 gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    448	     14	     69	    531	    213	avrt.elf
+		    444	     14	     69	    527	    20f	avrt.elf
 
-Program Memory Usage 	:	462 bytes   1,4 % Full
+Program Memory Usage 	:	458 bytes   1,4 % Full
 Data Memory Usage 		:	83 bytes   4,1 % Full
 
 defined  NO_USART_RX flag gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    370	     14	     35	    419	    1a3	avrt.elf
+		    366	     14	     35	    415	    19f	avrt.elf
 
-Program Memory Usage 	:	384 bytes   1,2 % Full
+Program Memory Usage 	:	380 bytes   1,2 % Full
 Data Memory Usage 		:	49 bytes   2,4 % Full
+
+For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio 6.2)
