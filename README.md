@@ -11,7 +11,7 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 
 int main(void)
 {
-	uart0_init(BAUD_CALC(9600));
+	uart_init(BAUD_CALC(9600));
     sei();
     while(1)
     {
