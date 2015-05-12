@@ -142,7 +142,6 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 
 #if defined(STDIO) && defined(STDIO_BAUDRATE) && defined(STDIO_RX_BUFSIZE) && defined(HW_TIMER) && defined(LED_PORT) && defined(LED_PIN)
 	#define NO_USART0
-	#warning arduino compatibility for this library is undefined
 #endif
 
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
@@ -488,7 +487,7 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 	// functions smaller then calling routines or executed once are inline for reducing
 	// flash memory usage (eg. switch and if routines can be executed during compilation)
 
-	static inline void uart_init(uint8_t usartct, uint16_t ubbr_value)
+	inline void uart_init(uint8_t usartct, uint16_t ubbr_value)
 	{
 		switch(usartct)
 		{
@@ -580,7 +579,7 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 	}
 	
 	// UCSRC_reg can be used to set other than 8n1 transmission
-	static inline void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg)
+	inline void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg)
 	{
 		switch(usartct)
 		{
@@ -600,7 +599,7 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 		
 	}
 	
-	static inline void uart_set_U2X(uint8_t usartct) // use instead of USE_U2Xn_SPEED
+	inline void uart_set_U2X(uint8_t usartct) // use instead of USE_U2Xn_SPEED
 	{
 		switch(usartct)
 		{
@@ -633,7 +632,7 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 	// functions smaller then calling routines or executed once are inline for reducing 
 	// flash memory usage (eg. switch and if routines can be executed during compilation)
 	
-	static inline void uart_init(uint16_t ubbr_value) // function called once
+	inline void uart_init(uint16_t ubbr_value) // function called once
 	{
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		
@@ -660,12 +659,12 @@ enum {COMPLETED = 0, BUFFER_EMPTY = 1};
 #endif
 
 	// UCSRC_reg can be used to set other than 8n1 transmission
-	static inline void uart_set_UCSRC(uint8_t UCSRC_reg) 
+	inline void uart_set_UCSRC(uint8_t UCSRC_reg) 
 	{
 		UCSR0C_REGISTER |= UCSRC_reg;
 	} 
 	
-	static inline void uart_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
+	inline void uart_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
 	{
 		UCSR0A_REGISTER |= (1<<U2X0_BIT);
 	} 

@@ -418,7 +418,7 @@
 		switch(usartct)
 		{
 		#ifndef NO_RX0_INTERRUPT 
-			default: // case 0: // avoid [-Wmaybe-uninitialized] warning
+			default: // case 0:
 
 				tmp_rx_first_byte = rx0_first_byte;
 				tmp_rx_last_byte = rx0_last_byte;
@@ -641,13 +641,13 @@
 		register char tmp;
 		tmp = UDR0_REGISTER; // save received character to temporary register
 
-		register uint8_t tmp_rx_last_byte = rx0_last_byte + 1; // saves 20 bytes // working only in this way, in the other adds 18 bytes to stock size
+		register uint8_t tmp_rx_last_byte = rx0_last_byte + 1;
 	
-		#ifdef RX0_BINARY_MODE 
-			if(rx0_first_byte != (tmp_rx_last_byte)) // tmp_rx_last_byte + 1
-		#else
-			if(rx0_first_byte != (tmp_rx_last_byte) && (tmp != '\r')) // tmp_rx_last_byte + 1
-		#endif
+	#ifdef RX0_BINARY_MODE 
+		if(rx0_first_byte != (tmp_rx_last_byte)) // tmp_rx_last_byte + 1
+	#else
+		if(rx0_first_byte != (tmp_rx_last_byte) && (tmp != '\r')) // tmp_rx_last_byte + 1
+	#endif
 		{
 			rx0_buffer[tmp_rx_last_byte-1] = tmp; // tmp_rx_last_byte
 			rx0_last_byte = (tmp_rx_last_byte) & RX0_BUFFER_MASK; // calculate new position of RX tail in buffer // tmp_rx_last_byte + 1
@@ -681,11 +681,11 @@
 	
 		register uint8_t tmp_rx_last_byte = rx1_last_byte + 1;
 	
-		#ifdef RX1_BINARY_MODE
-			if(rx1_first_byte != (tmp_rx_last_byte)) // tmp_rx_last_byte + 1
-		#else
-			if(rx1_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))	// tmp_rx_last_byte + 1
-		#endif
+	#ifdef RX1_BINARY_MODE
+		if(rx1_first_byte != (tmp_rx_last_byte)) // tmp_rx_last_byte + 1
+	#else
+		if(rx1_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))	// tmp_rx_last_byte + 1
+	#endif
 		{
 			rx1_buffer[tmp_rx_last_byte-1] = tmp;	// tmp_rx_last_byte
 			rx1_last_byte = (tmp_rx_last_byte) & RX1_BUFFER_MASK; // tmp_rx_last_byte + 1
@@ -719,11 +719,11 @@
 	
 		register uint8_t tmp_rx_last_byte = rx2_last_byte + 1;
 	
-		#ifdef RX2_BINARY_MODE
-			if(rx2_first_byte != (tmp_rx_last_byte))
-		#else
-			if(rx2_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))
-		#endif
+	#ifdef RX2_BINARY_MODE
+		if(rx2_first_byte != (tmp_rx_last_byte))
+	#else
+		if(rx2_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))
+	#endif
 		{
 			rx2_buffer[tmp_rx_last_byte-1] = tmp;
 			rx2_last_byte = (tmp_rx_last_byte) & RX2_BUFFER_MASK;
@@ -757,11 +757,11 @@
 		
 		register uint8_t tmp_rx_last_byte = rx3_last_byte + 1;
 		
-		#ifdef RX3_BINARY_MODE
-			if(rx3_first_byte != (tmp_rx_last_byte))
-		#else
-			if(rx3_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))
-		#endif
+	#ifdef RX3_BINARY_MODE
+		if(rx3_first_byte != (tmp_rx_last_byte))
+	#else
+		if(rx3_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))
+	#endif
 		{
 			rx3_buffer[tmp_rx_last_byte-1] = tmp;
 			rx3_last_byte = (tmp_rx_last_byte) & RX3_BUFFER_MASK;
