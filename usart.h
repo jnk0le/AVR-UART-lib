@@ -57,6 +57,7 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
+#include <util/atomic.h>
 
 #ifndef F_CPU
 	#error F_CPU is undefined, USART cannot work correctly without this parametr
@@ -67,6 +68,7 @@
 
 #ifdef DEBUG
 	#warning defined DEBUG mode flag, if you want to reduce code size, switch to release mode instead
+	#define USART_DO_NOT_INLINE
 #endif
 
 #ifndef DEFAULT_RX_BUFFER_SIZE
