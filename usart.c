@@ -264,8 +264,8 @@
 
 	void uart_puts_p(uint8_t usartct, const char *string)
 	{
-		while(pgm_read_byte(string))
-			uart_putc(usartct, pgm_read_byte(string++));
+		register char c;
+		while ((c = pgm_read_byte(string++)) ) uart_putc(usartct,c);
 	}
 
 	void uart_putint(uint8_t usartct, int16_t data)
@@ -349,8 +349,8 @@
 
 	void uart_puts_p(const char *string)
 	{
-		while(pgm_read_byte(string))
-			uart_putc(pgm_read_byte(string++));
+		register char c;
+		while ((c = pgm_read_byte(string++)) ) uart_putc(c);
 	}
 
 	void uart_putint(int16_t data)
