@@ -178,6 +178,7 @@ void MoveData(uint8_t *bufptr, uint8_t BytesToMove)
 	{
 		file[fileposition] = bufptr[i];
 		fileposition = (fileposition+1);
-			if(fileposition == 1024) fileposition = 0; // overwrite our file if sent file is >1K
+		
+		if(fileposition == 1024) fileposition = 0; // overwrite our file if sent file is >1K
 	}
 }
