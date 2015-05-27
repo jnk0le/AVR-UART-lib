@@ -21,7 +21,7 @@
 
 uint8_t HandleIncomingData(uint8_t dat);
 uint8_t validate_packet(uint8_t *bufptr, uint8_t *packet_number);
-uint16_t calcrc(uint8_t *ptr, uint8_t size);
+uint16_t calcrc(uint8_t *bufptr, uint8_t size);
 void MoveData(uint8_t *bufptr, uint8_t BytesToMove);
 
 uint8_t file[1024];
