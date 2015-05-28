@@ -24,7 +24,7 @@
 //#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary 
 //#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
 
-//#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission
+#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission
 
 //#define USART_DO_NOT_INLINE // disables inlining code typically executed once, that is heavily dependent of optimize flags
 
@@ -439,45 +439,23 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	#endif
 #endif // USART3_CONFIG
 
+// just for inline functions 
 #ifndef NO_TX0_INTERRUPT
-	volatile uint8_t tx0_first_byte, tx0_last_byte, interrupt_semaphore0;
-	char tx0_buffer[TX0_BUFFER_SIZE];
-#endif
-
-#ifndef NO_RX0_INTERRUPT
-	volatile uint8_t rx0_first_byte, rx0_last_byte;
-	char rx0_buffer[RX0_BUFFER_SIZE];
+	extern volatile uint8_t interrupt_semaphore0; 
 #endif
 
 #ifndef NO_TX1_INTERRUPT
-	volatile uint8_t tx1_first_byte, tx1_last_byte, interrupt_semaphore1;
-	char tx1_buffer[TX1_BUFFER_SIZE];
-#endif
-
-#ifndef NO_RX1_INTERRUPT
-	volatile uint8_t rx1_first_byte, rx1_last_byte;
-	char rx1_buffer[RX1_BUFFER_SIZE];
+	extern volatile uint8_t interrupt_semaphore1;
 #endif
 
 #ifndef NO_TX2_INTERRUPT
-	volatile uint8_t tx2_first_byte, tx2_last_byte, interrupt_semaphore2;
-	char tx2_buffer[TX2_BUFFER_SIZE];
-#endif
-
-#ifndef NO_RX2_INTERRUPT
-	volatile uint8_t rx2_first_byte, rx2_last_byte;
-	char rx2_buffer[RX2_BUFFER_SIZE];
+	extern volatile uint8_t interrupt_semaphore2;
 #endif
 
 #ifndef NO_TX3_INTERRUPT
-	volatile uint8_t tx3_first_byte, tx3_last_byte, interrupt_semaphore3;
-	char tx3_buffer[TX3_BUFFER_SIZE];
+	extern volatile uint8_t interrupt_semaphore3;
 #endif
 
-#ifndef NO_RX3_INTERRUPT
-	volatile uint8_t rx3_first_byte, rx3_last_byte;
-	char rx3_buffer[RX3_BUFFER_SIZE];
-#endif
 
 /************************************************************************************
  *                            Initializers                                          *

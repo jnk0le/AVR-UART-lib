@@ -7,6 +7,46 @@
 
 #include "usart.h"
 
+#ifndef NO_TX0_INTERRUPT
+	volatile uint8_t tx0_first_byte, tx0_last_byte, interrupt_semaphore0;
+	char tx0_buffer[TX0_BUFFER_SIZE];
+#endif
+
+#ifndef NO_RX0_INTERRUPT
+	volatile uint8_t rx0_first_byte, rx0_last_byte;
+	char rx0_buffer[RX0_BUFFER_SIZE];
+#endif
+
+#ifndef NO_TX1_INTERRUPT
+	volatile uint8_t tx1_first_byte, tx1_last_byte, interrupt_semaphore1;
+	char tx1_buffer[TX1_BUFFER_SIZE];
+#endif
+
+#ifndef NO_RX1_INTERRUPT
+	volatile uint8_t rx1_first_byte, rx1_last_byte;
+	char rx1_buffer[RX1_BUFFER_SIZE];
+#endif
+
+#ifndef NO_TX2_INTERRUPT
+	volatile uint8_t tx2_first_byte, tx2_last_byte, interrupt_semaphore2;
+	char tx2_buffer[TX2_BUFFER_SIZE];
+#endif
+
+#ifndef NO_RX2_INTERRUPT
+	volatile uint8_t rx2_first_byte, rx2_last_byte;
+	char rx2_buffer[RX2_BUFFER_SIZE];
+#endif
+
+#ifndef NO_TX3_INTERRUPT
+	volatile uint8_t tx3_first_byte, tx3_last_byte, interrupt_semaphore3;
+	char tx3_buffer[TX3_BUFFER_SIZE];
+#endif
+
+#ifndef NO_RX3_INTERRUPT
+	volatile uint8_t rx3_first_byte, rx3_last_byte;
+	char rx3_buffer[RX3_BUFFER_SIZE];
+#endif
+
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
 #ifdef USART_DO_NOT_INLINE
@@ -286,7 +326,7 @@
 
 	void uart_putlong(uint8_t usartct, int32_t data)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
+		char buffer[12]; // heading, 10 digit bytes, NULL
 		ltoa(data, buffer, 10);
 	
 		uart_putstr(usartct, buffer);
@@ -350,7 +390,7 @@
 	void uart_puts_p(const char *string)
 	{
 		register char c;
-		while ((c = pgm_read_byte(string++)) ) uart_putc(c);
+		while ( (c = pgm_read_byte(string++)) ) uart_putc(c);
 	}
 
 	void uart_putint(int16_t data)
@@ -371,7 +411,7 @@
 
 	void uart_putlong(int32_t data)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
+		char buffer[12]; // heading, 10 digit bytes, NULL
 		ltoa(data, buffer, 10);
 		
 		uart_putstr(buffer);
