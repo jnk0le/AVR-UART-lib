@@ -141,10 +141,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	#define USART3_U2X_SPEED
 #endif
 
-#if defined(STDIO) && defined(STDIO_BAUDRATE) && defined(STDIO_RX_BUFSIZE) && defined(HW_TIMER) && defined(LED_PORT) && defined(LED_PIN)
-	#define NO_USART0
-#endif
-
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
 
 #ifndef NO_USART0
@@ -167,10 +163,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #endif //NO_USART0
 #endif
 
-#if defined(__AVR_ATmega48__)||defined(__AVR_ATmega88__)|| defined(__AVR_ATmega168__)\
-||defined(__AVR_ATmega48P__) ||defined(__AVR_ATmega88P__)|| defined(__AVR_ATmega168P__)\
-||defined(__AVR_ATmega328P__)||defined(__AVR_ATmega328__)||defined(__AVR_ATmega48PA__)\
-||defined(__AVR_ATmega88PA__)|| defined(__AVR_ATmega168PA__)
+#if defined(__AVR_ATmega48__)||defined(__AVR_ATmega48P__)||defined(__AVR_ATmega48PA__)\
+||defined(__AVR_ATmega88__)||defined(__AVR_ATmega88P__)||defined(__AVR_ATmega88PA__)\
+||defined(__AVR_ATmega168__)||defined(__AVR_ATmega168P__)||defined(__AVR_ATmega168PA__)\
+||defined(__AVR_ATmega328__)||defined(__AVR_ATmega328P__)
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -193,8 +189,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #endif
 
 #if defined(__AVR_ATmega8__)||defined(__AVR_ATmega8P__)||defined(__AVR_ATmega16__)\
-||defined(__AVR_ATmega16L__)||defined(__AVR_ATmega32__)||defined(__AVR_ATmega32L__)\
-||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)||defined(__AVR_ATmega32A__)
+||defined(__AVR_ATmega16A__)||defined(__AVR_ATmega32__)||defined(__AVR_ATmega32A__)\
+||defined(__AVR_ATmega8A__)
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -281,9 +277,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 
 #if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)||defined(__AVR_ATmega644PA__)\
 ||defined(__AVR_ATmega1284__)||defined(__AVR_ATmega1284P__)||defined(__AVR_ATmega128__)\
-||defined(__AVR_ATmega128L__)||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64L__)\
+||defined(__AVR_ATmega128A__)||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64A__)\
 ||defined(__AVR_ATmega1281__)||defined(__AVR_ATmega2561__)||defined(__AVR_ATmega640__)\
-||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)
+||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)||defined(__AVR_ATmega164P__)\
+||defined(__AVR_ATmega324P__)||defined(__AVR_ATmega324A__)
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -366,6 +363,105 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #endif // NO_USART3
 
 #endif // 640/1280/2560 usart 2 & 3 
+
+#if defined(__AVR_ATmega8U2__) || defined(__AVR_ATmega16U2__) || defined(__AVR_ATmega16U4__)\
+||defined(__AVR_ATmega32U2__) || defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega32U6__)
+
+#ifndef NO_USART0 // we will call the only usart, as an usart0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART1_RX_vect
+	#define TX0_INTERRUPT		USART1_TX_vect
+	#define UDR0_REGISTER		UDR1
+	#define UBRR0L_REGISTER		UBRR1L
+	#define UBRR0H_REGISTER		UBRR1H
+	#define UCSR0A_REGISTER		UCSR1A
+	#define UCSR0B_REGISTER		UCSR1B
+	#define UCSR0C_REGISTER		UCSR1C
+	#define TXCIE0_BIT  		TXCIE1
+	#define RXCIE0_BIT  		RXCIE1
+	#define TXEN0_BIT   		TXEN1
+	#define RXEN0_BIT   		RXEN1
+	#define U2X0_BIT    		U2X1
+
+#endif // NO_USART0
+#endif
+
+#if defined(__AVR_ATmega169A__)||defined(__AVR_ATmega169__)
+
+#ifndef NO_USART0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART0_RX_vect
+	#define TX0_INTERRUPT		USART0_TX_vect
+	#define UDR0_REGISTER		UDR
+	#define UBRR0L_REGISTER		UBRRL
+	#define UBRR0H_REGISTER		UBRRH
+	#define UCSR0A_REGISTER		UCSRA
+	#define UCSR0B_REGISTER		UCSRB
+	#define UCSR0C_REGISTER		UCSRC
+	#define TXCIE0_BIT  		TXCIE
+	#define RXCIE0_BIT  		RXCIE
+	#define TXEN0_BIT   		TXEN
+	#define RXEN0_BIT   		RXEN
+	#define U2X0_BIT    		U2X
+
+#endif //NO_USART0
+#endif
+
+#if defined(__AVR_ATmega329__)||defined(__AVR_ATmega329P__)||defined(__AVR_ATmega329PA__)\
+||defined(__AVR_ATmega329A__)||defined(__AVR_ATmega649__)||defined(__AVR_ATmega649A__)\
+||defined(__AVR_ATmega649P__)||defined(__AVR_ATmega169P__)||defined(__AVR_ATmega169PA__)\
+||defined(__AVR_ATmega325__)||defined(__AVR_ATmega325A__)||defined(__AVR_ATmega325P__)\
+||defined(__AVR_ATmega325PA__)||defined(__AVR_ATmega645__)||defined(__AVR_ATmega645A__)\
+||defined(__AVR_ATmega645P__)
+
+
+#ifndef NO_USART0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART0_RX_vect
+	#define TX0_INTERRUPT		USART0_TX_vect
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT  		TXCIE0
+	#define RXCIE0_BIT  		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define U2X0_BIT    		U2X0
+
+#endif //NO_USART0
+#endif
+
+#if defined(__AVR_ATmega3290__)||defined(__AVR_ATmega6490__)||defined(__AVR_ATmega3290P__)\
+||defined(__AVR_ATmega3290PA__)||defined(__AVR_ATmega3290A__)||defined(__AVR_ATmega6490A__)\
+||defined(__AVR_ATmega6490P__)||defined(__AVR_ATmega3250__)||defined(__AVR_ATmega3250A__)\
+||defined(__AVR_ATmega3250P__)||defined(__AVR_ATmega3250PA__)||defined(__AVR_ATmega6450__)\
+||defined(__AVR_ATmega6450A__)||defined(__AVR_ATmega6450P__)
+
+#ifndef NO_USART0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART_RX_vect // wtf https://youtu.be/-L2o5OHTgKU
+	#define TX0_INTERRUPT		USART0_TX_vect
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT  		TXCIE0
+	#define RXCIE0_BIT  		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define U2X0_BIT    		U2X0
+
+#endif //NO_USART0
+#endif
 
 #if !defined(USE_USART0) && !defined(USE_USART1) && !defined(USE_USART2) && !defined(USE_USART3)
 	#error USART not available or unknown mcu
