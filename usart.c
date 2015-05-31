@@ -532,66 +532,54 @@
 		{
 		#ifndef NO_RX0_INTERRUPT
 			default: //case 0:
-				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) // critical section // avoid random data corruption
-				{
-					tmp_rx_first_byte = rx0_first_byte;
+				tmp_rx_first_byte = rx0_first_byte;
 			
+				if(tmp_rx_first_byte != rx0_last_byte) // if buffer is not empty
+				{
 					*data = rx0_buffer[tmp_rx_first_byte];
-					if(tmp_rx_first_byte != rx0_last_byte) // if buffer is not empty
-					{
-						rx0_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK; // calculate new position of RX head in buffer
-						return COMPLETED; // result = 0
-					}
-				
+					rx0_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK; // calculate new position of RX head in buffer
+					return COMPLETED; // result = 0
 				}
+				
 			break;
 		#endif // NO_RX0_INTERRUPT
 		#ifndef NO_RX1_INTERRUPT
 			case 1:
-				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) // critical section // avoid random data corruption
+				tmp_rx_first_byte = rx1_first_byte;
+				
+				if(tmp_rx_first_byte != rx1_last_byte) // if buffer is not empty
 				{
-					tmp_rx_first_byte = rx1_first_byte;
-				
 					*data = rx1_buffer[tmp_rx_first_byte];
-					if(tmp_rx_first_byte != rx1_last_byte) // if buffer is not empty
-					{
-						rx1_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK; // calculate new position of RX head in buffer
-						return COMPLETED; // result = 0
-					}
-				
+					rx1_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK; // calculate new position of RX head in buffer
+					return COMPLETED; // result = 0
 				}
+				
 			break;
 		#endif // NO_RX1_INTERRUPT
 		#ifndef NO_RX2_INTERRUPT
 			case 2:
-				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) // critical section // avoid random data corruption
+				tmp_rx_first_byte = rx2_first_byte;
+				
+				if(tmp_rx_first_byte != rx2_last_byte) // if buffer is not empty
 				{
-					tmp_rx_first_byte = rx2_first_byte;
-				
 					*data = rx2_buffer[tmp_rx_first_byte];
-					if(tmp_rx_first_byte != rx2_last_byte) // if buffer is not empty
-					{
-						rx2_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK; // calculate new position of RX head in buffer
-						return COMPLETED; // result = 0
-					}
-				
+					rx2_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK; // calculate new position of RX head in buffer
+					return COMPLETED; // result = 0
 				}
+				
 			break;
 		#endif // NO_RX2_INTERRUPT
 		#ifndef NO_RX3_INTERRUPT
 			case 3:
-				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) // critical section // avoid random data corruption
-				{	
-					tmp_rx_first_byte = rx3_first_byte;
+				tmp_rx_first_byte = rx3_first_byte;
 				
+				if(tmp_rx_first_byte != rx3_last_byte) // if buffer is not empty
+				{
 					*data = rx3_buffer[tmp_rx_first_byte];
-					if(tmp_rx_first_byte != rx3_last_byte) // if buffer is not empty
-					{
-						rx3_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK; // calculate new position of RX head in buffer
-						return COMPLETED; // result = 0
-					}
-				
+					rx3_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK; // calculate new position of RX head in buffer
+					return COMPLETED; // result = 0
 				}
+				
 		#endif // NO_RX3_INTERRUPT
 		}
 		return BUFFER_EMPTY; // in this case data value is a trash // result = 1
@@ -653,18 +641,16 @@
 
 	uint8_t uart_getData(uint8_t *data)
 	{
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) // critical section // avoid random data corruption
-		{
-			register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		
+		register uint8_t tmp_rx_first_byte = rx0_first_byte;
 
+		if(tmp_rx_first_byte != rx0_last_byte) // if buffer is not empty
+		{
 			*data = rx0_buffer[tmp_rx_first_byte];
-			if(tmp_rx_first_byte != rx0_last_byte) // if buffer is not empty
-			{
-				rx0_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK; // calculate new position of RX head in buffer
-				return COMPLETED; // result = 1
-			}
-			
-		} 
+			rx0_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK; // calculate new position of RX head in buffer
+			return COMPLETED; // result = 1
+		}
+		
 		return BUFFER_EMPTY; // in this case data value is a trash // result = 0
 	}
 
