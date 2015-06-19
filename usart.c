@@ -315,6 +315,14 @@
 
 		uart_putstr(usartct, buffer);
 	}
+	
+	void uart_putintr(uint8_t usartct, int16_t data, uint8_t radix)
+	{
+		char buffer[17]; // heading, 15 digit bytes, NULL
+		itoa(data, buffer, radix);
+
+		uart_putstr(usartct, buffer);
+	}
 
 	void uart_put_hex(uint8_t usartct, int16_t data)
 	{
@@ -329,6 +337,14 @@
 		char buffer[12]; // heading, 10 digit bytes, NULL
 		ltoa(data, buffer, 10);
 	
+		uart_putstr(usartct, buffer);
+	}
+	
+	void uart_putlongr(uint8_t usartct, int32_t data, uint8_t radix)
+	{
+		char buffer[17]; // heading, 15 digit bytes, NULL
+		ltoa(data, buffer, radix);
+		
 		uart_putstr(usartct, buffer);
 	}
 
@@ -400,6 +416,14 @@
 
 		uart_putstr(buffer);
 	}
+	
+	void uart_putintr(int16_t data, uint8_t radix)
+	{
+		char buffer[17]; // heading, 15 digit bytes, NULL
+		itoa(data, buffer, radix);
+
+		uart_putstr(buffer);
+	}
 
 	void uart_put_hex(int16_t data)
 	{
@@ -413,6 +437,14 @@
 	{
 		char buffer[12]; // heading, 10 digit bytes, NULL
 		ltoa(data, buffer, 10);
+		
+		uart_putstr(buffer);
+	}
+	
+	void uart_putlongr(int32_t data, uint8_t radix)
+	{
+		char buffer[17]; // heading, 15 digit bytes, NULL
+		ltoa(data, buffer, radix);
 		
 		uart_putstr(buffer);
 	}
@@ -690,13 +722,13 @@
 		register uint8_t tmp_rx_last_byte = rx0_last_byte + 1;
 	
 	#ifdef RX0_BINARY_MODE 
-		if(rx0_first_byte != (tmp_rx_last_byte)) // tmp_rx_last_byte + 1
+		if(rx0_first_byte != (tmp_rx_last_byte))
 	#else
-		if(rx0_first_byte != (tmp_rx_last_byte) && (tmp != '\r')) // tmp_rx_last_byte + 1
+		if(rx0_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))
 	#endif
 		{
-			rx0_buffer[tmp_rx_last_byte-1] = tmp; // tmp_rx_last_byte
-			rx0_last_byte = (tmp_rx_last_byte) & RX0_BUFFER_MASK; // calculate new position of RX tail in buffer // tmp_rx_last_byte + 1
+			rx0_buffer[tmp_rx_last_byte-1] = tmp;
+			rx0_last_byte = (tmp_rx_last_byte) & RX0_BUFFER_MASK; // calculate new position of RX tail in buffer
 		}
 		
 	}
@@ -728,13 +760,13 @@
 		register uint8_t tmp_rx_last_byte = rx1_last_byte + 1;
 	
 	#ifdef RX1_BINARY_MODE
-		if(rx1_first_byte != (tmp_rx_last_byte)) // tmp_rx_last_byte + 1
+		if(rx1_first_byte != (tmp_rx_last_byte))
 	#else
-		if(rx1_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))	// tmp_rx_last_byte + 1
+		if(rx1_first_byte != (tmp_rx_last_byte) && (tmp != '\r'))
 	#endif
 		{
-			rx1_buffer[tmp_rx_last_byte-1] = tmp;	// tmp_rx_last_byte
-			rx1_last_byte = (tmp_rx_last_byte) & RX1_BUFFER_MASK; // tmp_rx_last_byte + 1
+			rx1_buffer[tmp_rx_last_byte-1] = tmp;
+			rx1_last_byte = (tmp_rx_last_byte) & RX1_BUFFER_MASK;
 		}
 		
 	}

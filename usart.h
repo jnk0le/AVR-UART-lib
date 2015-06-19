@@ -190,7 +190,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 
 #if defined(__AVR_ATmega8__)||defined(__AVR_ATmega8P__)||defined(__AVR_ATmega16__)\
 ||defined(__AVR_ATmega16A__)||defined(__AVR_ATmega32__)||defined(__AVR_ATmega32A__)\
-||defined(__AVR_ATmega8A__)
+||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -446,7 +446,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #ifndef NO_USART0
 #define USE_USART0
 
-	#define RX0_INTERRUPT		USART_RX_vect // wtf https://youtu.be/-L2o5OHTgKU
+	#define RX0_INTERRUPT		USART_RX_vect // wtf
 	#define TX0_INTERRUPT		USART0_TX_vect
 	#define UDR0_REGISTER		UDR0
 	#define UBRR0L_REGISTER		UBRR0L
@@ -756,7 +756,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_putc(uint8_t usartct, char data); // put character/data into transmitter ring buffer
 	
 	void uart_putstrl(uint8_t usartct, char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
-	void uart_putstr(uint8_t usartct, char *string); // send string from the dynamic buffer 
+	void uart_putstr(uint8_t usartct, char *string); // send string from the memory buffer 
 	// stops when NULL byte is hit (NULL byte is not included into transmission)
 	#ifdef __cplusplus
 		#define uart_puts(_usartct,str) uart_putstr(_usartct,const_cast<char*>(str))// macro to avoid const *char conversion restrictions 
@@ -770,8 +770,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		// macro to automatically put a string constant into flash
 	
 	void uart_putint(uint8_t usartct, int16_t data);
+	void uart_putintr(uint8_t usartct, int16_t data, uint8_t radix);
+	
 	void uart_put_hex(uint8_t usartct, int16_t data);
+	
 	void uart_putlong(uint8_t usartct, int32_t data);
+	void uart_putlongr(uint8_t usartct, int32_t data, uint8_t radix);
+	
 	void uart_putfloat(uint8_t usartct, float data);
 	void uart_fputfloat(uint8_t usartct, float data, uint8_t size, uint8_t precision);
 
@@ -780,7 +785,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_putc(char data); // put character/data into transmitter ring buffer
 	
 	void uart_putstrl(char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
-	void uart_putstr(char *string); // send string from the dynamic buffer
+	void uart_putstr(char *string); // send string from the memory buffer
 		// stops when NULL byte is hit (NULL byte is not included into transmission)
 	#ifdef __cplusplus
 		#define uart_puts(str) uart_putstr(const_cast<char*>(str))// macro to avoid const *char conversion restrictions
@@ -794,8 +799,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		// macro to automatically put a string constant into flash
 	
 	void uart_putint(int16_t data);
+	void uart_putintr(int16_t data, uint8_t radix);
+	
 	void uart_put_hex(int16_t data);
+	
 	void uart_putlong(int32_t data);
+	void uart_putlongr(int32_t data, uint8_t radix);
+	
 	void uart_putfloat(float data);
 	void uart_fputfloat(float data, uint8_t size, uint8_t precision);
 
