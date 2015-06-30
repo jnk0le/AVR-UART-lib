@@ -3,7 +3,6 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
-#include <util/atomic.h>
 
 #include "usart.h"
 

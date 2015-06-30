@@ -24,7 +24,7 @@
 //#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary 
 //#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
 
-#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission
+//#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission
 
 //#define USART_DO_NOT_INLINE // disables inlining code typically executed once, that is heavily dependent of optimize flags
 
@@ -66,8 +66,13 @@
 #define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating UBBR value
 #define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBBR value for double speed
 
+#ifndef __OPTIMIZE__
+	#warning "Compiler optimizations disabled; functions from usart.h won't work as designed"
+	#define USART_DO_NOT_INLINE
+#endif
+	
 #ifdef DEBUG
-	#warning defined DEBUG mode flag, if you want to reduce code size, switch to release mode instead
+	//#warning "defined DEBUG mode flag, if you want to reduce code size, switch to release mode instead"
 	#define USART_DO_NOT_INLINE
 #endif
 
