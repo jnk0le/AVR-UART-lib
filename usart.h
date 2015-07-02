@@ -2,19 +2,16 @@
 #define USART_HPP
 
 /************************************************************************************
- *  Published on: 13-02-2015                                                        *
+ *  Published on: 21-02-2015                                                        *
  *  Author: jnk0le@hotmail.com                                                      *
  *  https://github.com/jnk0le                                                       *
  *  This library is distributed under MIT license terms                             *
  ************************************************************************************/
 
-// NOTE that this library is optimized for -Os optimization level (release build in IDEs)
-// in any other case, it can generate larger code than neutral libraries
-
 // if any other uart library produces better code than this, you can contact me to fix this issue
 
-// DO NOT DEFINE BUFFERS SIZES OR ANY SHARED MACROS IN 'main.cpp' CODE
-// instead of this, define it in "Project Properties -> AVR C++ Compiler -> Symbols" or try to use -D gcc flag (eg. -DF_CPU=8000000)
+// DO NOT DEFINE BUFFERS SIZES OR ANY SHARED MACROS IN 'main.c' CODE
+// instead of this, define it in "Project Properties -> AVR C Compiler -> Symbols" or try to use -D gcc flag (eg. -DF_CPU=8000000)
 
 //#define NO_USART_RX // disable all receiver code and dependencies
 //#define NO_USART_TX // disable all transmitter code and dependencies
@@ -57,7 +54,6 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
-#include <util/atomic.h>
 
 #ifndef F_CPU
 	#error F_CPU is undefined, USART cannot work correctly without this parametr
@@ -136,7 +132,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	#define NO_TX1_INTERRUPT
 	#define NO_TX2_INTERRUPT
 	#define NO_TX3_INTERRUPT
-	
 #endif
 
 #ifdef USE_DOUBLE_SPEED 
@@ -698,7 +693,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		}
 		
 	}
-#else // USART_DO_NOT_INLINE
+#else // USART_DO_NOT_INLINE defined
 	
 	void uart_init(uint8_t usartct, uint16_t ubbr_value);
 	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg);
@@ -763,13 +758,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_putstrl(uint8_t usartct, char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
 	void uart_putstr(uint8_t usartct, char *string); // send string from the memory buffer 
 	// stops when NULL byte is hit (NULL byte is not included into transmission)
+	
+	// for deprecated usage only (wastes ram data memory to keep all string constants), instead of this try to use puts_P
 	#ifdef __cplusplus
-		#define uart_puts(_usartct,str) uart_putstr(_usartct,const_cast<char*>(str))// macro to avoid const *char conversion restrictions 
+		#define uart_puts(_usartct,str) uart_putstr(_usartct,(const char*)(str))// macro to avoid const *char conversion restrictions 
 	#else
 		#define uart_puts(_usartct,str) uart_putstr(_usartct,str)
 	#endif
-		// for deprecated usage only (wastes ram data memory to keep all string constants), instead of this try to use puts_P
-
+		
 	void uart_puts_p(uint8_t usartct, const char *string); // send string from flash memory 
 		#define uart_puts_P(_usartct,__s)    uart_puts_p(_usartct,PSTR(__s)) 
 		// macro to automatically put a string constant into flash
@@ -793,7 +789,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_putstr(char *string); // send string from the memory buffer
 		// stops when NULL byte is hit (NULL byte is not included into transmission)
 	#ifdef __cplusplus
-		#define uart_puts(str) uart_putstr(const_cast<char*>(str))// macro to avoid const *char conversion restrictions
+		#define uart_puts(str) uart_putstr((const char*)(str))// macro to avoid const *char conversion restrictions
 	#else
 		#define uart_puts(str) uart_putstr(str)
 	#endif
@@ -826,7 +822,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 	
 	char uart_getc(uint8_t usartct); // get character from receiver ring buffer
-	void uart_gets(uint8_t usartct, char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited gets
+	void uart_gets(uint8_t usartct, char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited getsl
 	// to avoid stack/buffer overflows, temp buffer size have to be the same as ring buffer or bigger 
 	// adds NULL byte at the end of string
 	void uart_getsl(uint8_t usartct, char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit 
@@ -840,7 +836,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #else // single USART mcu
 
 	char uart_getc(void); // get character from receiver ring buffer
-	void uart_gets(char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited gets
+	void uart_gets(char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited getsl
 	// to avoid stack/buffer overflows, temp buffer size have to be the same as ring buffer or bigger
 	// adds NULL byte at the end of string
 	void uart_getsl(char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit
