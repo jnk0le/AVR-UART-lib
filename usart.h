@@ -1,5 +1,5 @@
-#ifndef USART_HPP
-#define USART_HPP
+#ifndef USART_H
+#define USART_H
 
 /************************************************************************************
  *  Published on: 21-02-2015                                                        *
@@ -761,7 +761,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	
 	// for deprecated usage only (wastes ram data memory to keep all string constants), instead of this try to use puts_P
 	#ifdef __cplusplus
-		#define uart_puts(_usartct,str) uart_putstr(_usartct,(const char*)(str))// macro to avoid const *char conversion restrictions 
+		#define uart_puts(_usartct,str) uart_putstr(_usartct,(const char*)(str))// macro to avoid const char* conversion restrictions 
 	#else
 		#define uart_puts(_usartct,str) uart_putstr(_usartct,str)
 	#endif
@@ -789,7 +789,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_putstr(char *string); // send string from the memory buffer
 		// stops when NULL byte is hit (NULL byte is not included into transmission)
 	#ifdef __cplusplus
-		#define uart_puts(str) uart_putstr((const char*)(str))// macro to avoid const *char conversion restrictions
+		#define uart_puts(str) uart_putstr((const char*)(str))// macro to avoid const char* conversion restrictions
 	#else
 		#define uart_puts(str) uart_putstr(str)
 	#endif
