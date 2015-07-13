@@ -1,11 +1,11 @@
 //**************************************************************
 // ****** FUNCTIONS FOR USART COMMUNICATION *******
 //**************************************************************
-//Compiler			: AVR-GCC
-//Author			: jnk0le@hotmail.com
-//			  		  https://github.com/jnk0le
-//Date				: 24 June 2015
-//License			: MIT
+//Compiler          : AVR-GCC
+//Author            : jnk0le@hotmail.com
+//                    https://github.com/jnk0le
+//Date              : 24 June 2015
+//License           : MIT
 //**************************************************************
 
 #include <avr/io.h>
@@ -60,11 +60,11 @@
 
 #ifdef USART_DO_NOT_INLINE
 //******************************************************************
-//Function	: To initialize USART interface.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Calculated UBBR value to initialize equal speed.
-//Return	:    none
-//note		: Use BAUD_CALC(speed) macro to calculate UBBR value.
+//Function  : To initialize USART interface.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Calculated UBBR value to initialize equal speed.
+//Return    :    none
+//note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
 //******************************************************************
 	void uart_init(uint8_t usartct, uint16_t ubbr_value)
 	{
@@ -150,10 +150,10 @@
 	}
 
 //******************************************************************
-//Function	: To initialize frame format.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Value to write into UCSRC register.
-//Return	:    none
+//Function  : To initialize frame format.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Value to write into UCSRC register.
+//Return    :    none
 //******************************************************************
 	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg) 
 	{
@@ -176,9 +176,9 @@
 	}
 
 //******************************************************************
-//Function	: To initialize double speed mode.
-//Arguments	: 1. Id of selected USART interface.
-//Return	:    none
+//Function  : To initialize double speed mode.
+//Arguments : 1. Id of selected USART interface.
+//Return    :    none
 //******************************************************************
 	void uart_set_U2X(uint8_t usartct)
 	{
@@ -206,10 +206,10 @@
 
 #ifdef USART_DO_NOT_INLINE
 //******************************************************************
-//Function	: To initialize USART interface.
-//Arguments	: 1. Calculated UBBR value to initialize equal speed.
-//Return	:    none
-//note		: use BAUD_CALC(speed) macro to calculate UBBR value.
+//Function  : To initialize USART interface.
+//Arguments : 1. Calculated UBBR value to initialize equal speed.
+//Return    :    none
+//note      : use BAUD_CALC(speed) macro to calculate UBBR value.
 //******************************************************************
 	void uart_init(uint16_t ubbr_value)
 	{
@@ -233,18 +233,18 @@
 
 // functions smaller than their callers
 //******************************************************************
-//Function	: To initialize frame format.
-//Arguments	: Value to write into UCSRC register.
-//Return	: none
+//Function  : To initialize frame format.
+//Arguments : Value to write into UCSRC register.
+//Return    : none
 //******************************************************************
 // 	void uart_set_UCSRC(uint8_t UCSRC_reg)
 // 	{
 // 		UCSR0C_REGISTER |= UCSRC_reg; 
 // 	}
 //******************************************************************
-//Function	: To initialize double speed mode.
-//Arguments	: none
-//Return	: none
+//Function  : To initialize double speed mode.
+//Arguments : none
+//Return    : none
 //******************************************************************
 // 	void uart_set_U2X(void)
 // 	{
@@ -258,10 +258,10 @@
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
 //******************************************************************
-//Function	: Send single character/byte.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. character/byte to send.
-//Return	:    none
+//Function  : Send single character/byte.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. character/byte to send.
+//Return    :    none
 //******************************************************************	
 	void uart_putc(uint8_t usartct, char data)
 	{
@@ -338,10 +338,10 @@
 	}
 
 //******************************************************************
-//Function	: Send string array.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Pointer to string array terminated by NULL.
-//Return	:    none
+//Function  : Send string array.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Pointer to string array terminated by NULL.
+//Return    :    none
 //******************************************************************
 	void uart_putstr(uint8_t usartct, char *string)
 	{
@@ -350,11 +350,11 @@
 	}
 
 //******************************************************************
-//Function	: Send string not terminated by NULL or part of the string array.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Pointer to string array.
-//			: 3. Number of characters/bytes to send.
-//Return	:    none
+//Function  : Send string not terminated by NULL or part of the string array.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Pointer to string array.
+//          : 3. Number of characters/bytes to send.
+//Return    :    none
 //******************************************************************
 	void uart_putstrl(uint8_t usartct, char *string, uint8_t BytesToWrite)
 	{
@@ -363,10 +363,10 @@
 	}
 
 //******************************************************************
-//Function	: Send string from flash memory.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Pointer to string placed in flash memory.
-//Return	:    none
+//Function  : Send string from flash memory.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Pointer to string placed in flash memory.
+//Return    :    none
 //******************************************************************
 	void uart_puts_p(uint8_t usartct, const char *string)
 	{
@@ -375,10 +375,10 @@
 	}
 
 //******************************************************************
-//Function	: Send integer formated into ASCI string (base 10).
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. int16_t data value.
-//Return	:    none
+//Function  : Send integer formated into ASCI string (base 10).
+//Arguments : 1. Id of selected USART interface.
+//          : 2. int16_t data value.
+//Return    :    none
 //******************************************************************
 	void uart_putint(uint8_t usartct, int16_t data)
 	{
@@ -389,11 +389,11 @@
 	}
 	
 //******************************************************************
-//Function	: Send integer formated into ASCI string.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. int16_t data value.
-//			: 3. Base value (DEC, HEX, OCT, BIN).
-//Return	:    none
+//Function  : Send integer formated into ASCI string.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. int16_t data value.
+//          : 3. Base value (DEC, HEX, OCT, BIN).
+//Return    :    none
 //******************************************************************
 	void uart_putintr(uint8_t usartct, int16_t data, uint8_t radix)
 	{
@@ -404,10 +404,10 @@
 	}
 
 //******************************************************************
-//Function	: Send integer formated into ASCI string (base 16)
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. int16_t data value.
-//Return	:    none
+//Function  : Send integer formated into ASCI string (base 16)
+//Arguments : 1. Id of selected USART interface.
+//          : 2. int16_t data value.
+//Return    :    none
 //******************************************************************
 	void uart_put_hex(uint8_t usartct, int16_t data)
 	{
@@ -418,10 +418,10 @@
 	}
 
 //******************************************************************
-//Function	: Send long integer formated into ASCI string (base 10).
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. int32_t data value.
-//Return	:    none
+//Function  : Send long integer formated into ASCI string (base 10).
+//Arguments : 1. Id of selected USART interface.
+//          : 2. int32_t data value.
+//Return    :    none
 //******************************************************************
 	void uart_putlong(uint8_t usartct, int32_t data)
 	{
@@ -432,11 +432,11 @@
 	}
 
 //******************************************************************
-//Function	: Send long integer formated into ASCI string.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. int32_t data value.
-//			: 3. Base value (DEC, HEX, OCT, BIN).
-//Return	:    none
+//Function  : Send long integer formated into ASCI string.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. int32_t data value.
+//          : 3. Base value (DEC, HEX, OCT, BIN).
+//Return    :    none
 //******************************************************************
 	void uart_putlongr(uint8_t usartct, int32_t data, uint8_t radix)
 	{
@@ -447,10 +447,10 @@
 	}
 
 //******************************************************************
-//Function	: Send floating point integer formated into ASCI string.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. float data value.
-//Return	:    none
+//Function  : Send floating point integer formated into ASCI string.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. float data value.
+//Return    :    none
 //******************************************************************
 	void uart_putfloat(uint8_t usartct, float data)
 	{
@@ -465,11 +465,11 @@
 	}
 
 //******************************************************************
-//Function	: Send floating point integer formated into ASCI string.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Float data value.
-//			: 3. Max allowed precision.
-//Return	:    none
+//Function  : Send floating point integer formated into ASCI string.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Float data value.
+//          : 3. Max allowed precision.
+//Return    :    none
 //******************************************************************
 	void uart_fputfloat(uint8_t usartct, float data, uint8_t precision)
 	{
@@ -486,9 +486,9 @@
 #else // single USART mcu
 
 //******************************************************************
-//Function	: Send single character/byte.
-//Arguments	: 1. character/byte to send.
-//Return	:    none
+//Function  : Send single character/byte.
+//Arguments : Character/byte to send.
+//Return    : none
 //******************************************************************
 	void uart_putc(char data)
 	{
@@ -508,9 +508,9 @@
 	}
 
 //******************************************************************
-//Function	: Send string array.
-//Arguments	: Pointer to string array terminated by NULL.
-//Return	: none
+//Function  : Send string array.
+//Arguments : Pointer to string array terminated by NULL.
+//Return    : none
 //******************************************************************
 	void uart_putstr(char *string)
 	{
@@ -519,10 +519,10 @@
 	}
 
 //******************************************************************
-//Function	: Send string not terminated by NULL or part of the string array.
-//Arguments	: 1. Pointer to string array.
-//			: 2. Number of characters/bytes to send.
-//Return	:    none
+//Function  : Send string not terminated by NULL or part of the string array.
+//Arguments : 1. Pointer to string array.
+//          : 2. Number of characters/bytes to send.
+//Return    :    none
 //******************************************************************
 	void uart_putstrl(char *string, uint8_t BytesToWrite)
 	{
@@ -532,9 +532,9 @@
 
 
 //******************************************************************
-//Function	: Send string from flash memory.
-//Arguments	: Pointer to string placed in flash memory.
-//Return	: none
+//Function  : Send string from flash memory.
+//Arguments : Pointer to string placed in flash memory.
+//Return    : none
 //******************************************************************
 	void uart_puts_p(const char *string)
 	{
@@ -543,9 +543,9 @@
 	}
 
 //******************************************************************
-//Function	: Send integer formated into ASCI string (base 10).
-//Arguments	: int16_t data value.
-//Return	: none
+//Function  : Send integer formated into ASCI string (base 10).
+//Arguments : int16_t data value.
+//Return    : none
 //******************************************************************
 	void uart_putint(int16_t data)
 	{
@@ -556,10 +556,10 @@
 	}
 	
 //******************************************************************
-//Function	: Send integer formated into ASCI string.
-//Arguments	: 1. int16_t data value.
-//			: 2. Base value (DEC, HEX, OCT, BIN).
-//Return	:    none
+//Function  : Send integer formated into ASCI string.
+//Arguments : 1. int16_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN).
+//Return    :    none
 //******************************************************************
 	void uart_putintr(int16_t data, uint8_t radix)
 	{
@@ -570,9 +570,9 @@
 	}
 
 //******************************************************************
-//Function	: Send integer formated into ASCI string (base 16)
-//Arguments	: int16_t data value.
-//Return	: none
+//Function  : Send integer formated into ASCI string (base 16)
+//Arguments : int16_t data value.
+//Return    : none
 //******************************************************************
 	void uart_put_hex(int16_t data)
 	{
@@ -583,9 +583,9 @@
 	}
 
 //******************************************************************
-//Function	: Send long integer formated into ASCI string (base 10).
-//Arguments	: int32_t data value.
-//Return	: none
+//Function  : Send long integer formated into ASCI string (base 10).
+//Arguments : int32_t data value.
+//Return    : none
 //******************************************************************
 	void uart_putlong(int32_t data)
 	{
@@ -596,10 +596,10 @@
 	}
 	
 //******************************************************************
-//Function	: Send long integer formated into ASCI string.
-//Arguments	: 1. int32_t data value.
-//			: 2. Base value (DEC, HEX, OCT, BIN).
-//Return	:    none
+//Function  : Send long integer formated into ASCI string.
+//Arguments : 1. int32_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN).
+//Return    :    none
 //******************************************************************
 	void uart_putlongr(int32_t data, uint8_t radix)
 	{
@@ -610,9 +610,9 @@
 	}
 
 //******************************************************************
-//Function	: Send floating point integer formated into ASCI string.
-//Arguments	: float data value.
-//Return	: none
+//Function  : Send floating point integer formated into ASCI string.
+//Arguments : float data value.
+//Return    : none
 //******************************************************************
 	void uart_putfloat(float data)
 	{
@@ -627,10 +627,10 @@
 	}
 
 //******************************************************************
-//Function	: Send floating point integer formated into ASCI string.
-//Arguments	: 1. Float data value.
-//			: 2. Max allowed precision.
-//Return	:    none
+//Function  : Send floating point integer formated into ASCI string.
+//Arguments : 1. Float data value.
+//          : 2. Max allowed precision.
+//Return    :    none
 //******************************************************************
 	void uart_fputfloat(float data, uint8_t precision)
 	{
@@ -653,9 +653,9 @@
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
 //******************************************************************
-//Function	: To receive single character/byte.
-//Arguments	: Id of selected USART interface.
-//Return	: Received character or NULL if received newline terminator or when buffer is empty.
+//Function  : To receive single character/byte.
+//Arguments : Id of selected USART interface.
+//Return    : Received character or NULL if received newline terminator or when buffer is empty.
 //******************************************************************
 	char uart_getc(uint8_t usartct)
 	{
@@ -716,12 +716,12 @@
 	}
 
 //******************************************************************
-//Function	: Reads string from receiver buffer.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Pointer to array to fill with received string.
-//Return	:    none
-//note		: Received string will be terminated by NULL.
-//			: DEPRECATED - use getsl instead.
+//Function  : Reads string from receiver buffer.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Pointer to array to fill with received string.
+//Return    :    none
+//note      : Received string will be terminated by NULL.
+//          : DEPRECATED - use getsl instead.
 //******************************************************************
 	void uart_gets(uint8_t usartct, char *buffer)
 	{
@@ -730,13 +730,13 @@
 	}
 	
 //******************************************************************
-//Function	: Reads string from receiver buffer
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Pointer to array to fill with received string.
-//			: 3. Limit for receiving string size (array size)
-//Return	:    none
-//note		: Received string will be terminated by NULL positioned at bufferlimit-1
-//			: or at the end of the string if it's shorter than bufferlimit-1
+//Function  : Reads string from receiver buffer
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Pointer to array to fill with received string.
+//          : 3. Limit for receiving string size (array size)
+//Return    :    none
+//note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//          : or at the end of the string if it's shorter than bufferlimit-1
 //******************************************************************
 	void uart_getsl(uint8_t usartct, char *buffer, uint8_t bufferlimit)
 	{
@@ -750,13 +750,13 @@
 	}
 
 //******************************************************************
-//Function	: To receive single byte in binary transmission.
-//Arguments	: 1. Id of selected USART interface.
-//			: 2. Pointer to byte which have to be filed by incoming data.
-//Return	:    Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
-//note		: This function doesn't cut CR, LF terminators
-//			: provided by defined RXn_BINARY_MODE macro (compiling interrupt handlers)
-//			: If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
+//Function  : To receive single byte in binary transmission.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Pointer to byte which have to be filed by incoming data.
+//Return    :    Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
+//note      : This function doesn't cut CR, LF terminators
+//          : provided by defined RXn_BINARY_MODE macro (compiling interrupt handlers)
+//          : If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
 //******************************************************************
 	uint8_t uart_getData(uint8_t usartct, uint8_t *data)
 	{
@@ -820,9 +820,9 @@
 	}
 
 //******************************************************************
-//Function	: To check how many bytes are waiting in the receiver buffer.
-//Arguments	: Id of selected USART interface.
-//Return	: Number of bytes waiting in receiver buffer.
+//Function  : To check how many bytes are waiting in the receiver buffer.
+//Arguments : Id of selected USART interface.
+//Return    : Number of bytes waiting in receiver buffer.
 //******************************************************************
 	uint8_t uart_AvailableBytes(uint8_t usartct) 
 	{
@@ -847,9 +847,9 @@
 #else // single USART mcu
 
 //******************************************************************
-//Function	: To receive single character/byte.
-//Arguments	: none
-//Return	: Received character or NULL if received newline terminator or when buffer is empty.
+//Function  : To receive single character/byte.
+//Arguments : none
+//Return    : Received character or NULL if received newline terminator or when buffer is empty.
 //******************************************************************
 	char uart_getc(void)
 	{
@@ -868,11 +868,11 @@
 
 
 //******************************************************************
-//Function	: Reads string from receiver buffer.
-//Arguments	: Pointer to array to fill with received string.
-//Return	: none
-//note		: Received string will be terminated by NULL.
-//			: DEPRECATED - use getsl instead.
+//Function  : Reads string from receiver buffer.
+//Arguments : Pointer to array to fill with received string.
+//Return    : none
+//note      : Received string will be terminated by NULL.
+//          : DEPRECATED - use getsl instead.
 //******************************************************************
 	void uart_gets(char *buffer)
 	{
@@ -881,12 +881,12 @@
 	}
 	
 //******************************************************************
-//Function	: Reads string from receiver buffer
-//Arguments	: 1. Pointer to array to fill with received string.
-//			: 2. Limit for receiving string size (array size)
-//Return	:    none
-//note		: Received string will be terminated by NULL positioned at bufferlimit-1
-//			: or at the end of the string if it's shorter than bufferlimit-1
+//Function  : Reads string from receiver buffer
+//Arguments : 1. Pointer to array to fill with received string.
+//          : 2. Limit for receiving string size (array size)
+//Return    :    none
+//note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//          : or at the end of the string if it's shorter than bufferlimit-1
 //******************************************************************
 	void uart_getsl(char *buffer, uint8_t bufferlimit)
 	{
@@ -900,12 +900,12 @@
 	}
 
 //******************************************************************
-//Function	: To receive single byte in binary transmission.
-//Arguments	: Pointer to byte which have to be filed by incoming data.
-//			: Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
-//note		: This function doesn't cut CR, LF terminators
-//			: provided by defined RXn_BINARY_MODE macro (compiling interrupt handlers)
-//			: If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
+//Function  : To receive single byte in binary transmission.
+//Arguments : Pointer to byte which have to be filed by incoming data.
+//          : Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
+//note      : This function doesn't cut CR, LF terminators
+//          : provided by defined RXn_BINARY_MODE macro (compiling interrupt handlers)
+//          : If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
 //******************************************************************
 	uint8_t uart_getData(uint8_t *data)
 	{
@@ -924,9 +924,9 @@
 
 
 //******************************************************************
-//Function	: To check how many bytes are waiting in the receiver buffer.
-//Arguments	: none
-//Return	: Number of bytes waiting in receiver buffer.
+//Function  : To check how many bytes are waiting in the receiver buffer.
+//Arguments : none
+//Return    : Number of bytes waiting in receiver buffer.
 //******************************************************************
 	uint8_t uart_AvailableBytes(void)
 	{
