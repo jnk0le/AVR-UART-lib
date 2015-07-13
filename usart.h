@@ -28,8 +28,8 @@
 /*****************************multiple USART mcu's***********************************/
 
 //#define NO_USART0 // disable usage of uart0
-//#define NO_USART1 // disable usage of uart1 
-//#define NO_USART2 // disable usage of uart2 
+//#define NO_USART1 // disable usage of uart1
+//#define NO_USART2 // disable usage of uart2
 //#define NO_USART3 // disable usage of uart3
 
 //#define NO_RX1_INTERRUPT // disables interrupt handling and frees RX1 gpio port // combining with NO_USART_RX is not necessary
@@ -779,7 +779,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_putlongr(uint8_t usartct, int32_t data, uint8_t radix);
 	
 	void uart_putfloat(uint8_t usartct, float data);
-	void uart_fputfloat(uint8_t usartct, float data, uint8_t size, uint8_t precision);
+	void uart_fputfloat(uint8_t usartct, float data, uint8_t precision);
 
 #else // single USART mcu
 
@@ -808,7 +808,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_putlongr(int32_t data, uint8_t radix);
 	
 	void uart_putfloat(float data);
-	void uart_fputfloat(float data, uint8_t size, uint8_t precision);
+	void uart_fputfloat(float data, uint8_t precision);
 
 #endif // single/multi USART
 
@@ -852,4 +852,4 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #endif // NO_USART_RX
 
 
-#endif // USART_HPP
+#endif // USART_H
