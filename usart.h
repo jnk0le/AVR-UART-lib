@@ -1,5 +1,5 @@
-#ifndef USART_H
-#define USART_H
+#ifndef _USART_H_
+#define _USART_H_
 
 /************************************************************************************
  *  Published on: 21-02-2015                                                        *
@@ -22,6 +22,8 @@
 //#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
 
 //#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission
+
+#define RX_GETCHAR_ECHO // echoes back received characters in getchar() function (espiecially for reading via scanf()) 
 
 //#define USART_DO_NOT_INLINE // disables inlining code typically executed once, that is heavily dependent of optimize flags
 
@@ -852,4 +854,145 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #endif // NO_USART_RX
 
 
-#endif // USART_H
+#ifdef _STDIO_H_
+
+#if !defined(RX0_BINARY_MODE)&&!defined(RX1_BINARY_MODE)&&!defined(RX2_BINARY_MODE)&&!defined(RX3_BINARY_MODE)
+	#warning receive interrupts are not working in binary mode; scanf() would not behave corectly [define RXn_BINARY_MODE]   
+#endif
+
+#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
+
+	// wrapper of stdio.h FDEV_SETUP_STREAM to allow setting udata; udata is used information about port ID
+	#define FDEV_SETUP_STREAM_U(p, g, f, u) \
+	{ \
+		.put = p, \
+		.get = g, \
+		.flags = f, \
+		.udata = u, \
+	}
+	
+	#ifndef NO_USART_TX
+	
+		void uart_putchar(char data, FILE *stream)
+		{
+			if ( data == '\n') uart_putc((uint16_t) stream -> udata, '\r');
+				
+			uart_putc((uint16_t) stream -> udata, data);
+		}
+	
+	#endif
+
+	#ifndef NO_USART_RX
+	
+		char uart_getchar(FILE *stream) // requires ISR working in binary mode 
+		{
+			uint8_t data;
+		
+			while( BUFFER_EMPTY == uart_getData((uint16_t) stream -> udata, &data) );
+			
+		#ifdef RX0_GETCHAR_ECHO
+			uart_putc((uint16_t) stream -> udata, data);
+		#endif
+		
+			return data;
+		}
+	
+	#endif
+	
+	#ifdef USE_USART0
+	
+		#if defined(NO_RX0_INTERRUPT)
+			FILE uart0_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 0);
+		
+		#elif defined(NO_TX0_INTERRUPT)
+			FILE uart0_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 0);
+		#else
+			FILE uart0_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 0);
+		#endif
+		
+	#endif // USE_USART0
+	
+	#ifdef USE_USART1
+	
+		#if defined(NO_RX1_INTERRUPT)
+			FILE uart1_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 1);
+		
+		#elif defined(NO_TX1_INTERRUPT)
+			FILE uart1_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 1);
+		#else
+			FILE uart1_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 1);
+		#endif
+		
+	#endif // USE_USART1
+	
+	#ifdef USE_USART2
+	
+		#if defined(NO_RX2_INTERRUPT)
+			FILE uart2_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 2);
+		
+		#elif defined(NO_TX2_INTERRUPT)
+			FILE uart2_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 2);
+		#else
+			FILE uart2_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 2);
+		#endif
+		
+	#endif // USE_USART2
+		
+	#ifdef USE_USART3
+		
+		#if defined(NO_RX3_INTERRUPT)
+			FILE uart3_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 3);
+		
+		#elif defined(NO_TX3_INTERRUPT)
+			FILE uart3_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 3);
+		#else
+			FILE uart3_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 3);
+		#endif
+		
+	#endif // USE_USART3
+	
+#else // single USART mcu
+
+	#ifndef NO_USART_TX
+	
+		void uart_putchar(char data, FILE *stream)
+		{
+			if (data == '\n') uart_putc('\r');
+			
+			uart_putc(data);
+		}
+		
+	#endif
+
+	#ifndef NO_USART_RX
+	
+		char uart_getchar(FILE *stream) // requires ISR working in binary mode 
+		{
+			uint8_t data;
+		
+			while( BUFFER_EMPTY == uart_getData(&data) );
+			
+		#ifdef RX_GETCHAR_ECHO
+			uart_putc(data);
+		#endif
+		
+			return data;
+		}
+	
+	#endif
+	
+	#if defined(NO_RX0_INTERRUPT)
+		FILE uart0_out = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+	
+	#elif defined(NO_TX0_INTERRUPT)
+		FILE uart0_in = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
+	#else
+		FILE uart0_io = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
+	#endif
+	
+#endif // single/multi USART
+
+#endif // used _STDIO_H_
+
+
+#endif // _USART_H_

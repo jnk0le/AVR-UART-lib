@@ -816,7 +816,7 @@
 				
 		#endif // NO_RX3_INTERRUPT
 		}
-		return BUFFER_EMPTY; // in this case data value is a trash // result = 1
+		return BUFFER_EMPTY; // result = 1
 	}
 
 //******************************************************************
@@ -919,7 +919,7 @@
 			return COMPLETED; // result = 1
 		}
 		
-		return BUFFER_EMPTY; // in this case data value is a trash // result = 0
+		return BUFFER_EMPTY; // result = 0
 	}
 
 
