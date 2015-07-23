@@ -1,13 +1,18 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <stdio.h> // printf()/scanf()
 
 #include "usart.h"
 
 
-int main(void)
+void main(void)
 {
 	uart_init(BAUD_CALC(115200)); // 8n1 transmission is set as default
+	
+	stdout = &uart0_io; // attach uart stream to stdout & stdin
+	stdin = &uart0_io; // uart0_in if no TX and uart0_out if no RX (depends on compilation macros)
+	
 	sei(); // enable interrupts, library wouldn't work without this
 		
 	uart_puts("hello from usart 0\r\n"); // write const string to usart buffer
@@ -22,12 +27,16 @@ int main(void)
 		uart_putint(uart_AvailableBytes()); // ask for bytes waiting in receiver buffer
 		uart_getsl(buffer, 13); // read 13 bytes or one line from usart buffer // uart_gets(buffer) is deprecated
 		uart_puts("/r/n");
-						
+		
 		uart_putfloat(0.1337f);
 		uart_puts("/r/n");
-		uart_putstr(buffer); // write dynamic string to usart buffer // C++ restriction, in C its the same as uart_puts()
+		uart_putstr(buffer); // write array string to usart buffer // C++ restriction, in C its the same as uart_puts()
 		uart_puts("/r/n");
-						
+			
+		printf("Say my name: ");
+		scanf("%s", buffer);
+		printf("So it's %s, You are damn' right.\n", buffer);
+		
 		_delay_ms(5000);
 	}
 }

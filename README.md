@@ -7,6 +7,7 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 - support for up to 4 USART's
 - allow for binary transmission
 - optimized as much as possible to reduce code size
+- printf()/scanf() streams compatibility
 - and much more
 
 int main(void)
