@@ -9,6 +9,7 @@
 #define EOT 0x04
 #define ACK 0x06
 #define NACK 0x15
+#define CAN 0x18
 
 #define bad_packet 0x00
 #define good_packet 0x01
@@ -19,9 +20,13 @@
 #define transmission_completed 0x01
 #define transmission_aborted 0x02
 
+#define XMODEM_VALIDATION_CRC 1 // 1 - crc, 0 - checksum
+//#define XMODEM_VALIDATION_CRC 0 // some terminals/devices still doesn't provide support for crc error handling
+
 uint8_t HandleIncomingData(uint8_t dat);
 uint8_t validate_packet(uint8_t *bufptr, uint8_t *packet_number);
 uint16_t calcrc(uint8_t *bufptr, uint8_t size);
+uint8_t calchecksum(uint8_t *bufptr, uint8_t size);
 void MoveData(uint8_t *bufptr, uint8_t BytesToMove);
 
 uint8_t file[1024];
@@ -48,7 +53,13 @@ int main(void)
 	uart_puts_P("Transmission will start in 10 seconds ...\r\n");
 	_delay_ms(5000);
 	_delay_ms(5000);
+	
+#if XMODEM_VALIDATION_CRC // 1 - crc
 	uart_putc('C');
+#else // 0 - checksum
+	uart_putc(NACK);
+#endif
+	
 	
 	while(transmission_status == transmission_in_progres)
 	{
@@ -56,7 +67,7 @@ int main(void)
 		if(BUFFER_EMPTY != uart_getData(&incoming_data))
 			transmission_status = HandleIncomingData(incoming_data);
 
-		//AnotherRealTimeTaskDuringTransmission(); 	// why not ?
+		//AnotherRealTimeTaskDuringTransmission(); // why not ?
 	}
 	
 	_delay_ms(3000);
@@ -90,8 +101,11 @@ uint8_t HandleIncomingData(uint8_t dat)
 		return transmission_completed;
 	}
 	
-	
+#if XMODEM_VALIDATION_CRC  // 1 - crc
 	if(xbuffposition == 133)
+#else // 0 - checksum
+	if(xbuffposition == 132)
+#endif
 	{
 		xbuffposition = 0;
 		
@@ -105,10 +119,6 @@ uint8_t HandleIncomingData(uint8_t dat)
 					// for example, write buffer to a flash device
 				return transmission_in_progres;
 			
-			//case eof:
-				//uart_putc(ACK);
-				// do nothing, we will exit
-				//break;
 			case duplicate:
 				uart_putc(ACK);
 					// a counter for duplicate packets could be added here, to enable a
@@ -120,6 +130,7 @@ uint8_t HandleIncomingData(uint8_t dat)
 				return transmission_in_progres;
 			
 			default:
+				uart_putc(CAN);
 				return transmission_aborted;
 					// bad, timeout or error -
 					// if required, insert an error handler of some description,
@@ -141,10 +152,16 @@ uint8_t validate_packet(uint8_t *bufptr, uint8_t *packet_number)
 
 	if (bufptr[1] == *packet_number)
 		return duplicate;
-		
+	
+#if XMODEM_VALIDATION_CRC  // 1 - crc
 	uint16_t crc = calcrc(&bufptr[3],128);      // compute CRC and validate it
 	
 	if ((bufptr[131] == (uint8_t)(crc >> 8)) && (bufptr[132] == (uint8_t)(crc)))
+#else // 0 - checksum
+	uint8_t cksum = calchecksum(uint8_t *bufptr, uint8_t size)
+	
+	if (bufptr[131] == cksum)
+#endif
 	{
 		*packet_number = *packet_number + 1; // good packet ... ok to increment
 		return good_packet;
@@ -170,6 +187,15 @@ uint16_t calcrc(uint8_t *bufptr, uint8_t size)
 	}
 	
 	return crc;
+}
+
+uint8_t calchecksum(uint8_t *bufptr, uint8_t size)
+{
+		uint8_t cksum = 0;
+		
+		while(size--) cksum += *bufptr++;
+		
+		return cksum;
 }
 
 void MoveData(uint8_t *bufptr, uint8_t BytesToMove)
