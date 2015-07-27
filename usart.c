@@ -17,7 +17,7 @@
 #include "usart.h"
 
 #ifndef NO_TX0_INTERRUPT
-	volatile uint8_t tx0_first_byte, tx0_last_byte, interrupt_semaphore0;
+	volatile uint8_t tx0_first_byte, tx0_last_byte;
 	char tx0_buffer[TX0_BUFFER_SIZE];
 #endif
 
@@ -27,7 +27,7 @@
 #endif
 
 #ifndef NO_TX1_INTERRUPT
-	volatile uint8_t tx1_first_byte, tx1_last_byte, interrupt_semaphore1;
+	volatile uint8_t tx1_first_byte, tx1_last_byte;
 	char tx1_buffer[TX1_BUFFER_SIZE];
 #endif
 
@@ -37,7 +37,7 @@
 #endif
 
 #ifndef NO_TX2_INTERRUPT
-	volatile uint8_t tx2_first_byte, tx2_last_byte, interrupt_semaphore2;
+	volatile uint8_t tx2_first_byte, tx2_last_byte;
 	char tx2_buffer[TX2_BUFFER_SIZE];
 #endif
 
@@ -47,7 +47,7 @@
 #endif
 
 #ifndef NO_TX3_INTERRUPT
-	volatile uint8_t tx3_first_byte, tx3_last_byte, interrupt_semaphore3;
+	volatile uint8_t tx3_first_byte, tx3_last_byte;
 	char tx3_buffer[TX3_BUFFER_SIZE];
 #endif
 
@@ -80,12 +80,8 @@
 			#endif
 			
 				UCSR0B_REGISTER = USART0_CONFIG_B;
-					// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
+					// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT);
 					// 8n1 is set by default, setting UCSRC is not needed
-			
-			#ifndef NO_TX0_INTERRUPT
-				interrupt_semaphore0 = unlocked;
-			#endif
 			
 			break;
 		#endif // NO_USART0
@@ -99,12 +95,8 @@
 			#endif
 				
 				UCSR1B_REGISTER = USART1_CONFIG_B;
-					// (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<TXCIE1_BIT)|(1<<RXCIE1_BIT);
+					// (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT);
 					// 8n1 is set by default, setting UCSRC is not needed
-				
-			#ifndef NO_TX1_INTERRUPT
-				interrupt_semaphore1 = unlocked;
-			#endif
 			
 			break;
 		#endif // USE_USART1
@@ -118,12 +110,8 @@
 			#endif
 			
 				UCSR2B_REGISTER = USART2_CONFIG_B;
-					// (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXCIE2_BIT);
+					// (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT);
 					// 8n1 is set by default, setting UCSRC is not needed
-			
-			#ifndef NO_TX2_INTERRUPT
-				interrupt_semaphore2 = unlocked;
-			#endif
 			
 			break;
 		#endif // USE_USART2
@@ -140,9 +128,6 @@
 					// (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXCIE3_BIT);
 					// 8n1 is set by default, setting UCSRC is not needed
 			
-			#ifndef NO_TX3_INTERRUPT
-				interrupt_semaphore3 = unlocked;
-			#endif
 			//break;
 		#endif // USE_USART3
 		}
@@ -221,12 +206,9 @@
 	#endif
 			
 		UCSR0B_REGISTER = USART0_CONFIG_B;
-			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
+			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT);
 			// 8n1 is set by default, setting UCSRC is not needed
-			
-	#ifndef NO_TX0_INTERRUPT
-		interrupt_semaphore0 = unlocked;
-	#endif
+		
 	}
 	
 #endif // USART_DO_NOT_INLINE
@@ -271,66 +253,50 @@
 		{
 		#ifndef NO_TX0_INTERRUPT 
 			default: // case 0:
-				tmp_tx_last_byte = tx0_last_byte;
-			
-				tx0_buffer[tmp_tx_last_byte] = data;
-				tmp_tx_last_byte = tx0_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX tail in buffer
+				tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-			
-				if(interrupt_semaphore0 == unlocked) // if transmitter interrupt is disabled
-				{
-					interrupt_semaphore0 = locked;
-					UDR0_REGISTER = tx0_buffer[tx0_first_byte]; // enable transmitter interrupt
-				}
+						
+				tx0_buffer[tmp_tx_last_byte] = data;
+				tx0_last_byte = tmp_tx_last_byte;
+						
+				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 			break; 
 		#endif // NO_TX0_INTERRUPT
 		#ifndef NO_TX1_INTERRUPT 
 			case 1:
-				tmp_tx_last_byte = tx1_last_byte;
-			
-				tx1_buffer[tmp_tx_last_byte] = data;
-				tmp_tx_last_byte = tx1_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX tail in buffer
+				tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-			
-				if(interrupt_semaphore1 == unlocked) // if transmitter interrupt is disabled
-				{
-					interrupt_semaphore1 = locked;
-					UDR1_REGISTER = tx1_buffer[tx1_first_byte]; // enable transmitter interrupt
-				}
+				
+				tx1_buffer[tmp_tx_last_byte] = data;
+				tx1_last_byte = tmp_tx_last_byte;
+				
+				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
 			break;
 		#endif // NO_TX1_INTERRUPT
 		#ifndef NO_TX2_INTERRUPT 
 			case 2:
-				tmp_tx_last_byte = tx2_last_byte;
-			
-				tx2_buffer[tmp_tx_last_byte] = data;
-				tmp_tx_last_byte = tx2_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX tail in buffer
+				tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx2_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-			
-				if(interrupt_semaphore2 == unlocked) // if transmitter interrupt is disabled
-				{
-					interrupt_semaphore2 = locked;
-					UDR2_REGISTER = tx2_buffer[tx2_first_byte]; // enable transmitter interrupt
-				}
+				
+				tx2_buffer[tmp_tx_last_byte] = data;
+				tx2_last_byte = tmp_tx_last_byte;
+				
+				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
 			break;
 		#endif // NO_TX2_INTERRUPT
 		#ifndef NO_TX3_INTERRUPT 
 			case 3:
-				tmp_tx_last_byte = tx3_last_byte;
-			
-				tx3_buffer[tmp_tx_last_byte] = data;
-				tmp_tx_last_byte = tx3_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX tail in buffer
+				tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx3_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-			
-				if(interrupt_semaphore3 == unlocked) // if transmitter interrupt is disabled
-				{
-					interrupt_semaphore3 = locked;
-					UDR3_REGISTER = tx3_buffer[tx3_first_byte]; // enable transmitter interrupt
-				}
+				
+				tx3_buffer[tmp_tx_last_byte] = data;
+				tx3_last_byte = tmp_tx_last_byte;
+				
+				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
 				//break;
 			#endif // NO_TX3_INTERRUPT
 			}
@@ -492,19 +458,14 @@
 //******************************************************************
 	void uart_putc(char data)
 	{
-		register uint8_t tmp_tx_last_byte = tx0_last_byte;
+		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		tx0_buffer[tmp_tx_last_byte] = data;
-		tmp_tx_last_byte = tx0_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX tail in buffer
-			
 		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
 		
-		if(interrupt_semaphore0 == unlocked) // if transmitter interrupt is disabled
-		{
-			interrupt_semaphore0 = locked;
-			UDR0_REGISTER = tx0_buffer[tx0_first_byte]; // enable transmitter interrupt
-		}
+		tx0_buffer[tmp_tx_last_byte] = data;
+		tx0_last_byte = tmp_tx_last_byte;
 		
+		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 	}
 
 //******************************************************************
@@ -940,16 +901,18 @@
 #ifndef NO_TX0_INTERRUPT
 	ISR(TX0_INTERRUPT)
 	{
-		register uint8_t tmp_tx_first_byte = tx0_first_byte = (tx0_first_byte + 1) & TX0_BUFFER_MASK;
-		// calculate new position of TX head in buffer, write back and use it as register variable 
+		register uint8_t tmp_tx_first_byte = tx0_first_byte; 
 		
 		if(tmp_tx_first_byte != tx0_last_byte)
 		{
+			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+			
 			UDR0_REGISTER = tx0_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+			tx0_first_byte = tmp_tx_first_byte;
 		}
 		else
 		{
-			interrupt_semaphore0 = unlocked; 
+			UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
 		}
 		
 	}
@@ -979,15 +942,18 @@
 #ifndef NO_TX1_INTERRUPT
 	ISR(TX1_INTERRUPT)
 	{
-		register uint8_t tmp_tx_first_byte = tx1_first_byte = (tx1_first_byte + 1) & TX1_BUFFER_MASK;
-	
+		register uint8_t tmp_tx_first_byte = tx1_first_byte;
+		
 		if(tmp_tx_first_byte != tx1_last_byte)
 		{
+			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+			
 			UDR1_REGISTER = tx1_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+			tx1_first_byte = tmp_tx_first_byte;
 		}
 		else
 		{
-			interrupt_semaphore1 = unlocked;
+			UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT);
 		}
 		
 	}
@@ -1017,15 +983,18 @@
 #ifndef NO_TX2_INTERRUPT
 	ISR(TX2_INTERRUPT)
 	{
-		register uint8_t tmp_tx_first_byte = tx2_first_byte = (tx2_first_byte + 1) & TX2_BUFFER_MASK;
-	
+		register uint8_t tmp_tx_first_byte = tx2_first_byte;
+		
 		if(tmp_tx_first_byte != tx2_last_byte)
 		{
+			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
+			
 			UDR2_REGISTER = tx2_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+			tx2_first_byte = tmp_tx_first_byte;
 		}
 		else
 		{
-			interrupt_semaphore2 = unlocked;
+			UCSR2B_REGISTER &= ~(1<<UDRIE2_BIT);
 		}
 		
 	}
@@ -1055,15 +1024,18 @@
 #ifndef NO_TX3_INTERRUPT
 	ISR(TX3_INTERRUPT)
 	{
-		register uint8_t tmp_tx_first_byte = tx3_first_byte = (tx3_first_byte + 1) & TX3_BUFFER_MASK;
-	
+		register uint8_t tmp_tx_first_byte = tx3_first_byte;
+		
 		if(tmp_tx_first_byte != tx3_last_byte)
 		{
+			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+			
 			UDR3_REGISTER = tx3_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+			tx3_first_byte = tmp_tx_first_byte;
 		}
 		else
 		{
-			interrupt_semaphore3 = unlocked;
+			UCSR3B_REGISTER &= ~(1<<UDRIE3_BIT);
 		}
 		
 	}

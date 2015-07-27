@@ -149,14 +149,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RX_vect
-	#define TX0_INTERRUPT		USART_TX_vect
+	//#define TX0_INTERRUPT		USART_TX_vect
+	#define TX0_INTERRUPT		USART_UDRE_vect
 	#define UDR0_REGISTER		UDR
 	#define UBRR0L_REGISTER		UBRRL
 	#define UBRR0H_REGISTER		UBRRH
 	#define UCSR0A_REGISTER		UCSRA
 	#define UCSR0B_REGISTER		UCSRB
 	#define UCSR0C_REGISTER		UCSRC
-	#define TXCIE0_BIT  		TXCIE
+	//#define TXCIE0_BIT  		TXCIE
+	#define UDRIE0_BIT    		UDRIE
 	#define RXCIE0_BIT  		RXCIE
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
@@ -174,14 +176,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RX_vect
-	#define TX0_INTERRUPT		USART_TX_vect
+	//#define TX0_INTERRUPT		USART_TX_vect
+	#define TX0_INTERRUPT		USART_UDRE_vect
 	#define UDR0_REGISTER		UDR0
 	#define UBRR0L_REGISTER		UBRR0L
 	#define UBRR0H_REGISTER		UBRR0H
 	#define UCSR0A_REGISTER		UCSR0A
 	#define UCSR0B_REGISTER		UCSR0B
 	#define UCSR0C_REGISTER		UCSR0C
-	#define TXCIE0_BIT  		TXCIE0
+	//#define TXCIE0_BIT  		TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
 	#define RXCIE0_BIT   		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
@@ -198,14 +202,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RXC_vect
-	#define TX0_INTERRUPT		USART_TXC_vect
+	//#define TX0_INTERRUPT		USART_TXC_vect
+	#define TX0_INTERRUPT		USART_UDRE_vect 
 	#define UDR0_REGISTER		UDR
 	#define UBRR0L_REGISTER		UBRRL
 	#define UBRR0H_REGISTER		UBRRH
 	#define UCSR0A_REGISTER		UCSRA
 	#define UCSR0B_REGISTER		UCSRB
 	#define UCSR0C_REGISTER		UCSRC
-	#define TXCIE0_BIT  		TXCIE
+	//#define TXCIE0_BIT  		TXCIE
+	#define UDRIE0_BIT    		UDRIE
 	#define RXCIE0_BIT  		RXCIE
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
@@ -220,14 +226,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RX_vect
-	#define TX0_INTERRUPT		USART_TX_vect
+	//#define TX0_INTERRUPT		USART_TX_vect
+	#define TX0_INTERRUPT		USART_UDRE_vect 
 	#define UDR0_REGISTER		UDR
 	#define UBRR0L_REGISTER		UBRRL
 	#define UBRR0H_REGISTER		UBRRH
 	#define UCSR0A_REGISTER		UCSRA
 	#define UCSR0B_REGISTER		UCSRB
 	#define UCSR0C_REGISTER		UCSRC
-	#define TXCIE0_BIT  		TXCIE
+	//#define TXCIE0_BIT  		TXCIE
+	#define UDRIE0_BIT    		UDRIE
 	#define RXCIE0_BIT  		RXCIE
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
@@ -242,14 +250,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART0_RXC_vect
-	#define TX0_INTERRUPT		USART0_TXC_vect
+	//#define TX0_INTERRUPT		USART0_TXC_vect
+	#define TX0_INTERRUPT		USART0_UDRE_vect 
 	#define UDR0_REGISTER		UDR0
 	#define UBRR0L_REGISTER		UBRR0L
 	#define UBRR0H_REGISTER		UBRR0H
 	#define UCSR0A_REGISTER		UCSR0A
 	#define UCSR0B_REGISTER		UCSR0B
 	#define UCSR0C_REGISTER		UCSR0C
-	#define TXCIE0_BIT  		TXCIE0
+	//#define TXCIE0_BIT  		TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
@@ -261,14 +271,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART1
 
 	#define RX1_INTERRUPT		USART1_RXC_vect
-	#define TX1_INTERRUPT		USART1_TXC_vect
+	//#define TX1_INTERRUPT		USART1_TXC_vect
+	#define TX1_INTERRUPT		USART1_UDRE_vect 
 	#define UDR1_REGISTER		UDR1
 	#define UBRR1L_REGISTER		UBRR1L
 	#define UBRR1H_REGISTER		UBRR1H
 	#define UCSR1A_REGISTER		UCSR1A
 	#define UCSR1B_REGISTER		UCSR1B
 	#define UCSR1C_REGISTER		UCSR1C
-	#define TXCIE1_BIT  		TXCIE1
+	//#define TXCIE1_BIT  		TXCIE1
+	#define UDRIE1_BIT    		UDRIE1
 	#define RXCIE1_BIT  		RXCIE1
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
@@ -288,14 +300,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART0_RX_vect
-	#define TX0_INTERRUPT		USART0_TX_vect
+	//#define TX0_INTERRUPT		USART0_TX_vect
+	#define TX0_INTERRUPT		USART0_UDRE_vect 
 	#define UDR0_REGISTER		UDR0
 	#define UBRR0L_REGISTER		UBRR0L
 	#define UBRR0H_REGISTER		UBRR0H
 	#define UCSR0A_REGISTER		UCSR0A
 	#define UCSR0B_REGISTER		UCSR0B
 	#define UCSR0C_REGISTER		UCSR0C
-	#define TXCIE0_BIT  		TXCIE0
+	//#define TXCIE0_BIT  		TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
@@ -307,14 +321,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART1
 
 	#define RX1_INTERRUPT		USART1_RX_vect
-	#define TX1_INTERRUPT		USART1_TX_vect
+	//#define TX1_INTERRUPT		USART1_TX_vect
+	#define TX1_INTERRUPT		USART1_UDRE_vect 
 	#define UDR1_REGISTER		UDR1
 	#define UBRR1L_REGISTER		UBRR1L
 	#define UBRR1H_REGISTER		UBRR1H
 	#define UCSR1A_REGISTER		UCSR1A
 	#define UCSR1B_REGISTER		UCSR1B
 	#define UCSR1C_REGISTER		UCSR1C
-	#define TXCIE1_BIT  		TXCIE1
+	//#define TXCIE1_BIT  		TXCIE1
+	#define UDRIE1_BIT    		UDRIE1
 	#define RXCIE1_BIT  		RXCIE1
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
@@ -330,14 +346,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART2
 
 	#define RX2_INTERRUPT		USART2_RX_vect
-	#define TX2_INTERRUPT		USART2_TX_vect
+	//#define TX2_INTERRUPT		USART2_TX_vect
+	#define TX2_INTERRUPT		USART2_UDRE_vect 
 	#define UDR2_REGISTER		UDR2
 	#define UBRR2L_REGISTER		UBRR2L
 	#define UBRR2H_REGISTER		UBRR2H
 	#define UCSR2A_REGISTER		UCSR2A
 	#define UCSR2B_REGISTER		UCSR2B
 	#define UCSR2C_REGISTER		UCSR2C
-	#define TXCIE2_BIT  		TXCIE2
+	//#define TXCIE2_BIT  		TXCIE2
+	#define UDRIE2_BIT    		UDRIE2
 	#define RXCIE2_BIT  		RXCIE2
 	#define TXEN2_BIT   		TXEN2
 	#define RXEN2_BIT   		RXEN2
@@ -349,14 +367,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART3
 
 	#define RX3_INTERRUPT		USART3_RX_vect
-	#define TX3_INTERRUPT		USART3_TX_vect
+	//#define TX3_INTERRUPT		USART3_TX_vect
+	#define TX3_INTERRUPT		USART3_UDRE_vect 
 	#define UDR3_REGISTER		UDR3
 	#define UBRR3L_REGISTER 	UBRR3L
 	#define UBRR3H_REGISTER		UBRR3H
 	#define UCSR3A_REGISTER		UCSR3A
 	#define UCSR3B_REGISTER		UCSR3B
 	#define UCSR3C_REGISTER		UCSR3C
-	#define TXCIE3_BIT  		TXCIE3
+	//#define TXCIE3_BIT  		TXCIE3
+	#define UDRIE3_BIT    		UDRIE3
 	#define RXCIE3_BIT  		RXCIE3
 	#define TXEN3_BIT   		TXEN3
 	#define RXEN3_BIT   		RXEN3
@@ -373,14 +393,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART1_RX_vect
-	#define TX0_INTERRUPT		USART1_TX_vect
+	//#define TX0_INTERRUPT		USART1_TX_vect
+	#define TX0_INTERRUPT		USART1_UDRE_vect 
 	#define UDR0_REGISTER		UDR1
 	#define UBRR0L_REGISTER		UBRR1L
 	#define UBRR0H_REGISTER		UBRR1H
 	#define UCSR0A_REGISTER		UCSR1A
 	#define UCSR0B_REGISTER		UCSR1B
 	#define UCSR0C_REGISTER		UCSR1C
-	#define TXCIE0_BIT  		TXCIE1
+	//#define TXCIE0_BIT  		TXCIE1
+	#define UDRIE0_BIT    		UDRIE1
 	#define RXCIE0_BIT  		RXCIE1
 	#define TXEN0_BIT   		TXEN1
 	#define RXEN0_BIT   		RXEN1
@@ -389,20 +411,22 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #endif // NO_USART0
 #endif
 
-#if defined(__AVR_ATmega169A__)||defined(__AVR_ATmega169__)
+#if defined(__AVR_ATmega169A__)||defined(__AVR_ATmega169__)||defined(__AVR_ATmega169P__)||defined(__AVR_ATmega169PA__)
 
 #ifndef NO_USART0
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART0_RX_vect
-	#define TX0_INTERRUPT		USART0_TX_vect
+	//#define TX0_INTERRUPT		USART0_TX_vect
+	#define TX0_INTERRUPT		USART0_UDRE_vect 
 	#define UDR0_REGISTER		UDR
 	#define UBRR0L_REGISTER		UBRRL
 	#define UBRR0H_REGISTER		UBRRH
 	#define UCSR0A_REGISTER		UCSRA
 	#define UCSR0B_REGISTER		UCSRB
 	#define UCSR0C_REGISTER		UCSRC
-	#define TXCIE0_BIT  		TXCIE
+	//#define TXCIE0_BIT  		TXCIE
+	#define UDRIE0_BIT    		UDRIE
 	#define RXCIE0_BIT  		RXCIE
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
@@ -423,14 +447,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART0_RX_vect
-	#define TX0_INTERRUPT		USART0_TX_vect
+	//#define TX0_INTERRUPT		USART0_TX_vect
+	#define TX0_INTERRUPT		USART0_UDRE_vect 
 	#define UDR0_REGISTER		UDR0
 	#define UBRR0L_REGISTER		UBRR0L
 	#define UBRR0H_REGISTER		UBRR0H
 	#define UCSR0A_REGISTER		UCSR0A
 	#define UCSR0B_REGISTER		UCSR0B
 	#define UCSR0C_REGISTER		UCSR0C
-	#define TXCIE0_BIT  		TXCIE0
+	//#define TXCIE0_BIT  		TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
@@ -449,14 +475,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #define USE_USART0
 
 	#define RX0_INTERRUPT		USART_RX_vect // wtf
-	#define TX0_INTERRUPT		USART0_TX_vect
+	//#define TX0_INTERRUPT		USART0_TX_vect
+	#define TX0_INTERRUPT		USART0_UDRE_vect 
 	#define UDR0_REGISTER		UDR0
 	#define UBRR0L_REGISTER		UBRR0L
 	#define UBRR0H_REGISTER		UBRR0H
 	#define UCSR0A_REGISTER		UCSR0A
 	#define UCSR0B_REGISTER		UCSR0B
 	#define UCSR0C_REGISTER		UCSR0C
-	#define TXCIE0_BIT  		TXCIE0
+	//#define TXCIE0_BIT  		TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
@@ -492,68 +520,50 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #ifndef USART0_CONFIG_B // set config bytes for UCSR0B_REGISTER
 	
 	#if defined(NO_RX0_INTERRUPT)
-		#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<TXCIE0_BIT)
+		#define USART0_CONFIG_B (1<<TXEN0_BIT)
 	
 	#elif defined(NO_TX0_INTERRUPT)
 		#define USART0_CONFIG_B (1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
 	#else
-		#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+		#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
 	#endif 
 #endif // USART0_CONFIG
 
 #ifndef USART1_CONFIG_B // set config bytes for UCSR1B_REGISTER
 	
 	#if defined(NO_RX1_INTERRUPT)
-		#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<TXCIE1_BIT)
+		#define USART1_CONFIG_B (1<<TXEN1_BIT)
 
 	#elif defined(NO_TX1_INTERRUPT)
 		#define USART1_CONFIG_B (1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
 	#else
-		#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<TXCIE1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+		#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
 	#endif
 #endif // USART1_CONFIG
 
 #ifndef USART2_CONFIG_B // set config bytes for UCSR2B_REGISTER
 
 	#if defined(NO_RX2_INTERRUPT)
-		#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<TXCIE2_BIT)
+		#define USART2_CONFIG_B (1<<TXEN2_BIT)
 
 	#elif defined(NO_TX2_INTERRUPT)
 		#define USART2_CONFIG_B (1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
 	#else
-		#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+		#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
 	#endif
 #endif // USART2_CONFIG
 
 #ifndef USART3_CONFIG_B // set config bytes for UCSR3B_REGISTER
 
 	#if defined(NO_RX3_INTERRUPT)
-		#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<TXCIE3_BIT)
+		#define USART3_CONFIG_B (1<<TXEN3_BIT)
 
 	#elif defined(NO_TX3_INTERRUPT)
 		#define USART3_CONFIG_B (1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
 	#else
-		#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+		#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
 	#endif
 #endif // USART3_CONFIG
-
-// just for inline functions 
-#ifndef NO_TX0_INTERRUPT
-	extern volatile uint8_t interrupt_semaphore0; 
-#endif
-
-#ifndef NO_TX1_INTERRUPT
-	extern volatile uint8_t interrupt_semaphore1;
-#endif
-
-#ifndef NO_TX2_INTERRUPT
-	extern volatile uint8_t interrupt_semaphore2;
-#endif
-
-#ifndef NO_TX3_INTERRUPT
-	extern volatile uint8_t interrupt_semaphore3;
-#endif
-
 
 /************************************************************************************
  *                            Initializers                                          *
@@ -580,12 +590,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		#endif
 			
 			UCSR0B_REGISTER = USART0_CONFIG_B;
-			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
+			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)(1<<RXCIE0_BIT);
 			// 8n1 is set by default, setting UCSRC is not needed
-			
-		#ifndef NO_TX0_INTERRUPT
-			interrupt_semaphore0 = unlocked;
-		#endif
 			
 			break;
 		#endif // NO_USART0
@@ -601,12 +607,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		#endif
 			
 			UCSR1B_REGISTER = USART1_CONFIG_B;
-			// (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<TXCIE1_BIT)|(1<<RXCIE1_BIT);
+			// (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT);
 			// 8n1 is set by default, setting UCSRC is not needed
-			
-		#ifndef NO_TX1_INTERRUPT
-			interrupt_semaphore1 = unlocked;
-		#endif
 			
 			break;
 		#endif // USE_USART1
@@ -622,12 +624,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		#endif
 			
 			UCSR2B_REGISTER = USART2_CONFIG_B;
-			// (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXCIE2_BIT);
+			// (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT);
 			// 8n1 is set by default, setting UCSRC is not needed
-			
-		#ifndef NO_TX2_INTERRUPT
-			interrupt_semaphore2 = unlocked;
-		#endif
 			
 			break;
 		#endif // USE_USART2
@@ -643,12 +641,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		#endif
 			
 			UCSR3B_REGISTER = USART3_CONFIG_B;
-			// (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXCIE3_BIT);
+			// (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT);
 			// 8n1 is set by default, setting UCSRC is not needed
 			
-		#ifndef NO_TX3_INTERRUPT
-			interrupt_semaphore3 = unlocked;
-		#endif
 			//break;
 		#endif // USE_USART3
 		}
@@ -721,12 +716,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	#endif
 		
 		UCSR0B_REGISTER = USART0_CONFIG_B;
-		// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXCIE0_BIT);
+		// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT);
 		// 8n1 is set by default, setting UCSRC is not needed
-		
-	#ifndef NO_TX0_INTERRUPT
-		interrupt_semaphore0 = unlocked;
-	#endif
 	}
 	
 #else // USART_DO_NOT_INLINE

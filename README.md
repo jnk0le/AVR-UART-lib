@@ -10,31 +10,20 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 - printf()/scanf() streams compatibility
 - and much more
 
-int main(void)
-{
-	uart_init(BAUD_CALC(9600));
-    sei();
-    while(1)
-    {
-		uart_puts("hello world\r\n");
-		_delay_ms(1000);
-    }
-}
-
-gives
+simple "hello world" code gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    444	     14	     69	    527	    20f	avrt.elf
+		    428	     14	     68	    510	    1fe	avrt.elf
 
-Program Memory Usage 	:	458 bytes   1,4 % Full
-Data Memory Usage 		:	83 bytes   4,1 % Full
+Program Memory Usage 	:	442 bytes   1,3 % Full
+Data Memory Usage 		:	82 bytes   4,0 % Full
 
 defined  NO_USART_RX flag gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    366	     14	     35	    415	    19f	avrt.elf
+		    350	     14	     34	    398	    18e	avrt.elf
 
-Program Memory Usage 	:	380 bytes   1,2 % Full
-Data Memory Usage 		:	49 bytes   2,4 % Full
+Program Memory Usage 	:	364 bytes   1,1 % Full
+Data Memory Usage 		:	48 bytes   2,3 % Full
 
 For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio 6.2)
