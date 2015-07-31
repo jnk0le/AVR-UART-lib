@@ -20,12 +20,13 @@ void main(void)
 	uart_puts_P("hello from flashed, usart\r\n"); // write string to usart buffer from flash memory
 		
 	char buffer[13];
+	uart_gets(buffer, 13) // read 13 bytes from buffer (CR,LF will not be cut)
 	
 	while(1)
 	{
 		uart_puts("bytes waiting in receiver buffer : ");
 		uart_putint(uart_AvailableBytes()); // ask for bytes waiting in receiver buffer
-		uart_getsl(buffer, 13); // read 13 bytes or one line from usart buffer // uart_gets(buffer) is deprecated
+		uart_getsln(buffer, 13); // read 12 bytes or one line from usart buffer 
 		uart_puts("/r/n");
 		
 		uart_putfloat(0.1337f);

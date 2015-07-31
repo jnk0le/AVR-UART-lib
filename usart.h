@@ -18,12 +18,8 @@
 
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces 
 
-//#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary 
-//#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
-
-//#define RX0_BINARY_MODE // prepare RX0 interrupt to binary transmission
-
-#define RX_GETCHAR_ECHO // echoes back received characters in getchar() function (espiecially for reading via scanf()) 
+#define RX_STDIO_GETCHAR_ECHO // echoes back received characters in getchar() function (for reading in scanf()) 
+#define RX_GETC_ECHO // echoes back received characters in getc() function
 
 //#define USART_DO_NOT_INLINE // disables inlining code typically executed once, that is heavily dependent of optimize flags
 
@@ -34,22 +30,25 @@
 //#define NO_USART2 // disable usage of uart2
 //#define NO_USART3 // disable usage of uart3
 
+//#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary 
 //#define NO_RX1_INTERRUPT // disables interrupt handling and frees RX1 gpio port // combining with NO_USART_RX is not necessary
 //#define NO_RX2_INTERRUPT // disables interrupt handling and frees RX2 gpio port // combining with NO_USART_RX is not necessary
 //#define NO_RX3_INTERRUPT // disables interrupt handling and frees RX3 gpio port // combining with NO_USART_RX is not necessary
 
+//#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
 //#define NO_TX1_INTERRUPT // disables interrupt handling and frees TX1 gpio port // combining with NO_USART_TX is not necessary
 //#define NO_TX2_INTERRUPT // disables interrupt handling and frees TX2 gpio port // combining with NO_USART_TX is not necessary
 //#define NO_TX3_INTERRUPT // disables interrupt handling and frees TX3 gpio port // combining with NO_USART_TX is not necessary
-
-//#define RX1_BINARY_MODE // prepare RX1 interrupt to binary transmission 
-//#define RX2_BINARY_MODE // prepare RX2 interrupt to binary transmission 
-//#define RX3_BINARY_MODE // prepare RX3 interrupt to binary transmission 
 
 //#define USART0_U2X_SPEED // enables double speed for USART0 // combining with USE_DOUBLE_SPEED is not necessary
 //#define USART1_U2X_SPEED // enables double speed for USART1 // combining with USE_DOUBLE_SPEED is not necessary
 //#define USART2_U2X_SPEED // enables double speed for USART2 // combining with USE_DOUBLE_SPEED is not necessary
 //#define USART3_U2X_SPEED // enables double speed for USART3 // combining with USE_DOUBLE_SPEED is not necessary
+
+//#define RX0_GETC_ECHO
+//#define RX1_GETC_ECHO
+//#define RX2_GETC_ECHO
+//#define RX3_GETC_ECHO
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -141,6 +140,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	#define USART1_U2X_SPEED
 	#define USART2_U2X_SPEED
 	#define USART3_U2X_SPEED
+#endif
+
+#ifdef RX_GETC_ECHO
+	#define RX0_GETC_ECHO
+	#define RX1_GETC_ECHO
+	#define RX2_GETC_ECHO
+	#define RX3_GETC_ECHO
 #endif
 
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
@@ -815,30 +821,30 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 	
 	char uart_getc(uint8_t usartct); // get character from receiver ring buffer
-	void uart_gets(uint8_t usartct, char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited getsl
-	// to avoid stack/buffer overflows, temp buffer size have to be the same as ring buffer or bigger 
-	// adds NULL byte at the end of string
-	void uart_getsl(uint8_t usartct, char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit 
-	// adds NULL byte at the end of string (positioned at bufferlimit-1)
+	
+	void uart_gets(uint8_t usartct, char *buffer, uint8_t bufferlimit); // reads whole receiver buffer or bufferlimit-1 characters
+	// newline terminator will not be cut // adds NULL byte at the end of string
+	void uart_getln(uint8_t usartct, char *buffer, uint8_t bufferlimit); // reads one line from the buffer, 
+	// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string 
+	
 	uint8_t uart_getData(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
-	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1) 
-	// don't forget to set RX0_BINARY_MODE flag
+	// in case of empty buffers returning flag is set to BUFFER_EMPTY - NULL
 	uint8_t uart_AvailableBytes(uint8_t usartct); // returns number of bytes waiting in the receiver buffer
-	//uint8_t uart_peek(uint8_t usartct); CSIIWWTMMFA
+	//uint8_t uart_peek(uint8_t usartct); 
 
 #else // single USART mcu
 
 	char uart_getc(void); // get character from receiver ring buffer
-	void uart_gets(char *buffer); // DEPRECATED, only in case of optimizing flash usage, instead of this try to use limited getsl
-	// to avoid stack/buffer overflows, temp buffer size have to be the same as ring buffer or bigger
-	// adds NULL byte at the end of string
-	void uart_getsl(char *buffer, uint8_t bufferlimit); // stops reading if NULL byte or bufferlimit-1 is hit
-	// adds NULL byte at the end of string (positioned at bufferlimit-1)
+	
+	void uart_gets(char *buffer, uint8_t bufferlimit); // reads whole receiver buffer or bufferlimit-1 characters
+	// newline terminator will not be cut // adds NULL byte at the end of string
+	void uart_getln(char *buffer, uint8_t bufferlimit); // reads one line from the buffer
+	// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string 
+	
 	uint8_t uart_getData(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
-	// in case of empty buffers returning flag is set to BUFFER_EMPTY (1)
-	// don't forget to set RXn_BINARY_MODE flag
+	// in case of empty buffers returning flag is set to BUFFER_EMPTY -NULL
 	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
-	//uint8_t uart_peek(void); CSIIWWTMMFA
+	//uint8_t uart_peek(void); 
 
 #endif // single/multi USART
 
@@ -846,10 +852,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 
 
 #ifdef _STDIO_H_
-
-#if !defined(RX0_BINARY_MODE)&&!defined(RX1_BINARY_MODE)&&!defined(RX2_BINARY_MODE)&&!defined(RX3_BINARY_MODE)
-	#warning receive interrupts are not working in binary mode; scanf() would not behave corectly [define RXn_BINARY_MODE]   
-#endif
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
@@ -881,7 +883,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		
 			while( BUFFER_EMPTY == uart_getData((uint16_t) stream -> udata, &data) );
 			
-		#ifdef RX0_GETCHAR_ECHO
+		#ifdef RX_STDIO_GETCHAR_ECHO
 			uart_putc((uint16_t) stream -> udata, data);
 		#endif
 		
@@ -963,7 +965,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		
 			while( BUFFER_EMPTY == uart_getData(&data) );
 			
-		#ifdef RX_GETCHAR_ECHO
+		#ifdef RX_STDIO_GETCHAR_ECHO
 			uart_putc(data);
 		#endif
 		
