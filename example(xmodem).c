@@ -2,7 +2,6 @@
 
 #include <util/delay.h>
 
-//#define RX0_BINARY_MODE have to be defined in usart header file or gcc -D flag
 #include "usart.h"
 
 #define SOH 0x01
@@ -14,7 +13,6 @@
 #define bad_packet 0x00
 #define good_packet 0x01
 #define duplicate 0x02
-//#define err 0x04
 
 #define transmission_in_progres 0x00
 #define transmission_completed 0x01
