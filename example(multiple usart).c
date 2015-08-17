@@ -16,13 +16,22 @@ void main(void)
 	
 	sei(); // enable interrupts, library wouldn't work without this
 	
-	uart_puts(0, "hello from usart 0\r\n"); // write const string to usart buffer 
+	uart_puts(0, "hello from usart 0\r\n"); // write const string to usart buffer // C++ restriction, in C its the same as uart_putstr()
 	// if you do not have enough SRAM memory space to keep all strings, try to use puts_P instead
 	uart_puts_P(1, "hello from flashed, usart 1\r\n"); // write string to usart buffer from flash memory
 	printf("hello from printf\n");
 	
 	char buffer[13];
 	uart_gets(1, buffer, 13) // read 12 bytes from buffer (CR,LF will not be cut)
+	
+	int a;
+	
+	uart_puts(0, "gimmie a number: ");
+	a = uart_getint(0);
+	
+	uart_puts(0, "numba a: ");
+	uart_putint(0, a);
+	uart_puts(0, "\r\n");
 	
 	while(1)
 	{
@@ -33,7 +42,7 @@ void main(void)
 		
 		uart_putfloat(1, 0.1337f);
 		uart_puts(1, "/r/n");
-		uart_putstr(1, buffer); // write array string to usart buffer // C++ restriction, in C its the same as uart_puts()
+		uart_putstr(1, buffer); // write array string to usart buffer 
 		
 		fprintf(uart1_io, "Say my name: ");
 		fscanf(uart1_io, "%s", buffer);

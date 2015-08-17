@@ -64,14 +64,15 @@
 //Arguments : 1. Id of selected USART interface.
 //          : 2. Calculated UBBR value to initialize equal speed.
 //Return    :    none
-//note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
+//Note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
 //******************************************************************
 	void uart_init(uint8_t usartct, uint16_t ubbr_value)
 	{
 		switch(usartct)
 		{
-		#ifdef USE_USART0
 			default:
+		#ifdef USE_USART0
+			case 0:
 				UBRR0L_REGISTER = (uint8_t) ubbr_value;
 				UBRR0H_REGISTER = (ubbr_value>>8);
 			
@@ -144,8 +145,9 @@
 	{
 		switch(usartct)
 		{
+			default:
 		#ifdef USE_USART0
-			default: UCSR0C_REGISTER |= UCSRC_reg; break;
+			case 0: UCSR0C_REGISTER |= UCSRC_reg; break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
 			case 1: UCSR1C_REGISTER |= UCSRC_reg; break;
@@ -169,8 +171,9 @@
 	{
 		switch(usartct)
 		{
+			default:
 		#ifdef USE_USART0
-			default: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
+			case 0: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
 			case 1: UCSR1A_REGISTER |= (1<<U2X1_BIT); break;
@@ -194,7 +197,7 @@
 //Function  : To initialize USART interface.
 //Arguments : 1. Calculated UBBR value to initialize equal speed.
 //Return    :    none
-//note      : use BAUD_CALC(speed) macro to calculate UBBR value.
+//Note      : use BAUD_CALC(speed) macro to calculate UBBR value.
 //******************************************************************
 	void uart_init(uint16_t ubbr_value)
 	{
@@ -251,8 +254,9 @@
 		
 		switch(usartct)
 		{
+			default: // first found case as default (byte saving)
 		#ifndef NO_TX0_INTERRUPT 
-			default: // case 0:
+			 case 0:
 				tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
@@ -624,8 +628,9 @@
 	
 		switch(usartct)
 		{
-			default: // case 0: // avoid compiler warnings if RX0 is not used
+			default: // first found case as default (byte saving)
 		#ifndef NO_RX0_INTERRUPT
+			case 0:
 				register uint8_t tmp_rx_first_byte = rx0_first_byte;
 				
 				if(tmp_rx_first_byte == rx0_last_byte) return 0;
@@ -634,8 +639,18 @@
 				tmp = rx0_buffer[tmp_rx_first_byte];
 			
 			#ifdef RX0_GETC_ECHO
-				uart_putc(0, tmp);
+			
+			#ifdef RX0_NEWLINE_MODE_N
+				if(tmp == '\n') uart_putc(usartct,'\r');
 			#endif
+				
+				uart_putc(usartct, tmp);
+				
+			#ifdef RX0_NEWLINE_MODE_R
+				if(tmp == '\r') uart_putc(usartct,'\n');
+			#endif
+				
+			#endif // RX0_GETC_ECHO
 				
 			break;
 		#endif // NO_RX0_INTERRUPT
@@ -649,8 +664,18 @@
 				register uint8_t tmp = rx1_buffer[tmp_rx_first_byte];
 			
 			#ifdef RX1_GETC_ECHO
-				uart_putc(1, tmp);
+			
+			#ifdef RX1_NEWLINE_MODE_N
+				if(tmp == '\n') uart_putc(usartct,'\r');
 			#endif
+			
+				uart_putc(usartct, tmp);
+			
+			#ifdef RX1_NEWLINE_MODE_R
+				if(tmp == '\r') uart_putc(usartct,'\n');
+			#endif
+			
+			#endif // RX1_GETC_ECHO
 				
 			break;
 		#endif // NO_RX1_INTERRUPT
@@ -664,8 +689,18 @@
 				tmp = rx2_buffer[tmp_rx_first_byte];
 			
 			#ifdef RX2_GETC_ECHO
-				uart_putc(2, tmp);
+			
+			#ifdef RX2_NEWLINE_MODE_N
+				if(tmp == '\n') uart_putc(usartct,'\r');
 			#endif
+			
+				uart_putc(usartct, tmp);
+			
+			#ifdef RX2_NEWLINE_MODE_R
+				if(tmp == '\r') uart_putc(usartct,'\n');
+			#endif
+			
+			#endif // RX2_GETC_ECHO
 			
 			break;
 		#endif // NO_RX2_INTERRUPT
@@ -679,8 +714,18 @@
 				tmp = rx3_buffer[tmp_rx_first_byte];
 				
 			#ifdef RX3_GETC_ECHO
-				uart_putc(3, tmp);
+			
+			#ifdef RX3_NEWLINE_MODE_N
+				if(tmp == '\n') uart_putc(usartct,'\r');
 			#endif
+			
+				uart_putc(usartct, tmp);
+			
+			#ifdef RX3_NEWLINE_MODE_R
+				if(tmp == '\r') uart_putc(usartct,'\n');
+			#endif
+			
+			#endif // RX3_GETC_ECHO
 				
 		#endif // NO_RX3_INTERRUPT
 		}
@@ -693,7 +738,7 @@
 //Arguments : 1. Id of selected USART interface.
 //          : 2. Pointer to array to fill with received string.
 //Return    :    none
-//note      : Received string will be terminated by NULL.
+//Note      : Received string will be terminated by NULL.
 //          : OBSOLETE - possibility of buffer overflows
 //******************************************************************
 //	void uart_getBuffer(uint8_t usartct, char *buffer)
@@ -708,7 +753,7 @@
 //          : 2. Pointer to array to fill with received string.
 //          : 3. Limit for receiving string size (array size)
 //Return    :    none
-//note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
 //          : or at the end of the string if it's shorter than bufferlimit-1
 //          : terminators CR LF will not be cut
 //******************************************************************
@@ -729,35 +774,293 @@
 //          : 2. Pointer to array to fill with received string.
 //          : 3. Limit for receiving string size (array size)
 //Return    :    none
-//note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
 //          : or at the end of the string if it's shorter than bufferlimit-1
 //          : CR and LF terminators will be cut from the stream. 
 //			: Function will return if bufferlimit is reached without waiting for newline terminator 
 //******************************************************************
-void uart_getln(uint8_t usartct, char *buffer, uint8_t bufferlimit)
-{
-	while(--bufferlimit)
+	void uart_getln(uint8_t usartct, char *buffer, uint8_t bufferlimit)
 	{
-		do{
-			*buffer = uart_getc(usartct);
-		}while(*buffer == 0);
-		
-		if(*buffer == '\r')
+		while(--bufferlimit)
 		{
-			uart_getc(usartct);
+			do{
+				*buffer = uart_getc(usartct);
+			}while(*buffer == 0);
+	
+		#ifdef RX_NEWLINE_MODE
+		
+		#ifdef RX0_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+			if(*buffer == '\n')
+		#else
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX0_NEWLINE_MODE_RN
+				while( !(uart_getc(usartct)) );
+			#endif
+				break;
+			}
+		
+			buffer++;
+		
+		#else // little dumb way, but only possible
+			
+			switch(usartct)
+			{
+			#ifndef NO_RX0_INTERRUPT
+				case 0:
+				
+				#ifdef RX0_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+					if(*buffer == '\n')
+				#else
+					if(*buffer == '\r')
+				#endif
+					{
+					#ifdef RX0_NEWLINE_MODE_RN
+						while( !(uart_getc(usartct)) );
+					#endif
+						goto breakloop;
+					}
+				break;
+			#endif // NO_RX0_INTERRUPT
+			#ifndef NO_RX1_INTERRUPT 
+				case 1:
+					
+				#ifdef RX1_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+					if(*buffer == '\n')
+				#else
+					if(*buffer == '\r')
+				#endif
+					{
+					#ifdef RX1_NEWLINE_MODE_RN
+						while( !(uart_getc(usartct)) );
+					#endif
+						goto breakloop;
+					}
+				break;
+			#endif // NO_RX1_INTERRUPT
+			#ifndef NO_RX2_INTERRUPT
+				case 2:
+					
+				#ifdef RX2_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+					if(*buffer == '\n')
+				#else
+					if(*buffer == '\r')
+				#endif
+					{
+					#ifdef RX2_NEWLINE_MODE_RN
+						while( !(uart_getc(usartct)) );
+					#endif
+						goto breakloop;
+					}
+				break;
+			#endif // NO_RX2_INTERRUPT
+			#ifndef NO_RX3_INTERRUPT
+				case 3:
+					
+				#ifdef RX3_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+					if(*buffer == '\n')
+				#else
+					if(*buffer == '\r')
+				#endif
+					{
+					#ifdef RX3_NEWLINE_MODE_RN
+						while( !(uart_getc(usartct)) );
+					#endif
+						goto breakloop;
+					}
+				break;
+			#endif // NO_RX3_INTERRUPT
+			}
+			
+			buffer++;
+			continue;
+breakloop:
 			break;
+			
+		#endif // RX_NEWLINE_MODE
+
 		}
-		buffer++;
+		*buffer = 0;
 	}
-	*buffer = 0;
-}
+
+//******************************************************************
+//Function  : Reads burst of characters until first whitespace (waits for EOL terminator or first whitespace)
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Pointer to array to fill with received string. 
+//          : 3. Limit for receiving string size (array size)
+//Return    :    none
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//          : or at the end of the string if it's shorter than bufferlimit-1
+//          : CR and LF terminators will be cut.
+//          : Function will return if bufferlimit is reached without waiting for newline terminator
+//          : Function will cut all whitespaces before first nonspace character
+//******************************************************************
+	void uart_getlnToFirstWhiteSpace(uint8_t usartct, char *buffer, uint8_t bufferlimit)
+	{
+		*buffer++ = this -> skipWhiteSpaces();
+		bufferlimit--;
+		
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart_getc(usartct);
+			} while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE
+				
+		#ifdef RX0_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else //RX0_NEWLINE_MODE_R
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX0_NEWLINE_MODE_RN
+				while( !(uart_getc(usartct)) );
+			#endif
+				break;
+			}
+			else if(*buffer <= 32)
+				break; // string reading is done, we will exit
+			
+			buffer++;
+			
+		#else // little dumb way, but only possible
+			
+			switch(usartct)
+			{
+			#ifndef NO_RX0_INTERRUPT
+				case 0:
+				
+				#ifdef RX0_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+					if(*buffer == '\n')
+				#else
+					if(*buffer == '\r')
+				#endif
+					{
+					#ifdef RX0_NEWLINE_MODE_RN
+						while( !(uart_getc(usartct)) );
+					#endif
+						goto breakloop;
+					}
+					else if(*buffer <= 32)
+						goto breakloop; // string reading is done, we will exit
+						
+				break;
+			#endif // NO_RX0_INTERRUPT
+			#ifndef NO_RX1_INTERRUPT 
+				case 1:
+					
+				#ifdef RX1_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+					if(*buffer == '\n')
+				#else
+					if(*buffer == '\r')
+				#endif
+					{
+					#ifdef RX1_NEWLINE_MODE_RN
+						while( !(uart_getc(usartct)) );
+					#endif
+						goto breakloop;
+					}
+					else if(*buffer <= 32)
+						goto breakloop; // string reading is done, we will exit
+				break;
+			#endif // NO_RX1_INTERRUPT
+			#ifndef NO_RX2_INTERRUPT
+				case 2:
+					
+				#ifdef RX2_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+					if(*buffer == '\n')
+				#else
+					if(*buffer == '\r')
+				#endif
+					{
+					#ifdef RX2_NEWLINE_MODE_RN
+						while( !(uart_getc(usartct)) );
+					#endif
+						goto breakloop;
+					}
+					else if(*buffer <= 32)
+						goto breakloop; // string reading is done, we will exit
+				break;
+			#endif // NO_RX2_INTERRUPT
+			#ifndef NO_RX3_INTERRUPT
+				case 3:
+					
+				#ifdef RX3_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+					if(*buffer == '\n')
+				#else
+					if(*buffer == '\r')
+				#endif
+					{
+					#ifdef RX3_NEWLINE_MODE_RN
+						while( !(uart_getc(usartct)) );
+					#endif
+						goto breakloop;
+						}
+					else if(*buffer <= 32)
+						goto breakloop; // string reading is done, we will exit
+				break;
+			#endif // NO_RX3_INTERRUPT
+			}
+			
+			buffer++;
+			continue;
+breakloop:
+			break;
+			
+			#endif // RX_NEWLINE_MODE
+		}
+		*buffer = 0;
+	}
+
+//******************************************************************
+//Function  : To skip all incoming whitespace characters until first nonspace character.
+//Arguments : none
+//Return    : First received nonspace character.
+//Note      : First nonspace character is cut from receiver buffer.
+//******************************************************************
+	char uart_skipWhiteSpaces(usartct)
+	{
+		register char c;
+		
+		do{
+			c = uart_getc(usartct);
+		}while(c <= 32);
+		
+		return c;
+	}
+
+	int16_t uart_getint(usartct)
+	{
+		char buff[32];
+		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
+		
+		return atoi(buff);
+	}
+	
+	int32_t uart_getlong(usartct)
+	{
+		char buff[32];
+		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
+			
+		return atol(buff);
+	}
+	
+	float uart_getfloat(void)
+	{
+		char buff[32];
+		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
+		
+		return atof(buff);
+	}
 
 //******************************************************************
 //Function  : To receive single byte in binary transmission.
 //Arguments : 1. Id of selected USART interface.
 //          : 2. Pointer to byte which have to be filed by incoming data.
 //Return    :    Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
-//note      : This function doesn't cut CR, LF, NULL terminators
+//Note      : This function doesn't cut CR, LF, NULL terminators
 //          : If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
 //******************************************************************
 	uint8_t uart_getData(uint8_t usartct, uint8_t *data)
@@ -854,14 +1157,23 @@ void uart_getln(uint8_t usartct, char *buffer, uint8_t bufferlimit)
 		if(tmp_rx_first_byte == rx0_last_byte) return 0;
 		rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 		
+		register char tmp = rx0_buffer[tmp_rx_first_byte];
+	
 	#ifdef RX0_GETC_ECHO
-		register uint8_t tmp = rx0_buffer[tmp_rx_first_byte];
+		
+	#ifdef RX0_NEWLINE_MODE_N
+		if(tmp == '\n') uart_putc('\r');
+	#endif
 		
 		uart_putc(tmp);
-		return tmp;
-	#else
-		return rx0_buffer[tmp_rx_first_byte];
+		
+	#ifdef RX0_NEWLINE_MODE_R
+		if(tmp == '\r') uart_putc('\n');
 	#endif
+
+	#endif // RX0_GETC_ECHO
+		
+		return tmp;
 	}
 
 
@@ -869,7 +1181,7 @@ void uart_getln(uint8_t usartct, char *buffer, uint8_t bufferlimit)
 //Function  : Reads string from receiver buffer.
 //Arguments : Pointer to array to fill with received string.
 //Return    : none
-//note      : Received string will be terminated by NULL.
+//Note      : Received string will be terminated by NULL.
 //          : OBSOLETE - possibility of buffer overflows
 //******************************************************************
 //	void uart_getBuffer(char *buffer)
@@ -883,7 +1195,7 @@ void uart_getln(uint8_t usartct, char *buffer, uint8_t bufferlimit)
 //Arguments : 1. Pointer to array to fill with received string.
 //          : 2. Limit for receiving string size (array size)
 //Return    :    none
-//note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
 //          : or at the end of the string if it's shorter than bufferlimit-1
 //			: terminators CR LF will not be cut
 //******************************************************************
@@ -903,34 +1215,122 @@ void uart_getln(uint8_t usartct, char *buffer, uint8_t bufferlimit)
 //Arguments : 1. Pointer to array to fill with received string.
 //          : 2. Limit for receiving string size (array size)
 //Return    :    none
-//note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
 //          : or at the end of the string if it's shorter than bufferlimit-1
 //          : CR and LF terminators will be cut. 
 //          : Function will return if bufferlimit is reached without waiting for newline terminator
 //******************************************************************
-void uart_getln(char *buffer, uint8_t bufferlimit)
-{
-	while(--bufferlimit)
+	void uart_getln(char *buffer, uint8_t bufferlimit)
 	{
-		do{
-			*buffer = uart_getc();
-		}while(*buffer == 0);
-		
-		if(*buffer == '\r')
+		while(--bufferlimit)
 		{
-			uart_getc();
-			break;
+			do{
+				*buffer = uart_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX0_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX0_NEWLINE_MODE_RN
+				while( !(uart_getc()) );
+			#endif
+				break;
+			}
+			buffer++;
 		}
-		buffer++;
+		*buffer = 0;
 	}
-	*buffer = 0;
-}
+
+//******************************************************************
+//Function  : Reads burst of characters until first whitespace (waits for EOL terminator or first whitespace)
+//Arguments : 1. Pointer to array to fill with received string.
+//          : 2. Limit for receiving string size (array size)
+//Return    :    none
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//          : or at the end of the string if it's shorter than bufferlimit-1
+//          : CR and LF terminators will be cut.
+//          : Function will return if bufferlimit is reached without waiting for newline terminator
+//          : Function will cut all whitespaces before first nonspace character
+//******************************************************************
+	void uart_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
+	{
+		*buffer++ = uart_skipWhiteSpaces();
+		bufferlimit--;
+		
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX0_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else //RX0_NEWLINE_MODE_R
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX0_NEWLINE_MODE_RN
+				while( !(uart_getc()) );
+			#endif
+				break;
+			}
+			else if(*buffer <= 32)
+				break; // string reading is done, we will exit
+
+			buffer++;
+		}
+		*buffer = 0;
+	}
+
+//******************************************************************
+//Function  : To skip all incoming whitespace characters until first nonspace character.
+//Arguments : none
+//Return    : First received nonspace character.
+//Note      : First nonspace character is cut from receiver buffer.
+//******************************************************************
+	char uart_skipWhiteSpaces(void)
+	{
+		register char c;
+		
+		do{
+			c = uart_getc();
+		}while(c <= 32);
+		
+		return c;
+	}
+	
+	int16_t uart_getint(void)
+	{
+		char buff[32];
+		uart_getlnToFirstWhiteSpace(buff, 32);
+		
+		return atoi(buff);
+	}
+	
+	int32_t uart_getlong(void)
+	{
+		char buff[32];
+		uart_getlnToFirstWhiteSpace(buff, 32);
+		
+		return atol(buff);
+	}
+	
+	float uart_getfloat(void)
+	{
+		char buff[32];
+		uart_getlnToFirstWhiteSpace(buff, 32);
+		
+		return atof(buff);
+	}
 
 //******************************************************************
 //Function  : To receive single byte in binary transmission.
 //Arguments : Pointer to byte which have to be filed by incoming data.
-//          : Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
-//note      : This function doesn't cut CR, LF, NULL terminators
+//Return    : Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
+//Note      : This function doesn't cut CR, LF, NULL terminators
 //          : If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
 //******************************************************************
 	uint8_t uart_getData(uint8_t *data)

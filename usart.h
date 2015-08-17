@@ -21,6 +21,10 @@
 #define RX_STDIO_GETCHAR_ECHO // echoes back received characters in getchar() function (for reading in scanf()) 
 #define RX_GETC_ECHO // echoes back received characters in getc() function
 
+#define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+// lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
+// (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
+
 //#define USART_DO_NOT_INLINE // disables inlining code typically executed once, that is heavily dependent of optimize flags
 
 /*****************************multiple USART mcu's***********************************/
@@ -50,6 +54,11 @@
 //#define RX2_GETC_ECHO
 //#define RX3_GETC_ECHO
 
+//#define RX0_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+//#define RX1_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+//#define RX2_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+//#define RX3_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/pgmspace.h>
@@ -69,41 +78,40 @@
 #endif
 	
 #ifdef DEBUG
-	//#warning "defined DEBUG mode flag, if you want to reduce code size, switch to release mode instead"
 	#define USART_DO_NOT_INLINE
 #endif
 
-#ifndef DEFAULT_RX_BUFFER_SIZE
-	#define DEFAULT_RX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
+#ifndef RX_BUFFER_SIZE
+	#define RX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
 #endif
 
-#ifndef DEFAULT_TX_BUFFER_SIZE
-	#define DEFAULT_TX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
+#ifndef TX_BUFFER_SIZE
+	#define TX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
 #endif
 
 #ifndef TX0_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define TX0_BUFFER_SIZE DEFAULT_TX_BUFFER_SIZE
+	#define TX0_BUFFER_SIZE TX_BUFFER_SIZE
 #endif
 #ifndef RX0_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define RX0_BUFFER_SIZE DEFAULT_RX_BUFFER_SIZE
+	#define RX0_BUFFER_SIZE RX_BUFFER_SIZE
 #endif
 #ifndef TX1_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define TX1_BUFFER_SIZE DEFAULT_TX_BUFFER_SIZE
+	#define TX1_BUFFER_SIZE TX_BUFFER_SIZE
 #endif
 #ifndef RX1_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define RX1_BUFFER_SIZE DEFAULT_RX_BUFFER_SIZE
+	#define RX1_BUFFER_SIZE RX_BUFFER_SIZE
 #endif
 #ifndef TX2_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define TX2_BUFFER_SIZE DEFAULT_TX_BUFFER_SIZE
+	#define TX2_BUFFER_SIZE TX_BUFFER_SIZE
 #endif
 #ifndef RX2_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define RX2_BUFFER_SIZE DEFAULT_RX_BUFFER_SIZE
+	#define RX2_BUFFER_SIZE RX_BUFFER_SIZE
 #endif
 #ifndef TX3_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define TX3_BUFFER_SIZE DEFAULT_TX_BUFFER_SIZE
+	#define TX3_BUFFER_SIZE TX_BUFFER_SIZE
 #endif
 #ifndef RX3_BUFFER_SIZE // Size of the ring buffers, must be power of 2
-	#define RX3_BUFFER_SIZE DEFAULT_RX_BUFFER_SIZE
+	#define RX3_BUFFER_SIZE RX_BUFFER_SIZE
 #endif
 
 #define TX0_BUFFER_MASK (TX0_BUFFER_SIZE - 1)
@@ -147,6 +155,51 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	#define RX1_GETC_ECHO
 	#define RX2_GETC_ECHO
 	#define RX3_GETC_ECHO
+#endif
+
+#ifndef RX_NEWLINE_MODE
+	#define RX_NEWLINE_MODE 2
+	#define RX0_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+	#define RX1_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+	#define RX2_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+	#define RX3_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+#else
+	#define RX0_NEWLINE_MODE RX_NEWLINE_MODE
+	#define RX1_NEWLINE_MODE RX_NEWLINE_MODE
+	#define RX2_NEWLINE_MODE RX_NEWLINE_MODE
+	#define RX3_NEWLINE_MODE RX_NEWLINE_MODE
+#endif
+
+#if (RX0_NEWLINE_MODE == 0)
+	#define RX0_NEWLINE_MODE_R
+#elif (RX0_NEWLINE_MODE == 1)
+	#define RX0_NEWLINE_MODE_N
+#else // RX0_NEWLINE_MODE == 2
+	#define RX0_NEWLINE_MODE_RN
+#endif
+
+#if (RX1_NEWLINE_MODE == 0)
+	#define RX1_NEWLINE_MODE_R
+#elif (RX1_NEWLINE_MODE == 1)
+	#define RX1_NEWLINE_MODE_N
+#else // RX1_NEWLINE_MODE == 2
+	#define RX1_NEWLINE_MODE_RN
+#endif
+
+#if (RX2_NEWLINE_MODE == 0)
+	#define RX2_NEWLINE_MODE_R
+#elif (RX2_NEWLINE_MODE == 1)
+	#define RX2_NEWLINE_MODE_N
+#else // RX2_NEWLINE_MODE == 2
+	#define RX2_NEWLINE_MODE_RN
+#endif
+
+#if (RX3_NEWLINE_MODE == 0)
+	#define RX3_NEWLINE_MODE_R
+#elif (RX3_NEWLINE_MODE == 1)
+	#define RX3_NEWLINE_MODE_N
+#else // RX3_NEWLINE_MODE == 2
+	#define RX3_NEWLINE_MODE_RN
 #endif
 
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
@@ -584,8 +637,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	{
 		switch(usartct)
 		{
-		#ifdef USE_USART0
 			default:
+		#ifdef USE_USART0
+			case 0:
 			UBRR0L_REGISTER = (uint8_t) ubbr_value;
 			
 			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
@@ -661,8 +715,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	{
 		switch(usartct)
 		{
+			default:
 		#ifdef USE_USART0
-			default: UCSR0C_REGISTER |= UCSRC_reg; break;
+			case 0: UCSR0C_REGISTER |= UCSRC_reg; break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
 			case 1: UCSR1C_REGISTER |= UCSRC_reg; break;
@@ -681,8 +736,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	{
 		switch(usartct)
 		{
+			default:
 		#ifdef USE_USART0
-			default: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
+			case 0: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
 			case 1: UCSR1A_REGISTER |= (1<<U2X1_BIT); break;
@@ -825,10 +881,18 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_gets(uint8_t usartct, char *buffer, uint8_t bufferlimit); // reads whole receiver buffer or bufferlimit-1 characters
 	// newline terminator will not be cut // adds NULL byte at the end of string
 	void uart_getln(uint8_t usartct, char *buffer, uint8_t bufferlimit); // reads one line from the buffer, 
-	// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string 
+	// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string
+	void uart_getlnToFirstWhiteSpace(uint8_t usartct, char *buffer, uint8_t bufferlimit); // read one line to the first whitescape after the string
+	//cuts all whitespaces before string and one after the string
+	
+	char uart_skipWhiteSpaces(usartct); // returns first nonspace character found in the buffer
+	
+	int16_t uart_getint(uint8_t usartct);
+	int32_t uart_getlong(uint8_t usartct);
+	float uart_getfloat(uint8_t usartct);
 	
 	uint8_t uart_getData(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
-	// in case of empty buffers returning flag is set to BUFFER_EMPTY - NULL
+	// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 	uint8_t uart_AvailableBytes(uint8_t usartct); // returns number of bytes waiting in the receiver buffer
 	//uint8_t uart_peek(uint8_t usartct); 
 
@@ -839,10 +903,18 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_gets(char *buffer, uint8_t bufferlimit); // reads whole receiver buffer or bufferlimit-1 characters
 	// newline terminator will not be cut // adds NULL byte at the end of string
 	void uart_getln(char *buffer, uint8_t bufferlimit); // reads one line from the buffer
-	// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string 
+	// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string
+	void uart_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitescape after the string
+	// cuts all whitespaces before string and one after the string
+	
+	char uart_skipWhiteSpaces(void); // returns first nonspace character found in the buffer
+	
+	int16_t uart_getint(void);
+	int32_t uart_getlong(void);
+	float uart_getfloat(void);
 	
 	uint8_t uart_getData(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
-	// in case of empty buffers returning flag is set to BUFFER_EMPTY -NULL
+	// in case of empty buffers returning flag is set to BUFFER_EMPTY - NULL
 	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
 	//uint8_t uart_peek(void); 
 
@@ -946,7 +1018,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	
 #else // single USART mcu
 
-	#ifndef NO_USART_TX
+	#ifndef NO_TX0_INTERRUPT
 	
 		void uart_putchar(char data, FILE *stream)
 		{
@@ -957,7 +1029,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 		
 	#endif
 
-	#ifndef NO_USART_RX
+	#ifndef NO_RX0_INTERRUPT
 	
 		char uart_getchar(FILE *stream) // requires ISR working in binary mode 
 		{
