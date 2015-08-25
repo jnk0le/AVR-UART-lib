@@ -21,7 +21,7 @@
 #define RX_STDIO_GETCHAR_ECHO // echoes back received characters in getchar() function (for reading in scanf()) 
 #define RX_GETC_ECHO // echoes back received characters in getc() function
 
-#define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+//#define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
@@ -828,10 +828,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	void uart_putint(uint8_t usartct, int16_t data);
 	void uart_putintr(uint8_t usartct, int16_t data, uint8_t radix);
 	
-	void uart_put_hex(uint8_t usartct, int16_t data);
+	void uart_putuint(uint8_t usartct, uint16_t data);
+	void uart_putuintr(uint8_t usartct, uint16_t data, uint8_t radix);
+	
+	void uart_put_hex(uint8_t usartct, uint16_t data);
 	
 	void uart_putlong(uint8_t usartct, int32_t data);
 	void uart_putlongr(uint8_t usartct, int32_t data, uint8_t radix);
+	
+	void uart_putulong(uint8_t usartct, uint32_t data);
+	void uart_putulongr(uint8_t usartct, uint32_t data, uint8_t radix);
 	
 	void uart_putfloat(uint8_t usartct, float data);
 	void uart_fputfloat(uint8_t usartct, float data, uint8_t precision);
@@ -856,11 +862,17 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	
 	void uart_putint(int16_t data);
 	void uart_putintr(int16_t data, uint8_t radix);
+
+	void uart_putuint(uint16_t data);
+	void uart_putuintr(uint16_t data, uint8_t radix);
 	
-	void uart_put_hex(int16_t data);
+	void uart_put_hex(uint16_t data);
 	
 	void uart_putlong(int32_t data);
 	void uart_putlongr(int32_t data, uint8_t radix);
+
+	void uart_putulong(uint32_t data);
+	void uart_putulongr(uint32_t data, uint8_t radix);
 	
 	void uart_putfloat(float data);
 	void uart_fputfloat(float data, uint8_t precision);

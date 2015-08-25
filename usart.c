@@ -362,13 +362,42 @@
 //Function  : Send integer formated into ASCI string.
 //Arguments : 1. Id of selected USART interface.
 //          : 2. int16_t data value.
-//          : 3. Base value (DEC, HEX, OCT, BIN).
+//          : 3. Base value (DEC, HEX, OCT, BIN, etc.).
 //Return    :    none
 //******************************************************************
 	void uart_putintr(uint8_t usartct, int16_t data, uint8_t radix)
 	{
 		char buffer[17]; // heading, 15 digit bytes, NULL
 		itoa(data, buffer, radix);
+
+		uart_putstr(usartct, buffer);
+	}
+	
+//******************************************************************
+//Function  : Send unsigned integer formated into ASCI string (base 10).
+//Arguments : 1. Id of selected USART interface.
+//          : 2. uint16_t data value.
+//Return    :    none
+//******************************************************************
+	void uart_putuint(uint8_t usartct, uint16_t data)
+	{
+		char buffer[7]; // heading, 5 digit bytes, NULL
+		utoa(data, buffer, 10);
+
+		uart_putstr(usartct, buffer);
+	}
+	
+//******************************************************************
+//Function  : Send unsigned integer formated into ASCI string.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. uint16_t data value.
+//          : 3. Base value (DEC, HEX, OCT, BIN, etc.).
+//Return    :    none
+//******************************************************************
+	void uart_putuintr(uint8_t usartct, uint16_t data, uint8_t radix)
+	{
+		char buffer[17]; // heading, 15 digit bytes, NULL
+		utoa(data, buffer, radix);
 
 		uart_putstr(usartct, buffer);
 	}
@@ -379,10 +408,10 @@
 //          : 2. int16_t data value.
 //Return    :    none
 //******************************************************************
-	void uart_put_hex(uint8_t usartct, int16_t data)
+	void uart_put_hex(uint8_t usartct, uint16_t data)
 	{
 		char buffer[6]; // heading, 4 digit bytes, NULL
-		itoa(data, buffer, 16);
+		utoa(data, buffer, 16);
 	
 		uart_putstr(usartct, buffer);
 	}
@@ -405,7 +434,7 @@
 //Function  : Send long integer formated into ASCI string.
 //Arguments : 1. Id of selected USART interface.
 //          : 2. int32_t data value.
-//          : 3. Base value (DEC, HEX, OCT, BIN).
+//          : 3. Base value (DEC, HEX, OCT, BIN, etc.).
 //Return    :    none
 //******************************************************************
 	void uart_putlongr(uint8_t usartct, int32_t data, uint8_t radix)
@@ -417,7 +446,36 @@
 	}
 
 //******************************************************************
-//Function  : Send floating point integer formated into ASCI string.
+//Function  : Send unsigned long integer formated into ASCI string (base 10).
+//Arguments : 1. Id of selected USART interface.
+//          : 2. uint32_t data value.
+//Return    :    none
+//******************************************************************
+	void uart_putulong(uint8_t usartct, uint32_t data)
+	{
+		char buffer[12]; // heading, 10 digit bytes, NULL
+		ultoa(data, buffer, 10);
+	
+		uart_putstr(usartct, buffer);
+	}
+
+//******************************************************************
+//Function  : Send unsigned long integer formated into ASCI string.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. uint32_t data value.
+//          : 3. Base value (DEC, HEX, OCT, BIN, etc.).
+//Return    :    none
+//******************************************************************
+	void uart_putulongr(uint8_t usartct, int32_t data, uint8_t radix)
+	{
+		char buffer[17]; // heading, 15 digit bytes, NULL
+		ltoa(data, buffer, radix);
+		
+		uart_putstr(usartct, buffer);
+	}
+
+//******************************************************************
+//Function  : Send floating point value formated into ASCI string.
 //Arguments : 1. Id of selected USART interface.
 //          : 2. float data value.
 //Return    :    none
@@ -435,10 +493,10 @@
 	}
 
 //******************************************************************
-//Function  : Send floating point integer formated into ASCI string.
+//Function  : Send floating point value formated into ASCI string.
 //Arguments : 1. Id of selected USART interface.
 //          : 2. Float data value.
-//          : 3. Max allowed precision.
+//          : 3. Number of displayed digits after the dot.
 //Return    :    none
 //******************************************************************
 	void uart_fputfloat(uint8_t usartct, float data, uint8_t precision)
@@ -495,7 +553,6 @@
 			uart_putc(*string++);
 	}
 
-
 //******************************************************************
 //Function  : Send string from flash memory.
 //Arguments : Pointer to string placed in flash memory.
@@ -522,8 +579,8 @@
 	
 //******************************************************************
 //Function  : Send integer formated into ASCI string.
-//Arguments : 1. int16_t data value.
-//          : 2. Base value (DEC, HEX, OCT, BIN).
+//Arguments : 1. uint16_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
 //Return    :    none
 //******************************************************************
 	void uart_putintr(int16_t data, uint8_t radix)
@@ -533,16 +590,43 @@
 
 		uart_putstr(buffer);
 	}
-
+	
 //******************************************************************
-//Function  : Send integer formated into ASCI string (base 16)
-//Arguments : int16_t data value.
+//Function  : Send unsigned integer formated into ASCI string (base 10).
+//Arguments : uint16_t data value.
 //Return    : none
 //******************************************************************
-	void uart_put_hex(int16_t data)
+	void uart_putuint(uint16_t data)
+	{
+		char buffer[7]; // heading, 5 digit bytes, NULL
+		utoa(data, buffer, 10);
+
+		uart_putstr(buffer);
+	}
+	
+//******************************************************************
+//Function  : Send unsigned integer formated into ASCI string.
+//Arguments : 1. uint16_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
+//Return    :    none
+//******************************************************************
+	void uart_putuintr(uint16_t data, uint8_t radix)
+	{
+		char buffer[17]; // heading, 15 digit bytes, NULL
+		utoa(data, buffer, radix);
+
+		uart_putstr(buffer);
+	}
+
+//******************************************************************
+//Function  : Send unsigned integer formated into ASCI string (base 16)
+//Arguments : uint16_t data value.
+//Return    : none
+//******************************************************************
+	void uart_put_hex(uint16_t data)
 	{
 		char buffer[6]; // heading, 4 digit bytes, NULL
-		itoa(data, buffer, 16);
+		utoa(data, buffer, 16);
 		
 		uart_putstr(buffer);
 	}
@@ -563,7 +647,7 @@
 //******************************************************************
 //Function  : Send long integer formated into ASCI string.
 //Arguments : 1. int32_t data value.
-//          : 2. Base value (DEC, HEX, OCT, BIN).
+//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
 //Return    :    none
 //******************************************************************
 	void uart_putlongr(int32_t data, uint8_t radix)
@@ -573,9 +657,36 @@
 		
 		uart_putstr(buffer);
 	}
+	
+//******************************************************************
+//Function  : Send unsigned long integer formated into ASCI string (base 10).
+//Arguments : uint32_t data value.
+//Return    : none
+//******************************************************************
+	void uart_putulong(uint32_t data)
+	{
+		char buffer[12]; // heading, 10 digit bytes, NULL
+		ultoa(data, buffer, 10);
+		
+		uart_putstr(buffer);
+	}
+	
+//******************************************************************
+//Function  : Send unsigned long integer formated into ASCI string.
+//Arguments : 1. uint32_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
+//Return    :    none
+//******************************************************************
+	void uart_putulongr(uint32_t data, uint8_t radix)
+	{
+		char buffer[17]; // heading, 15 digit bytes, NULL
+		ultoa(data, buffer, radix);
+		
+		uart_putstr(buffer);
+	}
 
 //******************************************************************
-//Function  : Send floating point integer formated into ASCI string.
+//Function  : Send floating point value formated into ASCI string.
 //Arguments : float data value.
 //Return    : none
 //******************************************************************
@@ -594,7 +705,7 @@
 //******************************************************************
 //Function  : Send floating point integer formated into ASCI string.
 //Arguments : 1. Float data value.
-//          : 2. Max allowed precision.
+//          : 2. Number of displayed digits after the dot.
 //Return    :    none
 //******************************************************************
 	void uart_fputfloat(float data, uint8_t precision)
@@ -620,7 +731,7 @@
 //******************************************************************
 //Function  : To receive single character/byte.
 //Arguments : Id of selected USART interface.
-//Return    : Received character or NULL if received newline terminator or when buffer is empty.
+//Return    : Received character or NULL if buffer is empty.
 //******************************************************************
 	char uart_getc(uint8_t usartct)
 	{
@@ -1016,7 +1127,7 @@ breakloop:
 
 //******************************************************************
 //Function  : To skip all incoming whitespace characters until first nonspace character.
-//Arguments : none
+//Arguments : ID of selected usart interface.
 //Return    : First received nonspace character.
 //Note      : First nonspace character is cut from receiver buffer.
 //******************************************************************
@@ -1031,6 +1142,11 @@ breakloop:
 		return c;
 	}
 
+//******************************************************************
+//Function  : Read 16bit integer value from the input stream.
+//Arguments : ID of selected usart interface.
+//Return    : Received 16bit integer value.
+//******************************************************************
 	int16_t uart_getint(usartct)
 	{
 		char buff[32];
@@ -1038,7 +1154,12 @@ breakloop:
 		
 		return atoi(buff);
 	}
-	
+
+//******************************************************************
+//Function  : Read 32bit integer value from the input stream.
+//Arguments : ID of selected usart interface.
+//Return    : Received 32bit integer value.
+//******************************************************************
 	int32_t uart_getlong(usartct)
 	{
 		char buff[32];
@@ -1046,7 +1167,12 @@ breakloop:
 			
 		return atol(buff);
 	}
-	
+
+//******************************************************************
+//Function  : Read floating point value from the input stream.
+//Arguments : ID of selected usart interface.
+//Return    : Received float value.
+//******************************************************************
 	float uart_getfloat(void)
 	{
 		char buff[32];
@@ -1148,7 +1274,7 @@ breakloop:
 //******************************************************************
 //Function  : To receive single character/byte.
 //Arguments : none
-//Return    : Received character or NULL if received newline terminator or when buffer is empty.
+//Return    : Received character or NULL if buffer is empty.
 //******************************************************************
 	char uart_getc(void)
 	{
@@ -1301,7 +1427,12 @@ breakloop:
 		
 		return c;
 	}
-	
+
+//******************************************************************
+//Function  : Read 16bit integer value from the input stream.
+//Arguments : none
+//Return    : Received 16bit integer value.
+//******************************************************************
 	int16_t uart_getint(void)
 	{
 		char buff[32];
@@ -1309,7 +1440,12 @@ breakloop:
 		
 		return atoi(buff);
 	}
-	
+
+//******************************************************************
+//Function  : Read 32bit integer value from the input stream.
+//Arguments : none
+//Return    : Received 32bit integer value
+//******************************************************************
 	int32_t uart_getlong(void)
 	{
 		char buff[32];
@@ -1317,7 +1453,12 @@ breakloop:
 		
 		return atol(buff);
 	}
-	
+
+//******************************************************************
+//Function  : Read floating point value from the input stream.
+//Arguments : none
+//Return    : Received float value.
+//******************************************************************
 	float uart_getfloat(void)
 	{
 		char buff[32];
@@ -1344,7 +1485,6 @@ breakloop:
 		
 		return COMPLETED; // result = 1
 	}
-
 
 //******************************************************************
 //Function  : To check how many bytes are waiting in the receiver buffer.

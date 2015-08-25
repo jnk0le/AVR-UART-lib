@@ -27,3 +27,13 @@ Program Memory Usage 	:	364 bytes   1,1 % Full
 Data Memory Usage 		:	48 bytes   2,3 % Full
 
 For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio 6.2)
+
+
+# Notes
+Lot of terminals sends only CR character as a newline terminator, instead of CRLF or even unix style LF
+(BTW PuTTY doesn't allow to change this) but in return requires CRLF terminator to show not broken text.
+This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
+0 - CR
+1 - LF
+2 - CRLF (default)
+
