@@ -137,7 +137,7 @@ int main(void)
 
 uint8_t HandleIncomingData(uint8_t dat)
 {
-	xmdm.buff[xbuffposition++] = dat;
+	xmdm.buff[xmdm.position++] = dat;
 	
 	if(dat == EOT && xmdm.position == 1)
 	{
