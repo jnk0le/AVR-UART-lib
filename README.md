@@ -8,22 +8,23 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 - allow for binary transmission
 - optimized as much as possible to reduce code size
 - printf()/scanf() streams compatibility
+- V-USB compatibility (25 cycle ISR restriction)
 - and much more
 
 simple "hello world" code gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    428	     14	     68	    510	    1fe	avrt.elf
+		    404	     14	     68	    486	    1e6	avrt.elf
 
-Program Memory Usage 	:	442 bytes   1,3 % Full
+Program Memory Usage 	:	418 bytes   1,3 % Full
 Data Memory Usage 		:	82 bytes   4,0 % Full
 
 defined  NO_USART_RX flag gives
 
 		   text	   data	    bss	    dec	    hex	filename
-		    350	     14	     34	    398	    18e	avrt.elf
+		    340	     14	     34	    388	    184	avrt.elf
 
-Program Memory Usage 	:	364 bytes   1,1 % Full
+Program Memory Usage 	:	354 bytes   1,1 % Full
 Data Memory Usage 		:	48 bytes   2,3 % Full
 
 For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio 6.2)
@@ -38,3 +39,7 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 - 1 - LF
 - 2 - CRLF (default)
 
+All interrupts are meeting maximum of 25 cycles time during disabled interrupts in SREG register. 
+It's not done by using poor ISR_NOBLOCK which allows interrupt handler to corrupt itself, but ISR_NAKED.
+The only thing what I had to optimize myself was prologues and epilogues, the body code was optimized enough by GCC so I borrowed it.
+ 

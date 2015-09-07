@@ -1501,6 +1501,9 @@ breakloop:
 #endif // NO_USART_RX
 
 #ifndef NO_TX0_INTERRUPT
+
+#ifdef USART_DO_NOT_INLINE
+	
 	ISR(TX0_INTERRUPT)
 	{
 		register uint8_t tmp_tx_first_byte = tx0_first_byte; 
@@ -1518,9 +1521,78 @@ breakloop:
 		}
 		
 	}
+
+#else // fixed prologues and epilogues to meet 25 cycles restrictions
+	
+	ISR(TX0_INTERRUPT, ISR_NAKED)
+	{
+		asm volatile("\n\t"                      /* 5 ISR entry */
+		"push  r31 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r0 \n\t"                          /* 2 */
+		"in    r0, __SREG__ \n\t"                /* 1 */
+		
+		/* load globals */
+		"lds   r24, (tx0_first_byte) \n\t"       /* 2 */
+		"lds   r25, (tx0_last_byte) \n\t"        /* 2 */
+		
+		/* if(tmp_tx_first_byte != tx0_last_byte) */
+		"cp    r24, r25 \n\t"                    /* 1 */
+		"breq  .+24 \n\t"                        /* 1/2 */
+		
+		/* tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX0_BUFFER_MASK */
+		"subi  r24, 0xFF \n\t"                   /* 1 */
+		"andi  r24, %M[mask]\n\t"                /* 1 */
+		
+		/* tx0_buffer[tmp_tx_first_byte] */
+		"mov   r30, r24 \n\t"                    /* 1 */
+		"ldi   r31, 0x00 \n\t"                   /* 1 */
+		"subi  r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
+		"sbci  r31, hi8(-(tx0_buffer)) \n\t"     /* 1 */
+		"ld    r25, Z \n\t"                      /* 2 */
+		
+		/* UDR0_REGISTER = tx0_buffer[tmp_tx_first_byte] */
+		"sts   %M[uart_data], r25 \n\t"          /* 2 */
+		"sts   (tx0_first_byte), r24 \n\t"       /* 2 */
+		
+		"rjmp   .+10 \n\t"                       /* 2 */
+		
+		/* UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT) */
+		"lds   r24, %M[control_reg] \n\t"        /* 2 */
+		"andi  r24, 0xDF \n\t"                   /* 1 */
+		"sts   %M[control_reg], r24\n\t"         /* 2 */
+		
+		"out   __SREG__ , r0 \n\t"               /* 1 */
+		"pop   r0 \n\t"                          /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r31 \n\t"                         /* 2 */
+		"reti \n\t"                              /* 5 ISR return */
+		
+		: /* output operands */
+		
+		: /* input operands */
+		[uart_data]   "M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
+		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+		//[disable_udrie] "M" ( ~(1<<UDRIE0_BIT) ), //no way
+		[mask]        "M"    (TX0_BUFFER_MASK)
+		
+		/* no clobbers */
+		);
+		
+	}
+	
+#endif // USART_DO_NOT_INLINE	
+	
 #endif // NO_TX0_INTERRUPT
 
 #ifndef NO_RX0_INTERRUPT
+	
+#ifdef USART_DO_NOT_INLINE
+	
 	ISR(RX0_INTERRUPT)
 	{
 		register uint8_t tmp_rx_last_byte = (rx0_last_byte + 1) & RX0_BUFFER_MASK;
@@ -1533,9 +1605,73 @@ breakloop:
 		}
 		
 	}
+	
+#else // fixed prologues and epilogues to meet 25 cycles restrictions 
+	
+	ISR(RX0_INTERRUPT, ISR_NAKED)
+	{
+		asm volatile("\n\t"                      /* 5 ISR entry */
+		"push  r31 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r18 \n\t"                         /* 2 */
+		"in    r18, __SREG__ \n\t"               /* 1 */
+		"push  r18 \n\t"                         /* 2 */
+
+		/* read byte from UDR register */
+		"lds   r25, %M[uart_data] \n\t"          /* 2 */
+		
+		/* load globals */
+		"lds   r24, (rx0_last_byte) \n\t"        /* 2 */
+		"lds   r18, (rx0_first_byte) \n\t"       /* 2 */
+		
+		/* tmp_rx_last_byte = (rx0_last_byte + 1) & RX0_BUFFER_MASK */
+		"subi  r24, 0xFF \n\t"                   /* 1 */
+		"andi  r24, %M[mask] \n\t"               /* 1 */
+		
+		/* if(rx0_first_byte != tmp_rx_last_byte) */
+		"cp    r18, r24 \n\t"                    /* 1 */
+		"breq  .+14 \n\t"                        /* 1/2 */
+		
+		/* rx0_buffer[tmp_rx_last_byte] = tmp */
+		"mov   r30, r24 \n\t"                    /* 1 */
+		"ldi   r31, 0x00 \n\t"                   /* 1 */
+		"subi  r30, lo8(-(rx0_buffer))\n\t"      /* 1 */
+		"sbci  r31, hi8(-(rx0_buffer))\n\t"      /* 1 */
+		"st    Z, r25 \n\t"                      /* 2 */
+		
+		/* rx0_last_byte = tmp_rx_last_byte */
+		"sts   (rx0_last_byte), r24 \n\t"        /* 2 */
+	
+		"pop   r18 \n\t"                         /* 2 */
+		"out   __SREG__ , r18 \n\t"              /* 1 */
+		"pop   r18 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r31 \n\t"                         /* 2 */
+		"reti \n\t"                              /* 5 ISR return */
+		
+		: /* output operands */
+		
+		: /* input operands */
+		[uart_data] "M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
+		[mask]      "M"    (RX0_BUFFER_MASK)
+		
+		/* no clobbers */
+		);
+		
+	}
+
+#endif // USART_DO_NOT_INLINE	
+	
 #endif // NO_RX0_INTERRUPT
 
 #ifndef NO_TX1_INTERRUPT
+
+#ifdef USART_DO_NOT_INLINE
+	
 	ISR(TX1_INTERRUPT)
 	{
 		register uint8_t tmp_tx_first_byte = tx1_first_byte;
@@ -1553,9 +1689,78 @@ breakloop:
 		}
 		
 	}
+	
+#else // fixed prologues and epilogues to meet 25 cycles restrictions 
+	
+	ISR(TX1_INTERRUPT, ISR_NAKED)
+	{
+		asm volatile("\n\t"                      /* 5 ISR entry */
+		"push  r31 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r0 \n\t"                          /* 2 */
+		"in    r0, __SREG__ \n\t"                /* 1 */
+		
+		/* load globals */
+		"lds   r24, (tx1_first_byte) \n\t"       /* 2 */
+		"lds   r25, (tx1_last_byte) \n\t"        /* 2 */
+		
+		/* if(tmp_tx_first_byte != tx1_last_byte) */
+		"cp    r24, r25 \n\t"                    /* 1 */
+		"breq  .+24 \n\t"                        /* 1/2 */
+		
+		/* tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX1_BUFFER_MASK */
+		"subi  r24, 0xFF \n\t"                   /* 1 */
+		"andi  r24, %M[mask]\n\t"                /* 1 */
+		
+		/* tx1_buffer[tmp_tx_first_byte] */
+		"mov   r30, r24 \n\t"                    /* 1 */
+		"ldi   r31, 0x00 \n\t"                   /* 1 */
+		"subi  r30, lo8(-(tx1_buffer)) \n\t"     /* 1 */
+		"sbci  r31, hi8(-(tx1_buffer)) \n\t"     /* 1 */
+		"ld    r25, Z \n\t"                      /* 2 */
+		
+		/* UDR1_REGISTER = tx1_buffer[tmp_tx_first_byte] */
+		"sts   %M[uart_data], r25 \n\t"          /* 2 */
+		"sts   (tx1_first_byte), r24 \n\t"       /* 2 */
+		
+		"rjmp   .+10 \n\t"                       /* 2 */
+		
+		/* UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT) */
+		"lds   r24, %M[control_reg] \n\t"        /* 2 */
+		"andi  r24, 0xDF \n\t"                   /* 1 */
+		"sts   %M[control_reg], r24\n\t"         /* 2 */
+		
+		"out   __SREG__ , r0 \n\t"               /* 1 */
+		"pop   r0 \n\t"                          /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r31 \n\t"                         /* 2 */
+		"reti \n\t"                              /* 5 ISR return */
+		
+		: /* output operands */
+		
+		: /* input operands */
+		[uart_data]   "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
+		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+		//[disable_udrie] "M" ( ~(1<<UDRIE1_BIT) ), //no way
+		[mask]        "M"    (TX1_BUFFER_MASK)
+		
+		/* no clobbers */
+		);
+		
+	}
+	
+#endif // USART_DO_NOT_INLINE
+
 #endif // NO_TX1_INTERRUPT
 
 #ifndef NO_RX1_INTERRUPT
+
+#ifdef USART_DO_NOT_INLINE
+
 	ISR(RX1_INTERRUPT)
 	{
 		register uint8_t tmp_rx_last_byte = (rx1_last_byte + 1) & RX1_BUFFER_MASK;
@@ -1568,9 +1773,73 @@ breakloop:
 		}
 		
 	}
+	
+#else // fixed prologues and epilogues to meet 25 cycles restrictions
+	
+	ISR(RX1_INTERRUPT, ISR_NAKED)
+	{
+		asm volatile("\n\t"                      /* 5 ISR entry */
+		"push  r31 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r18 \n\t"                         /* 2 */
+		"in    r18, __SREG__ \n\t"               /* 1 */
+		"push  r18 \n\t"                         /* 2 */
+
+		/* read byte from UDR register */
+		"lds   r25, %M[uart_data] \n\t"          /* 2 */
+		
+		/* load globals */
+		"lds   r24, (rx1_last_byte) \n\t"        /* 2 */
+		"lds   r18, (rx1_first_byte) \n\t"       /* 2 */
+		
+		/* tmp_rx_last_byte = (rx1_last_byte + 1) & RX1_BUFFER_MASK */
+		"subi  r24, 0xFF \n\t"                   /* 1 */
+		"andi  r24, %M[mask] \n\t"               /* 1 */
+		
+		/* if(rx1_first_byte != tmp_rx_last_byte) */
+		"cp    r18, r24 \n\t"                    /* 1 */
+		"breq  .+14 \n\t"                        /* 1/2 */
+		
+		/* rx1_buffer[tmp_rx_last_byte] = tmp */
+		"mov   r30, r24 \n\t"                    /* 1 */
+		"ldi   r31, 0x00 \n\t"                   /* 1 */
+		"subi  r30, lo8(-(rx1_buffer))\n\t"      /* 1 */
+		"sbci  r31, hi8(-(rx1_buffer))\n\t"      /* 1 */
+		"st    Z, r25 \n\t"                      /* 2 */
+		
+		/* rx1_last_byte = tmp_rx_last_byte */
+		"sts   (rx1_last_byte), r24 \n\t"        /* 2 */
+		
+		"pop   r18 \n\t"                         /* 2 */
+		"out   __SREG__ , r18 \n\t"              /* 1 */
+		"pop   r18 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r31 \n\t"                         /* 2 */
+		"reti \n\t"                              /* 5 ISR return */
+		
+		: /* output operands */
+		
+		: /* input operands */
+		[uart_data] "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
+		[mask]      "M"    (RX1_BUFFER_MASK)
+		
+		/* no clobbers */
+		);
+		
+	}
+	
+#endif // USART_DO_NOT_INLINE
+
 #endif // NO_RX1_INTERRUPT
 
 #ifndef NO_TX2_INTERRUPT
+
+#ifdef USART_DO_NOT_INLINE
+
 	ISR(TX2_INTERRUPT)
 	{
 		register uint8_t tmp_tx_first_byte = tx2_first_byte;
@@ -1588,9 +1857,78 @@ breakloop:
 		}
 		
 	}
+	
+#else // fixed prologues and epilogues to meet 25 cycles restrictions 
+	
+	ISR(TX2_INTERRUPT, ISR_NAKED)
+	{
+		asm volatile("\n\t"                      /* 5 ISR entry */
+		"push  r31 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r0 \n\t"                          /* 2 */
+		"in    r0, __SREG__ \n\t"                /* 1 */
+		
+		/* load globals */
+		"lds   r24, (tx2_first_byte) \n\t"       /* 2 */
+		"lds   r25, (tx2_last_byte) \n\t"        /* 2 */
+		
+		/* if(tmp_tx_first_byte != tx2_last_byte) */
+		"cp    r24, r25 \n\t"                    /* 1 */
+		"breq  .+24 \n\t"                        /* 1/2 */
+		
+		/* tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX2_BUFFER_MASK */
+		"subi  r24, 0xFF \n\t"                   /* 1 */
+		"andi  r24, %M[mask]\n\t"                /* 1 */
+		
+		/* tx2_buffer[tmp_tx_first_byte] */
+		"mov   r30, r24 \n\t"                    /* 1 */
+		"ldi   r31, 0x00 \n\t"                   /* 1 */
+		"subi  r30, lo8(-(tx2_buffer)) \n\t"     /* 1 */
+		"sbci  r31, hi8(-(tx2_buffer)) \n\t"     /* 1 */
+		"ld    r25, Z \n\t"                      /* 2 */
+		
+		/* UDR2_REGISTER = tx2_buffer[tmp_tx_first_byte] */
+		"sts   %M[uart_data], r25 \n\t"          /* 2 */
+		"sts   (tx2_first_byte), r24 \n\t"       /* 2 */
+		
+		"rjmp   .+10 \n\t"                       /* 2 */
+		
+		/* UCSR2B_REGISTER &= ~(1<<UDRIE2_BIT) */
+		"lds   r24, %M[control_reg] \n\t"        /* 2 */
+		"andi  r24, 0xDF \n\t"                   /* 1 */
+		"sts   %M[control_reg], r24\n\t"         /* 2 */
+		
+		"out   __SREG__ , r0 \n\t"               /* 1 */
+		"pop   r0 \n\t"                          /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r31 \n\t"                         /* 2 */
+		"reti \n\t"                              /* 5 ISR return */
+		
+		: /* output operands */
+		
+		: /* input operands */
+		[uart_data]   "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
+		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+		//[disable_udrie] "M" ( ~(1<<UDRIE2_BIT) ), //no way
+		[mask]        "M"    (TX2_BUFFER_MASK)
+		
+		/* no clobbers */
+		);
+		
+	}
+	
+#endif // USART_DO_NOT_INLINE
+
 #endif // NO_TX2_INTERRUPT
 
 #ifndef NO_RX2_INTERRUPT
+
+#ifdef USART_DO_NOT_INLINE
+
 	ISR(RX2_INTERRUPT)
 	{
 		register uint8_t tmp_rx_last_byte = (rx2_last_byte + 1) & RX2_BUFFER_MASK;
@@ -1603,9 +1941,73 @@ breakloop:
 		}
 		
 	}
+	
+#else // fixed prologues and epilogues to meet 25 cycles restrictions
+	
+	ISR(RX2_INTERRUPT, ISR_NAKED)
+	{
+		asm volatile("\n\t"                      /* 5 ISR entry */
+		"push  r31 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r18 \n\t"                         /* 2 */
+		"in    r18, __SREG__ \n\t"               /* 1 */
+		"push  r18 \n\t"                         /* 2 */
+
+		/* read byte from UDR register */
+		"lds   r25, %M[uart_data] \n\t"          /* 2 */
+		
+		/* load globals */
+		"lds   r24, (rx2_last_byte) \n\t"        /* 2 */
+		"lds   r18, (rx2_first_byte) \n\t"       /* 2 */
+		
+		/* tmp_rx_last_byte = (rx2_last_byte + 1) & RX2_BUFFER_MASK */
+		"subi  r24, 0xFF \n\t"                   /* 1 */
+		"andi  r24, %M[mask] \n\t"               /* 1 */
+		
+		/* if(rx2_first_byte != tmp_rx_last_byte) */
+		"cp    r18, r24 \n\t"                    /* 1 */
+		"breq  .+14 \n\t"                        /* 1/2 */
+		
+		/* rx2_buffer[tmp_rx_last_byte] = tmp */
+		"mov   r30, r24 \n\t"                    /* 1 */
+		"ldi   r31, 0x00 \n\t"                   /* 1 */
+		"subi  r30, lo8(-(rx2_buffer))\n\t"      /* 1 */
+		"sbci  r31, hi8(-(rx2_buffer))\n\t"      /* 1 */
+		"st    Z, r25 \n\t"                      /* 2 */
+		
+		/* rx2_last_byte = tmp_rx_last_byte */
+		"sts   (rx2_last_byte), r24 \n\t"        /* 2 */
+		
+		"pop   r18 \n\t"                         /* 2 */
+		"out   __SREG__ , r18 \n\t"              /* 1 */
+		"pop   r18 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r31 \n\t"                         /* 2 */
+		"reti \n\t"                              /* 5 ISR return */
+		
+		: /* output operands */
+		
+		: /* input operands */
+		[uart_data] "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
+		[mask]      "M"    (RX2_BUFFER_MASK)
+		
+		/* no clobbers */
+		);
+		
+	}
+
+#endif // USART_DO_NOT_INLINE
+
 #endif // NO_RX2_INTERRUPT
 
 #ifndef NO_TX3_INTERRUPT
+
+#ifdef USART_DO_NOT_INLINE
+
 	ISR(TX3_INTERRUPT)
 	{
 		register uint8_t tmp_tx_first_byte = tx3_first_byte;
@@ -1623,9 +2025,78 @@ breakloop:
 		}
 		
 	}
+	
+#else // fixed prologues and epilogues to meet 25 cycles restrictions
+	
+	ISR(TX3_INTERRUPT, ISR_NAKED)
+	{
+		asm volatile("\n\t"                      /* 5 ISR entry */
+		"push  r31 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r0 \n\t"                          /* 2 */
+		"in    r0, __SREG__ \n\t"                /* 1 */
+		
+		/* load globals */
+		"lds   r24, (tx3_first_byte) \n\t"       /* 2 */
+		"lds   r25, (tx3_last_byte) \n\t"        /* 2 */
+		
+		/* if(tmp_tx_first_byte != tx3_last_byte) */
+		"cp    r24, r25 \n\t"                    /* 1 */
+		"breq  .+24 \n\t"                        /* 1/2 */
+		
+		/* tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX3_BUFFER_MASK */
+		"subi  r24, 0xFF \n\t"                   /* 1 */
+		"andi  r24, %M[mask]\n\t"                /* 1 */
+		
+		/* tx3_buffer[tmp_tx_first_byte] */
+		"mov   r30, r24 \n\t"                    /* 1 */
+		"ldi   r31, 0x00 \n\t"                   /* 1 */
+		"subi  r30, lo8(-(tx3_buffer)) \n\t"     /* 1 */
+		"sbci  r31, hi8(-(tx3_buffer)) \n\t"     /* 1 */
+		"ld    r25, Z \n\t"                      /* 2 */
+		
+		/* UDR3_REGISTER = tx3_buffer[tmp_tx_first_byte] */
+		"sts   %M[uart_data], r25 \n\t"          /* 2 */
+		"sts   (tx3_first_byte), r24 \n\t"       /* 2 */
+		
+		"rjmp   .+10 \n\t"                       /* 2 */
+		
+		/* UCSR3B_REGISTER &= ~(1<<UDRIE3_BIT) */
+		"lds   r24, %M[control_reg] \n\t"        /* 2 */
+		"andi  r24, 0xDF \n\t"                   /* 1 */
+		"sts   %M[control_reg], r24\n\t"         /* 2 */
+		
+		"out   __SREG__ , r0 \n\t"               /* 1 */
+		"pop   r0 \n\t"                          /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r31 \n\t"                         /* 2 */
+		"reti \n\t"                              /* 5 ISR return */
+		
+		: /* output operands */
+		
+		: /* input operands */
+		[uart_data]   "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
+		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+		//[disable_udrie] "M" ( ~(1<<UDRIE3_BIT) ), //no way
+		[mask]        "M"    (TX3_BUFFER_MASK)
+		
+		/* no clobbers */
+		);
+		
+	}
+	
+#endif // USART_DO_NOT_INLINE
+
 #endif // NO_TX3_INTERRUPT
 
 #ifndef NO_RX3_INTERRUPT
+
+#ifdef USART_DO_NOT_INLINE
+
 	ISR(RX3_INTERRUPT)
 	{
 		register uint8_t tmp_rx_last_byte = (rx3_last_byte + 1) & RX3_BUFFER_MASK;
@@ -1638,4 +2109,65 @@ breakloop:
 		}
 		
 	}
+	
+#else // fixed prologues and epilogues to meet 25 cycles restrictions
+	
+	ISR(RX3_INTERRUPT, ISR_NAKED)
+	{
+		asm volatile("\n\t"                      /* 5 ISR entry */
+		"push  r31 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r18 \n\t"                         /* 2 */
+		"in    r18, __SREG__ \n\t"               /* 1 */
+		"push  r18 \n\t"                         /* 2 */
+
+		/* read byte from UDR register */
+		"lds   r25, %M[uart_data] \n\t"          /* 2 */
+		
+		/* load globals */
+		"lds   r24, (rx3_last_byte) \n\t"        /* 2 */
+		"lds   r18, (rx3_first_byte) \n\t"       /* 2 */
+		
+		/* tmp_rx_last_byte = (rx3_last_byte + 1) & RX3_BUFFER_MASK */
+		"subi  r24, 0xFF \n\t"                   /* 1 */
+		"andi  r24, %M[mask] \n\t"               /* 1 */
+		
+		/* if(rx3_first_byte != tmp_rx_last_byte) */
+		"cp    r18, r24 \n\t"                    /* 1 */
+		"breq  .+14 \n\t"                        /* 1/2 */
+		
+		/* rx3_buffer[tmp_rx_last_byte] = tmp */
+		"mov   r30, r24 \n\t"                    /* 1 */
+		"ldi   r31, 0x00 \n\t"                   /* 1 */
+		"subi  r30, lo8(-(rx3_buffer))\n\t"      /* 1 */
+		"sbci  r31, hi8(-(rx3_buffer))\n\t"      /* 1 */
+		"st    Z, r25 \n\t"                      /* 2 */
+		
+		/* rx3_last_byte = tmp_rx_last_byte */
+		"sts   (rx3_last_byte), r24 \n\t"        /* 2 */
+		
+		"pop   r18 \n\t"                         /* 2 */
+		"out   __SREG__ , r18 \n\t"              /* 1 */
+		"pop   r18 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r31 \n\t"                         /* 2 */
+		"reti \n\t"                              /* 5 ISR return */
+		
+		: /* output operands */
+		
+		: /* input operands */
+		[uart_data] "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
+		[mask]      "M"    (RX3_BUFFER_MASK)
+		
+		/* no clobbers */
+		);
+		
+	}
+
+#endif // USART_DO_NOT_INLINE
+
 #endif // NO_RX3_INTERRUPT
