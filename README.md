@@ -40,6 +40,6 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 - 2 - CRLF (default)
 
 All interrupts are meeting maximum of 25 cycles time during disabled interrupts in SREG register. 
-It's not done by using poor ISR_NOBLOCK which allows interrupt handler to corrupt itself, but ISR_NAKED.
+It's not done by using poor ISR_NOBLOCK which allows interrupt handler to corrupt itself, but ISR_NAKED with inline asm.
 The only thing what I had to optimize myself was prologues and epilogues, the body code was optimized enough by GCC so I borrowed it.
  
