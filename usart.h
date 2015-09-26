@@ -27,6 +27,8 @@
 
 //#define USART_DO_NOT_INLINE // disables inlining code typically executed once, that is heavily dependent of optimize flags
 
+//#define USART_UNSAFE_24_CYLCE_INTERRUPT // modify RX and TX interrupts to disable interrupts for maximum of 24 cycles
+// may lead to stack overflow if too many interrupts are fired at the same time // for use with V-USB or others cycle restricted libraries
 /*****************************multiple USART mcu's***********************************/
 
 //#define NO_USART0 // disable usage of uart0
@@ -200,6 +202,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	#define RX3_NEWLINE_MODE_N
 #else // RX3_NEWLINE_MODE == 2
 	#define RX3_NEWLINE_MODE_RN
+#endif
+
+#ifdef __usbdrv_h_included__ // V-USB
+	#define USART_UNSAFE_24_CYLCE_INTERRUPT
 #endif
 
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)

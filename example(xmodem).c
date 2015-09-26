@@ -235,11 +235,11 @@ uint16_t calcrc(uint8_t *bufptr, uint8_t size)
 
 uint8_t calchecksum(uint8_t *bufptr, uint8_t size)
 {
-		uint8_t cksum = 0;
+	uint8_t cksum = 0;
 		
-		while(size--) cksum += *bufptr++;
+	while(size--) cksum += *bufptr++;
 		
-		return cksum;
+	return cksum;
 }
 
 void MoveData(uint8_t *bufptr, uint8_t BytesToMove)
