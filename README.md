@@ -27,8 +27,9 @@ defined  NO_USART_RX flag gives
 Program Memory Usage 	:	354 bytes   1,1 % Full
 Data Memory Usage 		:	48 bytes   2,3 % Full
 
-For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio 6.2)
+Meanwhile Arduino generates 2KB of code.
 
+For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio 6.2)
 
 # Notes
 Lot of terminals sends only CR character as a newline terminator, instead of CRLF or even unix style LF
