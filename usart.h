@@ -1077,5 +1077,4 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 
 #endif // used _STDIO_H_
 
-
 #endif // _USART_H_

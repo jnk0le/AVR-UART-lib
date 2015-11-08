@@ -14,14 +14,14 @@
 #define good_packet 0x01
 #define duplicate 0x02
 
-enum ProgramStatus{
+typedef enum {
 	ready_for_transmission,
 	awaiting_for_command,
 	preparing_transmission,
 	transmission_in_progres,
 	transmission_completed,
 	transmission_aborted
-}
+} ProgramStatus;
 
 #define XMODEM_VALIDATION_CRC // comment out to use checksum instead of CRC
 // some terminals/devices still doesn't provide support for crc error handling
@@ -43,7 +43,7 @@ struct XmodemPacket {
 
 int main(void)
 {
-	enum ProgramStatus transmission_status = ready_for_transmission;
+	ProgramStatus transmission_status = ready_for_transmission;
 	uint8_t incoming_data;
 	char cmd;
 
