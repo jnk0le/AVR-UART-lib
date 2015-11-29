@@ -21,7 +21,8 @@
 #define RX_STDIO_GETCHAR_ECHO // echoes back received characters in getchar() function (for reading in scanf()) 
 #define RX_GETC_ECHO // echoes back received characters in getc() function
 
-//#define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+//#define PUTC_CONVERT_LF_TO_CRLF // allow for unix style (\n only) newline terminator in stored strings // not included into putc_noblock
+#define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
@@ -55,11 +56,6 @@
 //#define RX1_GETC_ECHO
 //#define RX2_GETC_ECHO
 //#define RX3_GETC_ECHO
-
-//#define RX0_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
-//#define RX1_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
-//#define RX2_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
-//#define RX3_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -129,7 +125,7 @@
 #define RX3_BUFFER_MASK (RX3_BUFFER_SIZE - 1)
 
 enum {locked, unlocked};
-enum {COMPLETED = 1, BUFFER_EMPTY = 0};	
+enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};	
 
 #ifdef NO_USART_RX // remove all RX interrupts
 	#define NO_RX0_INTERRUPT
@@ -159,49 +155,17 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 	#define RX3_GETC_ECHO
 #endif
 
-#ifndef RX_NEWLINE_MODE
-	#define RX_NEWLINE_MODE 2
-	#define RX0_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
-	#define RX1_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
-	#define RX2_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
-	#define RX3_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+#ifdef RX_NEWLINE_MODE
+	
+	#if (RX_NEWLINE_MODE == 0)
+		#define RX_NEWLINE_MODE_R
+	#elif (RX_NEWLINE_MODE == 1)
+		#define RX_NEWLINE_MODE_N
+	#else // RX_NEWLINE_MODE == 2
+		#define RX_NEWLINE_MODE_RN
+	#endif
 #else
-	#define RX0_NEWLINE_MODE RX_NEWLINE_MODE
-	#define RX1_NEWLINE_MODE RX_NEWLINE_MODE
-	#define RX2_NEWLINE_MODE RX_NEWLINE_MODE
-	#define RX3_NEWLINE_MODE RX_NEWLINE_MODE
-#endif
-
-#if (RX0_NEWLINE_MODE == 0)
-	#define RX0_NEWLINE_MODE_R
-#elif (RX0_NEWLINE_MODE == 1)
-	#define RX0_NEWLINE_MODE_N
-#else // RX0_NEWLINE_MODE == 2
-	#define RX0_NEWLINE_MODE_RN
-#endif
-
-#if (RX1_NEWLINE_MODE == 0)
-	#define RX1_NEWLINE_MODE_R
-#elif (RX1_NEWLINE_MODE == 1)
-	#define RX1_NEWLINE_MODE_N
-#else // RX1_NEWLINE_MODE == 2
-	#define RX1_NEWLINE_MODE_RN
-#endif
-
-#if (RX2_NEWLINE_MODE == 0)
-	#define RX2_NEWLINE_MODE_R
-#elif (RX2_NEWLINE_MODE == 1)
-	#define RX2_NEWLINE_MODE_N
-#else // RX2_NEWLINE_MODE == 2
-	#define RX2_NEWLINE_MODE_RN
-#endif
-
-#if (RX3_NEWLINE_MODE == 0)
-	#define RX3_NEWLINE_MODE_R
-#elif (RX3_NEWLINE_MODE == 1)
-	#define RX3_NEWLINE_MODE_N
-#else // RX3_NEWLINE_MODE == 2
-	#define RX3_NEWLINE_MODE_RN
+	#define RX_NEWLINE_MODE_RN // 2
 #endif
 
 #ifdef __usbdrv_h_included__ // V-USB
@@ -815,6 +779,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 	
 	void uart_putc(uint8_t usartct, char data); // put character/data into transmitter ring buffer
+	uint8_t uart_putc_noblock(uint8_t usartct, char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
 	void uart_putstrl(uint8_t usartct, char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
 	void uart_putstr(uint8_t usartct, char *string); // send string from the memory buffer 
@@ -851,6 +816,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #else // single USART mcu
 
 	void uart_putc(char data); // put character/data into transmitter ring buffer
+	uint8_t uart_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
 	void uart_putstrl(char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
 	void uart_putstr(char *string); // send string from the memory buffer
@@ -945,7 +911,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
-	// wrapper of stdio.h FDEV_SETUP_STREAM to allow setting udata; udata is used information about port ID
+	// wrapper of stdio.h FDEV_SETUP_STREAM to allow setting udata; udata is used to store info about port ID
 	#define FDEV_SETUP_STREAM_U(p, g, f, u) \
 	{ \
 		.put = p, \
@@ -1076,5 +1042,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0};
 #endif // single/multi USART
 
 #endif // used _STDIO_H_
+
 
 #endif // _USART_H_

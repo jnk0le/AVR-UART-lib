@@ -250,6 +250,10 @@
 //******************************************************************	
 	void uart_putc(uint8_t usartct, char data)
 	{
+	#ifdef PUTC_CONVERT_LF_TO_CRLF
+		if(data == '\n')
+			uart_putc(usartct, '\r');
+	#endif
 		register uint8_t tmp_tx_last_byte;
 		
 		switch(usartct)
@@ -305,6 +309,77 @@
 			#endif // NO_TX3_INTERRUPT
 			}
 		
+	}
+	
+//******************************************************************
+//Function  : Send single character/byte.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. character/byte to send.
+//Return    : Status value: 0 = BUFFER_FULL, 1 = COMPLETED.
+//Note      : If character cannot be sent due to full transmit buffer, function will abort transmitting character
+//******************************************************************
+	uint8_t uart_putc_noblock(uint8_t usartct, char data)
+	{
+		register uint8_t tmp_tx_last_byte;
+		
+		switch(usartct)
+		{
+			default: // first found case as default (byte saving)
+		#ifndef NO_TX0_INTERRUPT 
+			 case 0:
+				tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+			
+				if(tx0_first_byte == tmp_tx_last_byte)
+					return BUFFER_FULL;
+						
+				tx0_buffer[tmp_tx_last_byte] = data;
+				tx0_last_byte = tmp_tx_last_byte;
+						
+				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+			break; 
+		#endif // NO_TX0_INTERRUPT
+		#ifndef NO_TX1_INTERRUPT 
+			case 1:
+				tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+			
+				if(tx1_first_byte == tmp_tx_last_byte)
+					return BUFFER_FULL;
+				
+				tx1_buffer[tmp_tx_last_byte] = data;
+				tx1_last_byte = tmp_tx_last_byte;
+				
+				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
+			break;
+		#endif // NO_TX1_INTERRUPT
+		#ifndef NO_TX2_INTERRUPT 
+			case 2:
+				tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
+			
+				if(tx2_first_byte == tmp_tx_last_byte)
+					return BUFFER_FULL;
+				
+				tx2_buffer[tmp_tx_last_byte] = data;
+				tx2_last_byte = tmp_tx_last_byte;
+				
+				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
+			break;
+		#endif // NO_TX2_INTERRUPT
+		#ifndef NO_TX3_INTERRUPT 
+			case 3:
+				tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
+			
+				if(tx3_first_byte == tmp_tx_last_byte)
+					return BUFFER_FULL;
+				
+				tx3_buffer[tmp_tx_last_byte] = data;
+				tx3_last_byte = tmp_tx_last_byte;
+				
+				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
+				//break;
+		#endif // NO_TX3_INTERRUPT
+		}
+		
+		return COMPLETED;
 	}
 
 //******************************************************************
@@ -520,6 +595,10 @@
 //******************************************************************
 	void uart_putc(char data)
 	{
+	#ifdef PUTC_CONVERT_LF_TO_CRLF
+		if (data == '\n')
+			uart_putc('\r');
+	#endif
 		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 		
 		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
@@ -528,6 +607,27 @@
 		tx0_last_byte = tmp_tx_last_byte;
 		
 		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+	}
+	
+//******************************************************************
+//Function  : Send single character/byte.
+//Arguments : Character/byte to send.
+//Return    : Status value: 0 = BUFFER_FULL, 1 = COMPLETED.
+//Note      : If character cannot be sent due to full transmit buffer, function will abort transmitting character
+//******************************************************************
+	uint8_t uart_putc_noblock(char data)
+	{
+		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		
+		if(tx0_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+		
+		tx0_buffer[tmp_tx_last_byte] = data;
+		tx0_last_byte = tmp_tx_last_byte;
+		
+		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+		
+		return COMPLETED;
 	}
 
 //******************************************************************
@@ -751,13 +851,13 @@
 			
 			#ifdef RX0_GETC_ECHO
 			
-			#ifdef RX0_NEWLINE_MODE_N
+			#ifdef RX_NEWLINE_MODE_N
 				if(tmp == '\n') uart_putc(usartct,'\r');
 			#endif
 				
 				uart_putc(usartct, tmp);
 				
-			#ifdef RX0_NEWLINE_MODE_R
+			#ifdef RX_NEWLINE_MODE_R
 				if(tmp == '\r') uart_putc(usartct,'\n');
 			#endif
 				
@@ -776,13 +876,13 @@
 			
 			#ifdef RX1_GETC_ECHO
 			
-			#ifdef RX1_NEWLINE_MODE_N
+			#ifdef RX_NEWLINE_MODE_N
 				if(tmp == '\n') uart_putc(usartct,'\r');
 			#endif
 			
 				uart_putc(usartct, tmp);
 			
-			#ifdef RX1_NEWLINE_MODE_R
+			#ifdef RX_NEWLINE_MODE_R
 				if(tmp == '\r') uart_putc(usartct,'\n');
 			#endif
 			
@@ -801,13 +901,13 @@
 			
 			#ifdef RX2_GETC_ECHO
 			
-			#ifdef RX2_NEWLINE_MODE_N
+			#ifdef RX_NEWLINE_MODE_N
 				if(tmp == '\n') uart_putc(usartct,'\r');
 			#endif
 			
 				uart_putc(usartct, tmp);
 			
-			#ifdef RX2_NEWLINE_MODE_R
+			#ifdef RX_NEWLINE_MODE_R
 				if(tmp == '\r') uart_putc(usartct,'\n');
 			#endif
 			
@@ -826,13 +926,13 @@
 				
 			#ifdef RX3_GETC_ECHO
 			
-			#ifdef RX3_NEWLINE_MODE_N
+			#ifdef RX_NEWLINE_MODE_N
 				if(tmp == '\n') uart_putc(usartct,'\r');
 			#endif
 			
 				uart_putc(usartct, tmp);
 			
-			#ifdef RX3_NEWLINE_MODE_R
+			#ifdef RX_NEWLINE_MODE_R
 				if(tmp == '\r') uart_putc(usartct,'\n');
 			#endif
 			
@@ -897,99 +997,20 @@
 			do{
 				*buffer = uart_getc(usartct);
 			}while(*buffer == 0);
-	
-		#ifdef RX_NEWLINE_MODE
 		
-		#ifdef RX0_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
+		#ifdef RX_NEWLINE_MODE_N 
 			if(*buffer == '\n')
 		#else
 			if(*buffer == '\r')
 		#endif
 			{
-			#ifdef RX0_NEWLINE_MODE_RN
+			#ifdef RX_NEWLINE_MODE_RN
 				while( !(uart_getc(usartct)) );
 			#endif
 				break;
 			}
 		
 			buffer++;
-		
-		#else // little dumb way, but only possible
-			
-			switch(usartct)
-			{
-			#ifndef NO_RX0_INTERRUPT
-				case 0:
-				
-				#ifdef RX0_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
-					if(*buffer == '\n')
-				#else
-					if(*buffer == '\r')
-				#endif
-					{
-					#ifdef RX0_NEWLINE_MODE_RN
-						while( !(uart_getc(usartct)) );
-					#endif
-						goto breakloop;
-					}
-				break;
-			#endif // NO_RX0_INTERRUPT
-			#ifndef NO_RX1_INTERRUPT 
-				case 1:
-					
-				#ifdef RX1_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
-					if(*buffer == '\n')
-				#else
-					if(*buffer == '\r')
-				#endif
-					{
-					#ifdef RX1_NEWLINE_MODE_RN
-						while( !(uart_getc(usartct)) );
-					#endif
-						goto breakloop;
-					}
-				break;
-			#endif // NO_RX1_INTERRUPT
-			#ifndef NO_RX2_INTERRUPT
-				case 2:
-					
-				#ifdef RX2_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
-					if(*buffer == '\n')
-				#else
-					if(*buffer == '\r')
-				#endif
-					{
-					#ifdef RX2_NEWLINE_MODE_RN
-						while( !(uart_getc(usartct)) );
-					#endif
-						goto breakloop;
-					}
-				break;
-			#endif // NO_RX2_INTERRUPT
-			#ifndef NO_RX3_INTERRUPT
-				case 3:
-					
-				#ifdef RX3_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
-					if(*buffer == '\n')
-				#else
-					if(*buffer == '\r')
-				#endif
-					{
-					#ifdef RX3_NEWLINE_MODE_RN
-						while( !(uart_getc(usartct)) );
-					#endif
-						goto breakloop;
-					}
-				break;
-			#endif // NO_RX3_INTERRUPT
-			}
-			
-			buffer++;
-			continue;
-breakloop:
-			break;
-			
-		#endif // RX_NEWLINE_MODE
 
 		}
 		*buffer = 0;
@@ -1009,7 +1030,7 @@ breakloop:
 //******************************************************************
 	void uart_getlnToFirstWhiteSpace(uint8_t usartct, char *buffer, uint8_t bufferlimit)
 	{
-		*buffer++ = this -> skipWhiteSpaces();
+		*buffer++ = uart_skipWhiteSpaces(usartct);
 		bufferlimit--;
 		
 		while(--bufferlimit)
@@ -1017,16 +1038,14 @@ breakloop:
 			do{
 				*buffer = uart_getc(usartct);
 			} while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE
 				
-		#ifdef RX0_NEWLINE_MODE_N
+		#ifdef RX_NEWLINE_MODE_N
 			if(*buffer == '\n')
-		#else //RX0_NEWLINE_MODE_R
+		#else //RX_NEWLINE_MODE_R
 			if(*buffer == '\r')
 		#endif
 			{
-			#ifdef RX0_NEWLINE_MODE_RN
+			#ifdef RX_NEWLINE_MODE_RN
 				while( !(uart_getc(usartct)) );
 			#endif
 				break;
@@ -1035,92 +1054,7 @@ breakloop:
 				break; // string reading is done, we will exit
 			
 			buffer++;
-			
-		#else // little dumb way, but only possible
-			
-			switch(usartct)
-			{
-			#ifndef NO_RX0_INTERRUPT
-				case 0:
-				
-				#ifdef RX0_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
-					if(*buffer == '\n')
-				#else
-					if(*buffer == '\r')
-				#endif
-					{
-					#ifdef RX0_NEWLINE_MODE_RN
-						while( !(uart_getc(usartct)) );
-					#endif
-						goto breakloop;
-					}
-					else if(*buffer <= 32)
-						goto breakloop; // string reading is done, we will exit
-						
-				break;
-			#endif // NO_RX0_INTERRUPT
-			#ifndef NO_RX1_INTERRUPT 
-				case 1:
-					
-				#ifdef RX1_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
-					if(*buffer == '\n')
-				#else
-					if(*buffer == '\r')
-				#endif
-					{
-					#ifdef RX1_NEWLINE_MODE_RN
-						while( !(uart_getc(usartct)) );
-					#endif
-						goto breakloop;
-					}
-					else if(*buffer <= 32)
-						goto breakloop; // string reading is done, we will exit
-				break;
-			#endif // NO_RX1_INTERRUPT
-			#ifndef NO_RX2_INTERRUPT
-				case 2:
-					
-				#ifdef RX2_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
-					if(*buffer == '\n')
-				#else
-					if(*buffer == '\r')
-				#endif
-					{
-					#ifdef RX2_NEWLINE_MODE_RN
-						while( !(uart_getc(usartct)) );
-					#endif
-						goto breakloop;
-					}
-					else if(*buffer <= 32)
-						goto breakloop; // string reading is done, we will exit
-				break;
-			#endif // NO_RX2_INTERRUPT
-			#ifndef NO_RX3_INTERRUPT
-				case 3:
-					
-				#ifdef RX3_NEWLINE_MODE_N // RX_NEWLINE_MODE defined so 0 is the same as 3 others uarts
-					if(*buffer == '\n')
-				#else
-					if(*buffer == '\r')
-				#endif
-					{
-					#ifdef RX3_NEWLINE_MODE_RN
-						while( !(uart_getc(usartct)) );
-					#endif
-						goto breakloop;
-						}
-					else if(*buffer <= 32)
-						goto breakloop; // string reading is done, we will exit
-				break;
-			#endif // NO_RX3_INTERRUPT
-			}
-			
-			buffer++;
-			continue;
-breakloop:
-			break;
-			
-			#endif // RX_NEWLINE_MODE
+		
 		}
 		*buffer = 0;
 	}
@@ -1287,13 +1221,13 @@ breakloop:
 	
 	#ifdef RX0_GETC_ECHO
 		
-	#ifdef RX0_NEWLINE_MODE_N
+	#ifdef RX_NEWLINE_MODE_N
 		if(tmp == '\n') uart_putc('\r');
 	#endif
 		
 		uart_putc(tmp);
 		
-	#ifdef RX0_NEWLINE_MODE_R
+	#ifdef RX_NEWLINE_MODE_R
 		if(tmp == '\r') uart_putc('\n');
 	#endif
 
@@ -1354,13 +1288,13 @@ breakloop:
 				*buffer = uart_getc();
 			}while(*buffer == 0);
 			
-		#ifdef RX0_NEWLINE_MODE_N
+		#ifdef RX_NEWLINE_MODE_N
 			if(*buffer == '\n')
 		#else
 			if(*buffer == '\r')
 		#endif
 			{
-			#ifdef RX0_NEWLINE_MODE_RN
+			#ifdef RX_NEWLINE_MODE_RN
 				while( !(uart_getc()) );
 			#endif
 				break;
@@ -1392,13 +1326,13 @@ breakloop:
 				*buffer = uart_getc();
 			}while(*buffer == 0);
 			
-		#ifdef RX0_NEWLINE_MODE_N
+		#ifdef RX_NEWLINE_MODE_N
 			if(*buffer == '\n')
-		#else //RX0_NEWLINE_MODE_R
+		#else //RX_NEWLINE_MODE_R
 			if(*buffer == '\r')
 		#endif
 			{
-			#ifdef RX0_NEWLINE_MODE_RN
+			#ifdef RX_NEWLINE_MODE_RN
 				while( !(uart_getc()) );
 			#endif
 				break;
