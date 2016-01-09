@@ -1456,26 +1456,19 @@
 		
 	}
 
-#else // fixed prologues and epilogues to meet 25 cycles restrictions
+#else
 	
 	ISR(TX0_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 5 ISR entry */
+		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
-	
+
 		"push  r31 \n\t"                         /* 2 */
 		"push  r30 \n\t"                         /* 2 */
 		"push  r25 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
-	
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
+		"push  r24 \n\t"                         /* 2 */ 
 		
 		/* load globals */
 		"lds   r24, (tx0_first_byte) \n\t"       /* 2 */
@@ -1506,22 +1499,16 @@
 		"lds   r24, %M[control_reg] \n\t"        /* 2 */
 		"andi  r24, 0xDF \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
-		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
-	#endif
-	
+
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
-	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT	
+
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
-	#endif
-		"reti \n\t"                              /* 5 ISR return */
+
+		"reti \n\t"                              /* 4 ISR return */
 		
 		: /* output operands */
 		
@@ -1557,31 +1544,27 @@
 		
 	}
 	
-#else // fixed prologues and epilogues to meet 25 cycles restrictions 
+#else
 	
 	ISR(RX0_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 5 ISR entry */
+		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
 		
 		"push  r31 \n\t"                         /* 2 */
 		"push  r30 \n\t"                         /* 2 */
 		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
 		"push  r18 \n\t"                         /* 2 */
-		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"in    r18, __SREG__ \n\t"               /* 1 */
-		"push  r18 \n\t"                         /* 2 */
-	#endif
 
 		/* read byte from UDR register */
 		"lds   r25, %M[uart_data] \n\t"          /* 2 */
-		
+
+#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+		"sei \n\t"                               /* 1 */
+#endif
 		/* load globals */
 		"lds   r24, (rx0_last_byte) \n\t"        /* 2 */
 		"lds   r18, (rx0_first_byte) \n\t"       /* 2 */
@@ -1603,23 +1586,21 @@
 		
 		/* rx0_last_byte = tmp_rx_last_byte */
 		"sts   (rx0_last_byte), r24 \n\t"        /* 2 */
-	
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"pop   r18 \n\t"                         /* 2 */
-		"out   __SREG__ , r18 \n\t"              /* 1 */
-	#endif
-	
+
+#ifdef USART_UNSAFE_RX_INTERRUPT
+		"cli \n\t"                               /* 1 */
+#endif
+		
 		"pop   r18 \n\t"                         /* 2 */
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
-	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
+
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
-	#endif
-		"reti \n\t"                              /* 5 ISR return */
+
+		"reti \n\t"                              /* 4 ISR return */
 		
 		: /* output operands */
 		
@@ -1658,26 +1639,19 @@
 		
 	}
 	
-#else // fixed prologues and epilogues to meet 25 cycles restrictions 
+#else 
 	
 	ISR(TX1_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 5 ISR entry */
+		asm volatile("\n\t"                      /* 4 ISR entry */
 		
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
-	
+
 		"push  r31 \n\t"                         /* 2 */
 		"push  r30 \n\t"                         /* 2 */
 		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
-	
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT	
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
 		
 		/* load globals */
 		"lds   r24, (tx1_first_byte) \n\t"       /* 2 */
@@ -1709,21 +1683,15 @@
 		"andi  r24, 0xDF \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 	
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT	
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
-	#endif
-	
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
 		
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
-	#endif
-		"reti \n\t"                              /* 5 ISR return */
+
+		"reti \n\t"                              /* 4 ISR return */
 		
 		: /* output operands */
 		
@@ -1759,31 +1727,27 @@
 		
 	}
 	
-#else // fixed prologues and epilogues to meet 25 cycles restrictions
+#else
 	
 	ISR(RX1_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 5 ISR entry */
+		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"push  r0 \n\t"                         /* 2 */
 		"in    r0, __SREG__ \n\t"               /* 1 */
-	#endif
 	
 		"push  r31 \n\t"                         /* 2 */
 		"push  r30 \n\t"                         /* 2 */
 		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
 		"push  r18 \n\t"                         /* 2 */
-		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"in    r18, __SREG__ \n\t"               /* 1 */
-		"push  r18 \n\t"                         /* 2 */
-	#endif
 
 		/* read byte from UDR register */
 		"lds   r25, %M[uart_data] \n\t"          /* 2 */
 		
+#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+		"sei \n\t"                               /* 1 */
+#endif
 		/* load globals */
 		"lds   r24, (rx1_last_byte) \n\t"        /* 2 */
 		"lds   r18, (rx1_first_byte) \n\t"       /* 2 */
@@ -1805,22 +1769,20 @@
 		
 		/* rx1_last_byte = tmp_rx_last_byte */
 		"sts   (rx1_last_byte), r24 \n\t"        /* 2 */
-	
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"pop   r18 \n\t"                         /* 2 */
-		"out   __SREG__ , r18 \n\t"              /* 1 */
-	#endif
-	
+
+#ifdef USART_UNSAFE_RX_INTERRUPT
+		"cli \n\t"                               /* 1 */
+#endif
 		"pop   r18 \n\t"                         /* 2 */
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
+
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
-	#endif
-		"reti \n\t"                              /* 5 ISR return */
+
+		"reti \n\t"                              /* 4 ISR return */
 		
 		: /* output operands */
 		
@@ -1859,27 +1821,20 @@
 		
 	}
 	
-#else // fixed prologues and epilogues to meet 25 cycles restrictions 
+#else 
 	
 	ISR(TX2_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 5 ISR entry */
+		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"push  r0 \n\t"                         /* 2 */
 		"in    r0, __SREG__ \n\t"               /* 1 */
-	#endif
 	
 		"push  r31 \n\t"                         /* 2 */
 		"push  r30 \n\t"                         /* 2 */
 		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
-		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
-		
+	
 		/* load globals */
 		"lds   r24, (tx2_first_byte) \n\t"       /* 2 */
 		"lds   r25, (tx2_last_byte) \n\t"        /* 2 */
@@ -1909,22 +1864,16 @@
 		"lds   r24, %M[control_reg] \n\t"        /* 2 */
 		"andi  r24, 0xDF \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
-		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
-	#endif
-	
+
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
 		
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
-	#endif
-		"reti \n\t"                              /* 5 ISR return */
+
+		"reti \n\t"                              /* 4 ISR return */
 		
 		: /* output operands */
 		
@@ -1964,26 +1913,23 @@
 	
 	ISR(RX2_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 5 ISR entry */
+		asm volatile("\n\t"                      /* 4 ISR entry */
 		
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"push  r0 \n\t"                         /* 2 */
 		"in    r0, __SREG__ \n\t"               /* 1 */
-	#endif
+
 		"push  r31 \n\t"                         /* 2 */
 		"push  r30 \n\t"                         /* 2 */
 		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
 		"push  r18 \n\t"                         /* 2 */
-	
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"in    r18, __SREG__ \n\t"               /* 1 */
-		"push  r18 \n\t"                         /* 2 */
-	#endif
 
 		/* read byte from UDR register */
 		"lds   r25, %M[uart_data] \n\t"          /* 2 */
 		
+#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+		"sei \n\t"                               /* 1 */
+#endif
 		/* load globals */
 		"lds   r24, (rx2_last_byte) \n\t"        /* 2 */
 		"lds   r18, (rx2_first_byte) \n\t"       /* 2 */
@@ -2005,23 +1951,20 @@
 		
 		/* rx2_last_byte = tmp_rx_last_byte */
 		"sts   (rx2_last_byte), r24 \n\t"        /* 2 */
-		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"pop   r18 \n\t"                         /* 2 */
-		"out   __SREG__ , r18 \n\t"              /* 1 */
-	#endif
-	
+
+#ifdef USART_UNSAFE_RX_INTERRUPT
+		"cli \n\t"                               /* 1 */
+#endif
 		"pop   r18 \n\t"                         /* 2 */
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
 	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
-	#endif
-		"reti \n\t"                              /* 5 ISR return */
+
+		"reti \n\t"                              /* 4 ISR return */
 		
 		: /* output operands */
 		
@@ -2060,26 +2003,19 @@
 		
 	}
 	
-#else // fixed prologues and epilogues to meet 25 cycles restrictions
+#else 
 	
 	ISR(TX3_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 5 ISR entry */
+		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
 	
 		"push  r31 \n\t"                         /* 2 */
 		"push  r30 \n\t"                         /* 2 */
 		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
-	
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
 		
 		/* load globals */
 		"lds   r24, (tx3_first_byte) \n\t"       /* 2 */
@@ -2111,21 +2047,15 @@
 		"andi  r24, 0xDF \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
-	#endif
-	
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
 	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
-	#endif
-		"reti \n\t"                              /* 5 ISR return */
+
+		"reti \n\t"                              /* 4 ISR return */
 		
 		: /* output operands */
 		
@@ -2161,31 +2091,27 @@
 		
 	}
 	
-#else // fixed prologues and epilogues to meet 25 cycles restrictions
+#else 
 	
 	ISR(RX3_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 5 ISR entry */
+		asm volatile("\n\t"                      /* 4 ISR entry */
 		
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
-	#endif
-		
+	
 		"push  r31 \n\t"                         /* 2 */
 		"push  r30 \n\t"                         /* 2 */
 		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
 		"push  r18 \n\t"                         /* 2 */
-		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"in    r18, __SREG__ \n\t"               /* 1 */
-		"push  r18 \n\t"                         /* 2 */
-	#endif
 
 		/* read byte from UDR register */
 		"lds   r25, %M[uart_data] \n\t"          /* 2 */
 		
+#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+		"sei \n\t"                               /* 1 */
+#endif
 		/* load globals */
 		"lds   r24, (rx3_last_byte) \n\t"        /* 2 */
 		"lds   r18, (rx3_first_byte) \n\t"       /* 2 */
@@ -2208,22 +2134,19 @@
 		/* rx3_last_byte = tmp_rx_last_byte */
 		"sts   (rx3_last_byte), r24 \n\t"        /* 2 */
 		
-	#ifdef USART_UNSAFE_24_CYLCE_INTERRUPT
-		"pop   r18 \n\t"                         /* 2 */
-		"out   __SREG__ , r18 \n\t"              /* 1 */
-	#endif
-	
+#ifdef USART_UNSAFE_RX_INTERRUPT
+		"cli \n\t"                               /* 1 */
+#endif
 		"pop   r18 \n\t"                         /* 2 */
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
 	
-	#ifndef USART_UNSAFE_24_CYLCE_INTERRUPT
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
-	#endif
-		"reti \n\t"                              /* 5 ISR return */
+
+		"reti \n\t"                              /* 4 ISR return */
 		
 		: /* output operands */
 		

@@ -8,7 +8,7 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 - allow for binary transmission
 - optimized as much as possible to reduce code size
 - printf()/scanf() streams compatibility
-- V-USB compatibility (25 cycle ISR restriction)
+- partial V-USB compatibility (25 cycle ISR restriction (TX is broken at the moment))
 - and much more
 
 simple "hello world" code gives
@@ -39,11 +39,3 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 - 0 - CR
 - 1 - LF
 - 2 - CRLF (default)
-
-All interrupts can meet maximum of 24 cycles time during disabled interrupts in SREG register. 
-It's not done by using poor ISR_NOBLOCK which allows interrupt handler to corrupt itself, but ISR_NAKED with inline asm.
-The only thing what I had to optimize myself was prologues and epilogues, the body code was optimized enough by GCC so I borrowed it.
-
-24 cycle interrupts mode is disabled by defuault to prevent possible safety issues (leading to stack overflow due to race condition), to enable this pass 
-USART_UNSAFE_24_CYLCE_INTERRUPT macro or uncomment it in usart header file.
- 
