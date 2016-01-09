@@ -195,9 +195,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 #endif //NO_USART0
 #endif
 
-#if defined(__AVR_ATmega48__)||defined(__AVR_ATmega48P__)||defined(__AVR_ATmega48PA__)\
-||defined(__AVR_ATmega88__)||defined(__AVR_ATmega88P__)||defined(__AVR_ATmega88PA__)\
-||defined(__AVR_ATmega168__)||defined(__AVR_ATmega168P__)||defined(__AVR_ATmega168PA__)\
+#if defined(__AVR_ATmega48__)||defined(__AVR_ATmega48P__)||defined(__AVR_ATmega48PA__)||defined(__AVR_ATmega48PB__)\
+||defined(__AVR_ATmega88__)||defined(__AVR_ATmega88P__)||defined(__AVR_ATmega88PA__)||defined(__AVR_ATmega88PB__)\
+||defined(__AVR_ATmega168__)||defined(__AVR_ATmega168P__)||defined(__AVR_ATmega168PA__)||defined(__AVR_ATmega168PB__)\
 ||defined(__AVR_ATmega328__)||defined(__AVR_ATmega328P__)
 
 #ifndef NO_USART0
@@ -220,6 +220,51 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	#define U2X0_BIT    		U2X0
 
 #endif //NO_USART0
+#endif
+
+#if defined(__AVR_ATmega328PB__)
+
+#ifndef NO_USART0
+#define USE_USART0
+
+#define RX0_INTERRUPT		USART0_RX_vect
+//#define TX0_INTERRUPT		USART0_TX_vect
+#define TX0_INTERRUPT		USART0_UDRE_vect
+#define UDR0_REGISTER		UDR0
+#define UBRR0L_REGISTER		UBRR0L
+#define UBRR0H_REGISTER		UBRR0H
+#define UCSR0A_REGISTER		UCSR0A
+#define UCSR0B_REGISTER		UCSR0B
+#define UCSR0C_REGISTER		UCSR0C
+//#define TXCIE0_BIT  		TXCIE0
+#define UDRIE0_BIT    		UDRIE0
+#define RXCIE0_BIT   		RXCIE0
+#define TXEN0_BIT   		TXEN0
+#define RXEN0_BIT   		RXEN0
+#define U2X0_BIT    		U2X0
+
+#endif //NO_USART0
+
+#ifndef NO_USART1
+#define USE_USART1
+
+#define RX1_INTERRUPT		USART1_RX_vect
+//#define TX1_INTERRUPT		USART1_TX_vect
+#define TX1_INTERRUPT		USART1_UDRE_vect
+#define UDR1_REGISTER		UDR1
+#define UBRR1L_REGISTER		UBRR1L
+#define UBRR1H_REGISTER		UBRR1H
+#define UCSR1A_REGISTER		UCSR1A
+#define UCSR1B_REGISTER		UCSR1B
+#define UCSR1C_REGISTER		UCSR1C
+//#define TXCIE1_BIT  		TXCIE1
+#define UDRIE1_BIT    		UDRIE1
+#define RXCIE1_BIT   		RXCIE1
+#define TXEN1_BIT   		TXEN1
+#define RXEN1_BIT   		RXEN1
+#define U2X1_BIT    		U2X1
+
+#endif //NO_USART1
 #endif
 
 #if defined(__AVR_ATmega8__)||defined(__AVR_ATmega8P__)||defined(__AVR_ATmega16__)\
@@ -868,7 +913,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	void uart_getlnToFirstWhiteSpace(uint8_t usartct, char *buffer, uint8_t bufferlimit); // read one line to the first whitescape after the string
 	//cuts all whitespaces before string and one after the string
 	
-	char uart_skipWhiteSpaces(usartct); // returns first nonspace character found in the buffer
+	char uart_skipWhiteSpaces(uint8_t usartct); // returns first nonspace character found in the buffer
 	
 	int16_t uart_getint(uint8_t usartct);
 	int32_t uart_getlong(uint8_t usartct);

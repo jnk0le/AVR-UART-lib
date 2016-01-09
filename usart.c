@@ -541,7 +541,7 @@
 //          : 3. Base value (DEC, HEX, OCT, BIN, etc.).
 //Return    :    none
 //******************************************************************
-	void uart_putulongr(uint8_t usartct, int32_t data, uint8_t radix)
+	void uart_putulongr(uint8_t usartct, uint32_t data, uint8_t radix)
 	{
 		char buffer[17]; // heading, 15 digit bytes, NULL
 		ltoa(data, buffer, radix);
@@ -835,14 +835,14 @@
 //******************************************************************
 	char uart_getc(uint8_t usartct)
 	{
-		register uint8_t tmp_rx_first_byte, tmp_rx_last_byte, tmp;
+		register uint8_t tmp_rx_first_byte, tmp;
 	
 		switch(usartct)
 		{
 			default: // first found case as default (byte saving)
 		#ifndef NO_RX0_INTERRUPT
 			case 0:
-				register uint8_t tmp_rx_first_byte = rx0_first_byte;
+				tmp_rx_first_byte = rx0_first_byte;
 				
 				if(tmp_rx_first_byte == rx0_last_byte) return 0;
 				rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
@@ -867,12 +867,12 @@
 		#endif // NO_RX0_INTERRUPT
 		#ifndef NO_RX1_INTERRUPT 
 			case 1: 
-				register uint8_t tmp_rx_first_byte = rx1_first_byte;
+				tmp_rx_first_byte = rx1_first_byte;
 				
 				if(tmp_rx_first_byte == rx1_last_byte) return 0;
 				rx1_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
 				
-				register uint8_t tmp = rx1_buffer[tmp_rx_first_byte];
+				tmp = rx1_buffer[tmp_rx_first_byte];
 			
 			#ifdef RX1_GETC_ECHO
 			
@@ -892,7 +892,7 @@
 		#endif // NO_RX1_INTERRUPT
 		#ifndef NO_RX2_INTERRUPT
 			case 2:
-				register uint8_t tmp_rx_first_byte = rx2_first_byte;
+				tmp_rx_first_byte = rx2_first_byte;
 				
 				if(tmp_rx_first_byte == rx2_last_byte) return 0;
 				rx2_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
@@ -917,7 +917,7 @@
 		#endif // NO_RX2_INTERRUPT
 		#ifndef NO_RX3_INTERRUPT
 			case 3:
-				register uint8_t tmp_rx_first_byte = rx3_first_byte;
+				tmp_rx_first_byte = rx3_first_byte;
 				
 				if(tmp_rx_first_byte == rx3_last_byte) return 0;
 				rx3_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
@@ -1065,7 +1065,7 @@
 //Return    : First received nonspace character.
 //Note      : First nonspace character is cut from receiver buffer.
 //******************************************************************
-	char uart_skipWhiteSpaces(usartct)
+	char uart_skipWhiteSpaces(uint8_t usartct)
 	{
 		register char c;
 		
@@ -1081,7 +1081,7 @@
 //Arguments : ID of selected usart interface.
 //Return    : Received 16bit integer value.
 //******************************************************************
-	int16_t uart_getint(usartct)
+	int16_t uart_getint(uint8_t usartct)
 	{
 		char buff[32];
 		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
@@ -1094,7 +1094,7 @@
 //Arguments : ID of selected usart interface.
 //Return    : Received 32bit integer value.
 //******************************************************************
-	int32_t uart_getlong(usartct)
+	int32_t uart_getlong(uint8_t usartct)
 	{
 		char buff[32];
 		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
@@ -1107,7 +1107,7 @@
 //Arguments : ID of selected usart interface.
 //Return    : Received float value.
 //******************************************************************
-	float uart_getfloat(void)
+	float uart_getfloat(uint8_t usartct)
 	{
 		char buff[32];
 		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
