@@ -1434,30 +1434,45 @@
 
 #endif // NO_USART_RX
 
-#ifndef NO_TX0_INTERRUPT
 
-#ifdef USART_DO_NOT_INLINE
-	
-	ISR(TX0_INTERRUPT)
+//******************************************************************
+//ISR prototypes
+//******************************************************************
+/*
+	ISR(TXn_INTERRUPT)
 	{
-		register uint8_t tmp_tx_first_byte = tx0_first_byte; 
+		register uint8_t tmp_tx_first_byte = txn_first_byte;
 		
-		if(tmp_tx_first_byte != tx0_last_byte)
+		if(tmp_tx_first_byte != txn_last_byte)
 		{
-			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TXn_BUFFER_MASK; // calculate new position of TX head in buffer
 			
-			UDR0_REGISTER = tx0_buffer[tmp_tx_first_byte]; // transmit character from the buffer
-			tx0_first_byte = tmp_tx_first_byte;
+			UDRn_REGISTER = txn_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+			txn_first_byte = tmp_tx_first_byte;
 		}
 		else
 		{
-			UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
+			UCSRnB_REGISTER &= ~(1<<UDRIEn_BIT);
 		}
 		
 	}
 
-#else
-	
+	ISR(RXn_INTERRUPT)
+	{
+		register uint8_t tmp_rx_last_byte = (rxn_last_byte + 1) & RXn_BUFFER_MASK;
+		register uint8_t tmp = UDRn_REGISTER;
+
+		if(rxn_first_byte != tmp_rx_last_byte)
+		{
+			rxn_buffer[tmp_rx_last_byte] = tmp;
+			rxn_last_byte = tmp_rx_last_byte;
+		}
+		
+	}
+*/
+
+#ifndef NO_TX0_INTERRUPT
+
 	ISR(TX0_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
@@ -1521,31 +1536,12 @@
 		/* no clobbers */
 		);
 		
-	}
-	
-#endif // USART_DO_NOT_INLINE	
+	}	
 	
 #endif // NO_TX0_INTERRUPT
 
 #ifndef NO_RX0_INTERRUPT
-	
-#ifdef USART_DO_NOT_INLINE
-	
-	ISR(RX0_INTERRUPT)
-	{
-		register uint8_t tmp_rx_last_byte = (rx0_last_byte + 1) & RX0_BUFFER_MASK;
-		register uint8_t tmp = UDR0_REGISTER;
 
-		if(rx0_first_byte != tmp_rx_last_byte)
-		{
-			rx0_buffer[tmp_rx_last_byte] = tmp;
-			rx0_last_byte = tmp_rx_last_byte;
-		}
-		
-	}
-	
-#else
-	
 	ISR(RX0_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
@@ -1613,34 +1609,10 @@
 		
 	}
 
-#endif // USART_DO_NOT_INLINE	
-	
 #endif // NO_RX0_INTERRUPT
 
 #ifndef NO_TX1_INTERRUPT
 
-#ifdef USART_DO_NOT_INLINE
-	
-	ISR(TX1_INTERRUPT)
-	{
-		register uint8_t tmp_tx_first_byte = tx1_first_byte;
-		
-		if(tmp_tx_first_byte != tx1_last_byte)
-		{
-			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
-			
-			UDR1_REGISTER = tx1_buffer[tmp_tx_first_byte]; // transmit character from the buffer
-			tx1_first_byte = tmp_tx_first_byte;
-		}
-		else
-		{
-			UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT);
-		}
-		
-	}
-	
-#else 
-	
 	ISR(TX1_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
@@ -1705,29 +1677,10 @@
 		);
 		
 	}
-	
-#endif // USART_DO_NOT_INLINE
 
 #endif // NO_TX1_INTERRUPT
 
 #ifndef NO_RX1_INTERRUPT
-
-#ifdef USART_DO_NOT_INLINE
-
-	ISR(RX1_INTERRUPT)
-	{
-		register uint8_t tmp_rx_last_byte = (rx1_last_byte + 1) & RX1_BUFFER_MASK;
-		register uint8_t tmp = UDR1_REGISTER;
-
-		if(rx1_first_byte != tmp_rx_last_byte)
-		{
-			rx1_buffer[tmp_rx_last_byte] = tmp;
-			rx1_last_byte = tmp_rx_last_byte;
-		}
-		
-	}
-	
-#else
 	
 	ISR(RX1_INTERRUPT, ISR_NAKED)
 	{
@@ -1794,35 +1747,11 @@
 		);
 		
 	}
-	
-#endif // USART_DO_NOT_INLINE
 
 #endif // NO_RX1_INTERRUPT
 
 #ifndef NO_TX2_INTERRUPT
 
-#ifdef USART_DO_NOT_INLINE
-
-	ISR(TX2_INTERRUPT)
-	{
-		register uint8_t tmp_tx_first_byte = tx2_first_byte;
-		
-		if(tmp_tx_first_byte != tx2_last_byte)
-		{
-			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
-			
-			UDR2_REGISTER = tx2_buffer[tmp_tx_first_byte]; // transmit character from the buffer
-			tx2_first_byte = tmp_tx_first_byte;
-		}
-		else
-		{
-			UCSR2B_REGISTER &= ~(1<<UDRIE2_BIT);
-		}
-		
-	}
-	
-#else 
-	
 	ISR(TX2_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
@@ -1887,30 +1816,11 @@
 		);
 		
 	}
-	
-#endif // USART_DO_NOT_INLINE
 
 #endif // NO_TX2_INTERRUPT
 
 #ifndef NO_RX2_INTERRUPT
 
-#ifdef USART_DO_NOT_INLINE
-
-	ISR(RX2_INTERRUPT)
-	{
-		register uint8_t tmp_rx_last_byte = (rx2_last_byte + 1) & RX2_BUFFER_MASK;
-		register uint8_t tmp = UDR2_REGISTER;
-
-		if(rx2_first_byte != tmp_rx_last_byte)
-		{
-			rx2_buffer[tmp_rx_last_byte] = tmp;
-			rx2_last_byte = tmp_rx_last_byte;
-		}
-		
-	}
-	
-#else // fixed prologues and epilogues to meet 25 cycles restrictions
-	
 	ISR(RX2_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
@@ -1976,35 +1886,11 @@
 		);
 		
 	}
-
-#endif // USART_DO_NOT_INLINE
-
+	
 #endif // NO_RX2_INTERRUPT
 
 #ifndef NO_TX3_INTERRUPT
 
-#ifdef USART_DO_NOT_INLINE
-
-	ISR(TX3_INTERRUPT)
-	{
-		register uint8_t tmp_tx_first_byte = tx3_first_byte;
-		
-		if(tmp_tx_first_byte != tx3_last_byte)
-		{
-			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
-			
-			UDR3_REGISTER = tx3_buffer[tmp_tx_first_byte]; // transmit character from the buffer
-			tx3_first_byte = tmp_tx_first_byte;
-		}
-		else
-		{
-			UCSR3B_REGISTER &= ~(1<<UDRIE3_BIT);
-		}
-		
-	}
-	
-#else 
-	
 	ISR(TX3_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
@@ -2070,29 +1956,10 @@
 		
 	}
 	
-#endif // USART_DO_NOT_INLINE
-
 #endif // NO_TX3_INTERRUPT
 
 #ifndef NO_RX3_INTERRUPT
 
-#ifdef USART_DO_NOT_INLINE
-
-	ISR(RX3_INTERRUPT)
-	{
-		register uint8_t tmp_rx_last_byte = (rx3_last_byte + 1) & RX3_BUFFER_MASK;
-		register uint8_t tmp = UDR3_REGISTER;
-
-		if(rx3_first_byte != tmp_rx_last_byte)
-		{
-			rx3_buffer[tmp_rx_last_byte] = tmp;
-			rx3_last_byte = tmp_rx_last_byte;
-		}
-		
-	}
-	
-#else 
-	
 	ISR(RX3_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
@@ -2158,7 +2025,5 @@
 		);
 		
 	}
-
-#endif // USART_DO_NOT_INLINE
 
 #endif // NO_RX3_INTERRUPT
