@@ -147,16 +147,16 @@
 		{
 			default:
 		#ifdef USE_USART0
-			case 0: UCSR0C_REGISTER |= UCSRC_reg; break;
+			case 0: UCSR0C_REGISTER = UCSRC_reg; break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
-			case 1: UCSR1C_REGISTER |= UCSRC_reg; break;
+			case 1: UCSR1C_REGISTER = UCSRC_reg; break;
 		#endif // USE_USART1
 		#ifdef USE_USART2
-			case 2: UCSR2C_REGISTER |= UCSRC_reg; break;
+			case 2: UCSR2C_REGISTER = UCSRC_reg; break;
 		#endif // USE_USART2
 		#ifdef USE_USART3
-			case 3: UCSR3C_REGISTER |= UCSRC_reg; //break;
+			case 3: UCSR3C_REGISTER = UCSRC_reg; //break;
 		#endif // USE_USART3
 		}
 		
@@ -173,16 +173,16 @@
 		{
 			default:
 		#ifdef USE_USART0
-			case 0: UCSR0A_REGISTER |= (1<<U2X0_BIT); break;
+			case 0: UCSR0A_REGISTER = (1<<U2X0_BIT); break;
 		#endif // USE_USART0
 		#ifdef USE_USART1
-			case 1: UCSR1A_REGISTER |= (1<<U2X1_BIT); break;
+			case 1: UCSR1A_REGISTER = (1<<U2X1_BIT); break;
 		#endif // USE_USART1
 		#ifdef USE_USART2
-			case 2: UCSR2A_REGISTER |= (1<<U2X2_BIT); break;
+			case 2: UCSR2A_REGISTER = (1<<U2X2_BIT); break;
 		#endif // USE_USART2
 		#ifdef USE_USART3
-			case 3: UCSR3A_REGISTER |= (1<<U2X3_BIT); //break;
+			case 3: UCSR3A_REGISTER = (1<<U2X3_BIT); //break;
 		#endif // USE_USART3
 		}
 		
@@ -224,7 +224,7 @@
 //******************************************************************
 // 	void uart_set_UCSRC(uint8_t UCSRC_reg)
 // 	{
-// 		UCSR0C_REGISTER |= UCSRC_reg; 
+// 		UCSR0C_REGISTER = UCSRC_reg; 
 // 	}
 //******************************************************************
 //Function  : To initialize double speed mode.
@@ -233,7 +233,7 @@
 //******************************************************************
 // 	void uart_set_U2X(void)
 // 	{
-// 		UCSR0A_REGISTER |= (1<<U2X0_BIT); 
+// 		UCSR0A_REGISTER = (1<<U2X0_BIT); 
 // 	}
 
 #endif // single/multi USART
