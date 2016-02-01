@@ -1480,10 +1480,10 @@
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
 
-		"push  r31 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */ 
+		"push  r25 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r31 \n\t"                         /* 2 */
 		
 		/* load globals */
 		"lds   r24, (tx0_first_byte) \n\t"       /* 2 */
@@ -1493,9 +1493,13 @@
 		"cp    r24, r25 \n\t"                    /* 1 */
 		"breq  .+24 \n\t"                        /* 1/2 */
 		
-		/* tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX0_BUFFER_MASK */
+		/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
 		"subi  r24, 0xFF \n\t"                   /* 1 */
+	
+		/* tmp_tx_first_byte &= TX0_BUFFER_MASK */
+	#if (TX0_BUFFER_MASK != 0xff)
 		"andi  r24, %M[mask]\n\t"                /* 1 */
+	#endif
 		
 		/* tx0_buffer[tmp_tx_first_byte] */
 		"mov   r30, r24 \n\t"                    /* 1 */
@@ -1515,11 +1519,11 @@
 		"andi  r24, 0xDF \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
-
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
 
@@ -1549,25 +1553,29 @@
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
 		
-		"push  r31 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
 		"push  r18 \n\t"                         /* 2 */
-
+		"push  r24 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r31 \n\t"                         /* 2 */
+		
 		/* read byte from UDR register */
 		"lds   r25, %M[uart_data] \n\t"          /* 2 */
 
-#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
 		"sei \n\t"                               /* 1 */
-#endif
+	#endif
 		/* load globals */
 		"lds   r24, (rx0_last_byte) \n\t"        /* 2 */
 		"lds   r18, (rx0_first_byte) \n\t"       /* 2 */
 		
-		/* tmp_rx_last_byte = (rx0_last_byte + 1) & RX0_BUFFER_MASK */
+		/* tmp_rx_last_byte = rx0_last_byte + 1 */
 		"subi  r24, 0xFF \n\t"                   /* 1 */
-		"andi  r24, %M[mask] \n\t"               /* 1 */
+		
+		/* tmp_rx_last_byte &= RX0_BUFFER_MASK */
+	#if (RX0_BUFFER_MASK != 0xff)
+		"andi  r24, %M[mask]\n\t"                /* 1 */
+	#endif
 		
 		/* if(rx0_first_byte != tmp_rx_last_byte) */
 		"cp    r18, r24 \n\t"                    /* 1 */
@@ -1583,16 +1591,15 @@
 		/* rx0_last_byte = tmp_rx_last_byte */
 		"sts   (rx0_last_byte), r24 \n\t"        /* 2 */
 
-#ifdef USART_UNSAFE_RX_INTERRUPT
+	#ifdef USART_UNSAFE_RX_INTERRUPT
 		"cli \n\t"                               /* 1 */
-#endif
-		
-		"pop   r18 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
+	#endif
 		"pop   r31 \n\t"                         /* 2 */
-
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r18 \n\t"                         /* 2 */
+		
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
 
@@ -1620,10 +1627,10 @@
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
 
-		"push  r31 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r31 \n\t"                         /* 2 */
 		
 		/* load globals */
 		"lds   r24, (tx1_first_byte) \n\t"       /* 2 */
@@ -1633,9 +1640,13 @@
 		"cp    r24, r25 \n\t"                    /* 1 */
 		"breq  .+24 \n\t"                        /* 1/2 */
 		
-		/* tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX1_BUFFER_MASK */
+		/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
 		"subi  r24, 0xFF \n\t"                   /* 1 */
+				
+		/* tmp_tx_first_byte &= TX1_BUFFER_MASK */
+	#if (TX1_BUFFER_MASK != 0xff)
 		"andi  r24, %M[mask]\n\t"                /* 1 */
+	#endif
 		
 		/* tx1_buffer[tmp_tx_first_byte] */
 		"mov   r30, r24 \n\t"                    /* 1 */
@@ -1655,10 +1666,10 @@
 		"andi  r24, 0xDF \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 	
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
 		
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
@@ -1689,25 +1700,29 @@
 		"push  r0 \n\t"                         /* 2 */
 		"in    r0, __SREG__ \n\t"               /* 1 */
 	
-		"push  r31 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
 		"push  r18 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r31 \n\t"                         /* 2 */
 
 		/* read byte from UDR register */
 		"lds   r25, %M[uart_data] \n\t"          /* 2 */
 		
-#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
 		"sei \n\t"                               /* 1 */
-#endif
+	#endif
 		/* load globals */
 		"lds   r24, (rx1_last_byte) \n\t"        /* 2 */
 		"lds   r18, (rx1_first_byte) \n\t"       /* 2 */
 		
-		/* tmp_rx_last_byte = (rx1_last_byte + 1) & RX1_BUFFER_MASK */
+		/* tmp_rx_last_byte = rx1_last_byte + 1 */
 		"subi  r24, 0xFF \n\t"                   /* 1 */
-		"andi  r24, %M[mask] \n\t"               /* 1 */
+				
+		/* tmp_rx_last_byte &= RX1_BUFFER_MASK */
+	#if (RX1_BUFFER_MASK != 0xff)
+		"andi  r24, %M[mask]\n\t"                /* 1 */
+	#endif
 		
 		/* if(rx1_first_byte != tmp_rx_last_byte) */
 		"cp    r18, r24 \n\t"                    /* 1 */
@@ -1723,14 +1738,14 @@
 		/* rx1_last_byte = tmp_rx_last_byte */
 		"sts   (rx1_last_byte), r24 \n\t"        /* 2 */
 
-#ifdef USART_UNSAFE_RX_INTERRUPT
+	#ifdef USART_UNSAFE_RX_INTERRUPT
 		"cli \n\t"                               /* 1 */
-#endif
-		"pop   r18 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
+	#endif
 		"pop   r31 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r18 \n\t"                         /* 2 */
 
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
@@ -1759,10 +1774,10 @@
 		"push  r0 \n\t"                         /* 2 */
 		"in    r0, __SREG__ \n\t"               /* 1 */
 	
-		"push  r31 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r31 \n\t"                         /* 2 */
 	
 		/* load globals */
 		"lds   r24, (tx2_first_byte) \n\t"       /* 2 */
@@ -1772,9 +1787,13 @@
 		"cp    r24, r25 \n\t"                    /* 1 */
 		"breq  .+24 \n\t"                        /* 1/2 */
 		
-		/* tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX2_BUFFER_MASK */
+		/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
 		"subi  r24, 0xFF \n\t"                   /* 1 */
+		
+		/* tmp_tx_first_byte &= TX2_BUFFER_MASK */
+	#if (TX2_BUFFER_MASK != 0xff)
 		"andi  r24, %M[mask]\n\t"                /* 1 */
+	#endif
 		
 		/* tx2_buffer[tmp_tx_first_byte] */
 		"mov   r30, r24 \n\t"                    /* 1 */
@@ -1794,10 +1813,10 @@
 		"andi  r24, 0xDF \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
 		
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
@@ -1828,25 +1847,29 @@
 		"push  r0 \n\t"                         /* 2 */
 		"in    r0, __SREG__ \n\t"               /* 1 */
 
-		"push  r31 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
 		"push  r18 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r31 \n\t"                         /* 2 */
 
 		/* read byte from UDR register */
 		"lds   r25, %M[uart_data] \n\t"          /* 2 */
 		
-#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
 		"sei \n\t"                               /* 1 */
-#endif
+	#endif
 		/* load globals */
 		"lds   r24, (rx2_last_byte) \n\t"        /* 2 */
 		"lds   r18, (rx2_first_byte) \n\t"       /* 2 */
 		
-		/* tmp_rx_last_byte = (rx2_last_byte + 1) & RX2_BUFFER_MASK */
+		/* tmp_rx_last_byte = rx2_last_byte + 1 */
 		"subi  r24, 0xFF \n\t"                   /* 1 */
-		"andi  r24, %M[mask] \n\t"               /* 1 */
+		
+		/* tmp_rx_last_byte &= RX2_BUFFER_MASK */
+	#if (RX2_BUFFER_MASK != 0xff)
+		"andi  r24, %M[mask]\n\t"                /* 1 */
+	#endif
 		
 		/* if(rx2_first_byte != tmp_rx_last_byte) */
 		"cp    r18, r24 \n\t"                    /* 1 */
@@ -1862,14 +1885,14 @@
 		/* rx2_last_byte = tmp_rx_last_byte */
 		"sts   (rx2_last_byte), r24 \n\t"        /* 2 */
 
-#ifdef USART_UNSAFE_RX_INTERRUPT
+	#ifdef USART_UNSAFE_RX_INTERRUPT
 		"cli \n\t"                               /* 1 */
-#endif
-		"pop   r18 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
+	#endif
 		"pop   r31 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r18 \n\t"                         /* 2 */
 	
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
@@ -1898,10 +1921,10 @@
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
 	
-		"push  r31 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r31 \n\t"                         /* 2 */
 		
 		/* load globals */
 		"lds   r24, (tx3_first_byte) \n\t"       /* 2 */
@@ -1911,9 +1934,13 @@
 		"cp    r24, r25 \n\t"                    /* 1 */
 		"breq  .+24 \n\t"                        /* 1/2 */
 		
-		/* tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TX3_BUFFER_MASK */
+		/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
 		"subi  r24, 0xFF \n\t"                   /* 1 */
+		
+		/* tmp_tx_first_byte &= TX3_BUFFER_MASK */
+	#if (TX3_BUFFER_MASK != 0xff)
 		"andi  r24, %M[mask]\n\t"                /* 1 */
+	#endif
 		
 		/* tx3_buffer[tmp_tx_first_byte] */
 		"mov   r30, r24 \n\t"                    /* 1 */
@@ -1933,10 +1960,10 @@
 		"andi  r24, 0xDF \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 		
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
 		"pop   r31 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
 	
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
@@ -1967,25 +1994,29 @@
 		"push  r0 \n\t"                          /* 2 */
 		"in    r0, __SREG__ \n\t"                /* 1 */
 	
-		"push  r31 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
 		"push  r18 \n\t"                         /* 2 */
+		"push  r24 \n\t"                         /* 2 */
+		"push  r25 \n\t"                         /* 2 */
+		"push  r30 \n\t"                         /* 2 */
+		"push  r31 \n\t"                         /* 2 */
 
 		/* read byte from UDR register */
 		"lds   r25, %M[uart_data] \n\t"          /* 2 */
 		
-#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
 		"sei \n\t"                               /* 1 */
-#endif
+	#endif
 		/* load globals */
 		"lds   r24, (rx3_last_byte) \n\t"        /* 2 */
 		"lds   r18, (rx3_first_byte) \n\t"       /* 2 */
 		
-		/* tmp_rx_last_byte = (rx3_last_byte + 1) & RX3_BUFFER_MASK */
+		/* tmp_rx_last_byte = rx3_last_byte + 1 */
 		"subi  r24, 0xFF \n\t"                   /* 1 */
-		"andi  r24, %M[mask] \n\t"               /* 1 */
+		
+		/* tmp_rx_last_byte &= RX3_BUFFER_MASK */
+	#if (RX3_BUFFER_MASK != 0xff)
+		"andi  r24, %M[mask]\n\t"                /* 1 */
+	#endif
 		
 		/* if(rx3_first_byte != tmp_rx_last_byte) */
 		"cp    r18, r24 \n\t"                    /* 1 */
@@ -2001,14 +2032,14 @@
 		/* rx3_last_byte = tmp_rx_last_byte */
 		"sts   (rx3_last_byte), r24 \n\t"        /* 2 */
 		
-#ifdef USART_UNSAFE_RX_INTERRUPT
+	#ifdef USART_UNSAFE_RX_INTERRUPT
 		"cli \n\t"                               /* 1 */
-#endif
-		"pop   r18 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
+	#endif
 		"pop   r31 \n\t"                         /* 2 */
+		"pop   r30 \n\t"                         /* 2 */
+		"pop   r25 \n\t"                         /* 2 */
+		"pop   r24 \n\t"                         /* 2 */
+		"pop   r18 \n\t"                         /* 2 */
 	
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */

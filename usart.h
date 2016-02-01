@@ -56,11 +56,7 @@
 //#define RX2_GETC_ECHO
 //#define RX3_GETC_ECHO
 
-#include <avr/io.h>
-#include <util/delay.h>
-#include <avr/pgmspace.h>
-#include <avr/interrupt.h>
-#include <stdlib.h>
+#include <avr/io.h> // for inline func
 
 #ifndef F_CPU
 	#error F_CPU is undefined, USART cannot work correctly without this parametr
@@ -977,7 +973,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 
 	#ifndef NO_USART_RX
 	
-		char uart_getchar(FILE *stream) // requires ISR working in binary mode 
+		char uart_getchar(FILE *stream)
 		{
 			uint8_t data;
 		
@@ -1059,7 +1055,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 
 	#ifndef NO_RX0_INTERRUPT
 	
-		char uart_getchar(FILE *stream) // requires ISR working in binary mode 
+		char uart_getchar(FILE *stream) 
 		{
 			uint8_t data;
 		
