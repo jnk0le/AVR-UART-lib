@@ -22,7 +22,7 @@ void main(void)
 	printf("hello from printf\n");
 	
 	char buffer[13];
-	uart_gets(1, buffer, 13) // read 12 bytes from buffer (CR,LF will not be cut)
+	uart_gets(1, buffer, 13) // read at most 13 bytes from buffer (CR,LF will not be cut)
 	
 	int a;
 	
@@ -37,7 +37,7 @@ void main(void)
 	{
 		uart_puts(0, "bytes waiting in receiver buffer : ");
 		uart_putint(0, uart_AvailableBytes(0)); // ask for bytes waiting in receiver buffer
-		uart_getln(0, buffer, 13); // read 12 bytes or one line from usart buffer // uart_gets(0, buffer) is deprecated
+		uart_getln(0, buffer, 13); // read 13 bytes or one line from usart buffer
 		uart_puts(0, "/r/n");
 		
 		uart_putfloat(1, 0.1337f);
@@ -46,7 +46,7 @@ void main(void)
 		
 		fprintf(uart1_io, "Say my name: ");
 		fscanf(uart1_io, "%s", buffer);
-		fprintf(uart1_io, "So it's %s, You are damn' right.\n", buffer);
+		fprintf(uart1_io, "So it's %s, You are damn' right./n", buffer);
 		
 		_delay_ms(5000);
 	}

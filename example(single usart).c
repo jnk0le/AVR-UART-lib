@@ -20,7 +20,7 @@ void main(void)
 	uart_puts_P("hello from flashed, usart\r\n"); // write string to usart buffer from flash memory
 		
 	char buffer[13];
-	uart_gets(buffer, 13) // read 13 bytes from buffer (CR,LF will not be cut)
+	uart_gets(buffer, 13) // read at most 13 bytes from buffer (CR,LF will not be cut)
 	
 	int a;
 	
@@ -45,7 +45,7 @@ void main(void)
 			
 		printf("Say my name: ");
 		scanf("%s", buffer);
-		printf("So it's %s, You are damn' right.\n", buffer);
+		printf("So it's %s, You are damn' right./n", buffer);
 		
 		_delay_ms(5000);
 	}
