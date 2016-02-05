@@ -38,15 +38,15 @@ void main(void)
 		uart_puts(0, "bytes waiting in receiver buffer : ");
 		uart_putint(0, uart_AvailableBytes(0)); // ask for bytes waiting in receiver buffer
 		uart_getln(0, buffer, 13); // read 13 bytes or one line from usart buffer
-		uart_puts(0, "/r/n");
+		uart_puts(0, "\r\n");
 		
 		uart_putfloat(1, 0.1337f);
-		uart_puts(1, "/r/n");
+		uart_puts(1, "\r\n");
 		uart_putstr(1, buffer); // write array string to usart buffer 
 		
 		fprintf(uart1_io, "Say my name: ");
 		fscanf(uart1_io, "%s", buffer);
-		fprintf(uart1_io, "So it's %s, You are damn' right./n", buffer);
+		fprintf(uart1_io, "So it's %s, You are damn' right.\n", buffer);
 		
 		_delay_ms(5000);
 	}

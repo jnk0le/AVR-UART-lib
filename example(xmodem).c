@@ -31,6 +31,7 @@ uint8_t validate_packet(uint8_t *bufptr, uint8_t *packet_number);
 uint16_t calcrc(uint8_t *bufptr, uint8_t size);
 uint8_t calchecksum(uint8_t *bufptr, uint8_t size);
 void MoveData(uint8_t *bufptr, uint8_t BytesToMove);
+void HexDump16(uint8_t *bufptr, uint8_t ByteCount);
 
 uint8_t file[1024];
 uint16_t fileposition;
@@ -78,16 +79,8 @@ int main(void)
 						case 'x':
 							uart_puts_P("hexdump of sent file : \r\n");
 
-							for (uint16_t i = 0; i < 1024; i++)
-							{
-								uart_put_hex(file[i]);
-								
-								if ((i+1) % 8 == 0)
-									uart_puts("\r\n");
-								else
-									uart_putc(' ');
-							}
-
+							HexDump16(file, 1024);
+							
 							break;
 						case default:
 							uart_puts_P("Usage:\r\n");
@@ -251,4 +244,81 @@ void MoveData(uint8_t *bufptr, uint8_t BytesToMove)
 		
 		if(fileposition == 1024) fileposition = 0; // overwrite our file if sent file is >1K
 	}
+}
+
+void HexDump16(uint8_t *bufptr, uint8_t ByteCount)
+{
+	uint16_t i;
+	unsigned char buff[17];
+	buff[16] = 0;
+	
+	// Process every byte in the data.
+    for (i = 0; i < ByteCount; i++) 
+	{
+        // Multiple of 16 means new line (with line offset).
+
+        if ((i % 16) == 0) 
+		{
+            // Just don't print ASCII for the zeroth line.
+            if (i != 0)
+			{
+				uart_puts("  ");
+				uart_puts(buff);
+				uart_puts("\r\n");
+			}
+                
+			// Output the offset.
+            uart_puts("  ")
+				
+			if(i <= 0x0fff)
+				uart_putc('0');
+			if(i <= 0x00ff)	
+				uart_putc('0');
+			//if(i <= 0x000f)
+				//uart_putc('0');
+				
+			uart_putintr(i, 16);
+			uart_putc(' ')
+        }
+
+        // Now the hex code for the specific character.
+        uart_putc(" ");
+		
+		if(bufptr[i] <= 0x0f)
+			uart_putc('0'); // add 0 padding
+		
+		uart_put_hex(bufptr[i]);
+
+        // And store a printable ASCII character for later.
+        if ((bufptr[i] < 0x20) || (bufptr[i] > 0x7e))
+            buff[i % 16] = '.';
+        else
+            buff[i % 16] = bufptr[i];
+    }
+
+    // Pad out last line if not exactly 16 characters.
+    while ((i % 16) != 0) 
+	{
+		buff[i % 16] = 0;
+        uart_puts("   ");
+        i++;
+    }
+
+    // And print the final ASCII bit.
+    uart_putc('  ');
+	uart_puts(buff);
+	uart_puts("\r\n");
+	
+	/*for (uint16_t i = 0; i < 1024; i++)
+	{
+		if(file[i] <= 0x0f)
+			uart_putc('0'); // add 0 padding
+		
+		uart_put_hex(file[i]);
+								
+		if ((i+1) % 8 == 0)
+			uart_puts("\r\n");
+		else
+			uart_putc(' ');
+	}*/
 }
