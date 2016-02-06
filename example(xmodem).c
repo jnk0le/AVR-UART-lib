@@ -73,6 +73,7 @@ int main(void)
 					{
 						case 'd':
 							transmission_status = preparing_transmission;
+							uart_puts_P("Waiting for transmission ...\r\n");
 							break;
 						case 't': 
 						case 's':
@@ -99,16 +100,20 @@ int main(void)
 
 				break;
 			case preparing_transmission:
-				uart_puts_P("Transmission will start in 10 seconds ...\r\n");
 				
-				_delay_ms(10000); // poor delay due to no timers used
-
+				if(uart_AvailableBytes())
+				{
+					transmission_status = transmission_in_progres;
+					break;
+				}
 			#ifdef XMODEM_VALIDATION_CRC
 				uart_putc('C');
 			#else
 				uart_putc(NACK);
 			#endif
-
+				
+				_delay_ms(1000); // poor delay
+				
 				break;
 			case transmission_in_progres:
 				while (BUFFER_EMPTY != uart_getData(&incoming_data))
