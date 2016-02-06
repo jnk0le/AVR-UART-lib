@@ -31,7 +31,7 @@ uint8_t validate_packet(uint8_t *bufptr, uint8_t *packet_number);
 uint16_t calcrc(uint8_t *bufptr, uint8_t size);
 uint8_t calchecksum(uint8_t *bufptr, uint8_t size);
 void MoveData(uint8_t *bufptr, uint8_t BytesToMove);
-void HexDump16(uint8_t *bufptr, uint8_t ByteCount);
+void HexDump16(uint8_t *bufptr, uint16_t ByteCount);
 
 uint8_t file[1024];
 uint16_t fileposition;
@@ -64,8 +64,11 @@ int main(void)
 
 				break;
 			case awaiting_for_command:
-				if (cmd = uart_getc()) // if received character
+				
+				cmd = uart_getc();
+				if (cmd) // if received character
 				{
+					uart_puts("\r\n");
 					switch (cmd)
 					{
 						case 'd':
@@ -82,14 +85,14 @@ int main(void)
 							HexDump16(file, 1024);
 							
 							break;
-						case default:
+						default:
 							uart_puts_P("Usage:\r\n");
 							uart_puts_P("d\t download file from pc\r\n");
 							uart_puts_P("t\t send file to pc [not supported by now]\r\n");
 							uart_puts_P("s\t look for any readable strings in received file [not supported by now]\r\n");
 							uart_puts_P("x\t show hexdump of stored file\r\n");
 
-							uart_puts("\r\n");
+							uart_putc('>');
 					}
 
 				}
@@ -139,9 +142,9 @@ uint8_t HandleIncomingData(uint8_t dat)
 	}
 	
 #ifdef XMODEM_VALIDATION_CRC
-	if(xbuffposition == 133)
+	if(xmdm.position == 133)
 #else
-	if(xbuffposition == 132)
+	if(xmdm.position == 132)
 #endif
 	{
 		xmdm.position = 0;
@@ -246,10 +249,10 @@ void MoveData(uint8_t *bufptr, uint8_t BytesToMove)
 	}
 }
 
-void HexDump16(uint8_t *bufptr, uint8_t ByteCount)
+void HexDump16(uint8_t *bufptr, uint16_t ByteCount)
 {
 	uint16_t i;
-	unsigned char buff[17];
+	char buff[17];
 	buff[16] = 0;
 	
 	// Process every byte in the data.
@@ -268,21 +271,21 @@ void HexDump16(uint8_t *bufptr, uint8_t ByteCount)
 			}
                 
 			// Output the offset.
-            uart_puts("  ")
+            uart_puts("  ");
 				
 			if(i <= 0x0fff)
 				uart_putc('0');
 			if(i <= 0x00ff)	
 				uart_putc('0');
-			//if(i <= 0x000f)
-				//uart_putc('0');
+			if(i <= 0x000f)
+				uart_putc('0');
 				
 			uart_putintr(i, 16);
-			uart_putc(' ')
+			uart_putc(' ');
         }
 
         // Now the hex code for the specific character.
-        uart_putc(" ");
+        uart_putc(' ');
 		
 		if(bufptr[i] <= 0x0f)
 			uart_putc('0'); // add 0 padding
@@ -305,7 +308,7 @@ void HexDump16(uint8_t *bufptr, uint8_t ByteCount)
     }
 
     // And print the final ASCII bit.
-    uart_putc('  ');
+    uart_puts("  ");
 	uart_puts(buff);
 	uart_puts("\r\n");
 	
