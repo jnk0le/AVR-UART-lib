@@ -285,7 +285,7 @@ void HexDump16(uint8_t *bufptr, uint16_t ByteCount)
 			if(i <= 0x000f)
 				uart_putc('0');
 				
-			uart_putintr(i, 16);
+			uart_put_hex(i);
 			uart_putc(' ');
         }
 
@@ -316,17 +316,4 @@ void HexDump16(uint8_t *bufptr, uint16_t ByteCount)
     uart_puts("  ");
 	uart_puts(buff);
 	uart_puts("\r\n");
-	
-	/*for (uint16_t i = 0; i < 1024; i++)
-	{
-		if(file[i] <= 0x0f)
-			uart_putc('0'); // add 0 padding
-		
-		uart_put_hex(file[i]);
-								
-		if ((i+1) % 8 == 0)
-			uart_puts("\r\n");
-		else
-			uart_putc(' ');
-	}*/
 }
