@@ -58,184 +58,122 @@
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
-#ifdef USART_DO_NOT_INLINE
 //******************************************************************
-//Function  : To initialize USART interface.
+//Function  : To reinitialize USART interface (runtime speed changing).
 //Arguments : 1. Id of selected USART interface.
 //          : 2. Calculated UBBR value to initialize equal speed.
 //Return    :    none
 //Note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
+//          : All data inside UDR shift register will be lost.
+//          : U2X bit is cleared if USARTn_U2X_SPEED is not set.
 //******************************************************************
-	void uart_init(uint8_t usartct, uint16_t ubbr_value)
+	void uart_reinit(uint8_t usartct, uint16_t ubbr_value)
 	{
 		switch(usartct)
 		{
 			default:
 		#ifdef USE_USART0
 			case 0:
+				UCSR0B_REGISTER = 0; // flush all buffers
+			
 				UBRR0L_REGISTER = (uint8_t) ubbr_value;
 				UBRR0H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART0_U2X_SPEED
 				UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
+			#else
+				UCSR0A_REGISTER &= ~(1<<U2X0_BIT);
 			#endif
 			
 				UCSR0B_REGISTER = USART0_CONFIG_B;
-					// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT);
-					// 8n1 is set by default, setting UCSRC is not needed
+				// 8n1 is set by default, setting UCSRC is not needed
 			
 			break;
 		#endif // NO_USART0
 		#ifdef USE_USART1
 			case 1:
+				UCSR1B_REGISTER = 0; // flush all buffers
+			
 				UBRR1L_REGISTER = (uint8_t) ubbr_value;
 				UBRR1H_REGISTER = (ubbr_value>>8);
 				
 			#ifdef USART1_U2X_SPEED
 				UCSR1A_REGISTER |= (1<<U2X1_BIT); // enable double speed
+			#else
+				UCSR1A_REGISTER &= ~(1<<U2X0_BIT);
 			#endif
 				
 				UCSR1B_REGISTER = USART1_CONFIG_B;
-					// (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT);
-					// 8n1 is set by default, setting UCSRC is not needed
+				// 8n1 is set by default, setting UCSRC is not needed
 			
 			break;
 		#endif // USE_USART1
 		#ifdef USE_USART2
 			case 2:
+				UCSR2B_REGISTER = 0; // flush all buffers
+			
 				UBRR2L_REGISTER = (uint8_t) ubbr_value;
 				UBRR2H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART2_U2X_SPEED
 				UCSR2A_REGISTER |= (1<<U2X2_BIT); // enable double speed
+			#else
+				UCSR2A_REGISTER &= ~(1<<U2X0_BIT);
 			#endif
 			
 				UCSR2B_REGISTER = USART2_CONFIG_B;
-					// (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT);
-					// 8n1 is set by default, setting UCSRC is not needed
+				// 8n1 is set by default, setting UCSRC is not needed
 			
 			break;
 		#endif // USE_USART2
 		#ifdef USE_USART3
 			case 3:
+				UCSR3B_REGISTER = 0; // flush all buffers
+			
 				UBRR3L_REGISTER = (uint8_t) ubbr_value;
 				UBRR3H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART3_U2X_SPEED
 				UCSR3A_REGISTER |= (1<<U2X3_BIT); // enable double speed
+			#else
+				UCSR3A_REGISTER &= ~(1<<U2X0_BIT);
 			#endif
 			
 				UCSR3B_REGISTER = USART3_CONFIG_B;
-					// (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXCIE3_BIT);
-					// 8n1 is set by default, setting UCSRC is not needed
+				// 8n1 is set by default, setting UCSRC is not needed
 			
 			//break;
 		#endif // USE_USART3
 		}
-		
 	}
-
-//******************************************************************
-//Function  : To initialize frame format.
-//Arguments : 1. Id of selected USART interface.
-//          : 2. Value to write into UCSRC register.
-//Return    :    none
-//******************************************************************
-	void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg) 
-	{
-		switch(usartct)
-		{
-			default:
-		#ifdef USE_USART0
-			case 0: UCSR0C_REGISTER = UCSRC_reg; break;
-		#endif // USE_USART0
-		#ifdef USE_USART1
-			case 1: UCSR1C_REGISTER = UCSRC_reg; break;
-		#endif // USE_USART1
-		#ifdef USE_USART2
-			case 2: UCSR2C_REGISTER = UCSRC_reg; break;
-		#endif // USE_USART2
-		#ifdef USE_USART3
-			case 3: UCSR3C_REGISTER = UCSRC_reg; //break;
-		#endif // USE_USART3
-		}
-		
-	}
-
-//******************************************************************
-//Function  : To initialize double speed mode.
-//Arguments : 1. Id of selected USART interface.
-//Return    :    none
-//******************************************************************
-	void uart_set_U2X(uint8_t usartct)
-	{
-		switch(usartct)
-		{
-			default:
-		#ifdef USE_USART0
-			case 0: UCSR0A_REGISTER = (1<<U2X0_BIT); break;
-		#endif // USE_USART0
-		#ifdef USE_USART1
-			case 1: UCSR1A_REGISTER = (1<<U2X1_BIT); break;
-		#endif // USE_USART1
-		#ifdef USE_USART2
-			case 2: UCSR2A_REGISTER = (1<<U2X2_BIT); break;
-		#endif // USE_USART2
-		#ifdef USE_USART3
-			case 3: UCSR3A_REGISTER = (1<<U2X3_BIT); //break;
-		#endif // USE_USART3
-		}
-		
-	}
-	
-#endif // USART_DO_NOT_INLINE
 
 #else // single USART mcu
 
-#ifdef USART_DO_NOT_INLINE
 //******************************************************************
-//Function  : To initialize USART interface.
-//Arguments : 1. Calculated UBBR value to initialize equal speed.
-//Return    :    none
-//Note      : use BAUD_CALC(speed) macro to calculate UBBR value.
+//Function  : To reinitialize USART interface (runtime speed changing).
+//Arguments : Calculated UBBR value to initialize equal speed.
+//Return    : none
+//Note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
+//          : All data inside UDR shift register will be lost.
+//          : U2X bit is cleared if USARTn_U2X_SPEED is not set.
 //******************************************************************
-	void uart_init(uint16_t ubbr_value)
+	void uart_reinit(uint16_t ubbr_value)
 	{
+		UCSR0B_REGISTER = 0; //flush all buffers
+		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		UBRR0H_REGISTER = (ubbr_value>>8);
 			
 	#ifdef USART0_U2X_SPEED
 		UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
+	#else
+		UCSR0A_REGISTER &= ~(1<<U2X0_BIT);
 	#endif
 			
 		UCSR0B_REGISTER = USART0_CONFIG_B;
-			// (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT);
-			// 8n1 is set by default, setting UCSRC is not needed
-		
+		// 8n1 is set by default, setting UCSRC is not needed
 	}
 	
-#endif // USART_DO_NOT_INLINE
-
-// functions smaller than their callers
-//******************************************************************
-//Function  : To initialize frame format.
-//Arguments : Value to write into UCSRC register.
-//Return    : none
-//******************************************************************
-// 	void uart_set_UCSRC(uint8_t UCSRC_reg)
-// 	{
-// 		UCSR0C_REGISTER = UCSRC_reg; 
-// 	}
-//******************************************************************
-//Function  : To initialize double speed mode.
-//Arguments : none
-//Return    : none
-//******************************************************************
-// 	void uart_set_U2X(void)
-// 	{
-// 		UCSR0A_REGISTER = (1<<U2X0_BIT); 
-// 	}
-
 #endif // single/multi USART
 
 #ifndef NO_USART_TX
@@ -1473,7 +1411,7 @@
 
 #ifndef NO_TX0_INTERRUPT
 
-	ISR(TX0_INTERRUPT, ISR_NAKED)
+	ISR(UDRE0_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
@@ -1620,7 +1558,7 @@
 
 #ifndef NO_TX1_INTERRUPT
 
-	ISR(TX1_INTERRUPT, ISR_NAKED)
+	ISR(UDRE1_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 		
@@ -1767,7 +1705,7 @@
 
 #ifndef NO_TX2_INTERRUPT
 
-	ISR(TX2_INTERRUPT, ISR_NAKED)
+	ISR(UDRE2_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
@@ -1914,7 +1852,7 @@
 
 #ifndef NO_TX3_INTERRUPT
 
-	ISR(TX3_INTERRUPT, ISR_NAKED)
+	ISR(UDRE3_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
