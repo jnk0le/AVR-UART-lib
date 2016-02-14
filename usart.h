@@ -14,13 +14,15 @@
 //#define NO_USART_RX // disable all receiver code and dependencies
 //#define NO_USART_TX // disable all transmitter code and dependencies
 
+//#define USART_RS485_MODE // globally enable rs485 operation mode // RE have to be shorted with DE
+
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces 
 
 #define RX_STDIO_GETCHAR_ECHO // echoes back received characters in getchar() function (for reading in scanf()) 
 #define RX_GETC_ECHO // echoes back received characters in getc() function
 
 //#define PUTC_CONVERT_LF_TO_CRLF // allow for unix style (\n only) newline terminator in stored strings // not included into putc_noblock
-#define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - /r/n
+#define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - \r\n
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
@@ -51,6 +53,33 @@
 //#define RX1_GETC_ECHO
 //#define RX2_GETC_ECHO
 //#define RX3_GETC_ECHO
+
+//#define USART0_RS485_MODE // set correct DE pin first 
+//#define USART1_RS485_MODE	// set correct DE pin first 
+//#define USART2_RS485_MODE	// set correct DE pin first 
+//#define USART3_RS485_MODE	// set correct DE pin first 
+
+/*****************************RS 485 config***********************************/
+
+//#define RS485_CONTROL0_PORT D // A,B,C,D ... port naming - define valid port connected to DE + RE 
+//#define RS485_CONTROL0_PIN 2 // 1,2,3,4 ... pin naming - define valid pin connected to DE + RE
+
+//#define RS485_CONTROL1_PORT 
+//#define RS485_CONTROL1_PIN 
+
+//#define RS485_CONTROL2_PORT 
+//#define RS485_CONTROL2_PIN
+
+//#define RS485_CONTROL3_PORT
+//#define RS485_CONTROL3_PIN
+
+
+#define ___DDR(x) ___XDDR(x)
+#define ___XDDR(x) (DDR ## x)
+
+#define ___PORT(x) ___XPORT(x)
+#define ___XPORT(x) (PORT ## x)
+
 
 #include <avr/io.h> // for inline func
 
@@ -144,6 +173,37 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	#define RX1_GETC_ECHO
 	#define RX2_GETC_ECHO
 	#define RX3_GETC_ECHO
+#endif
+
+#ifdef USART_RS485_MODE
+	#define USART0_RS485_MODE
+	#define USART1_RS485_MODE
+	#define USART2_RS485_MODE
+	#define USART3_RS485_MODE
+#endif
+
+#ifdef USART0_RS485_MODE
+	#if !defined(RS485_CONTROL0_PORT)||!defined(RS485_CONTROL0_PIN)
+		#error "define valid DE/RE output for USART0 RS485 operation"
+	#endif
+#endif
+
+#ifdef USART1_RS485_MODE
+	#if !defined(RS485_CONTROL1_PORT)||!defined(RS485_CONTROL1_PIN)
+		#error "define valid DE/RE output for USART1 RS485 operation"
+	#endif
+#endif
+
+#ifdef USART2_RS485_MODE
+	#if !defined(RS485_CONTROL2_PORT)||!defined(RS485_CONTROL2_PIN)
+		#error "define valid DE/RE output for USART2 RS485 operation"
+	#endif
+#endif
+
+#ifdef USART3_RS485_MODE
+	#if !defined(RS485_CONTROL3_PORT)||!defined(RS485_CONTROL3_PIN)
+		#error "define valid DE/RE output for USART3 RS485 operation"
+	#endif
 #endif
 
 #ifdef RX_NEWLINE_MODE
@@ -590,7 +650,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	#elif defined(NO_TX0_INTERRUPT)
 		#define USART0_CONFIG_B (1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
 	#else
-		#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+		#ifdef USART0_RS485_MODE
+			#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+		#else
+			#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+		#endif
 	#endif 
 #endif // USART0_CONFIG
 
@@ -602,7 +666,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	#elif defined(NO_TX1_INTERRUPT)
 		#define USART1_CONFIG_B (1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
 	#else
-		#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+		#ifdef USART1_RS485_MODE
+			#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<TXCIE1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+		#else
+			#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+		#endif
 	#endif
 #endif // USART1_CONFIG
 
@@ -614,7 +682,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	#elif defined(NO_TX2_INTERRUPT)
 		#define USART2_CONFIG_B (1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
 	#else
-		#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+		#ifdef USART2_RS485_MODE
+			#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+		#else	
+			#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+		#endif
 	#endif
 #endif // USART2_CONFIG
 
@@ -626,7 +698,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	#elif defined(NO_TX3_INTERRUPT)
 		#define USART3_CONFIG_B (1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
 	#else
-		#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+		#ifdef USART3_RS485_MODE
+			#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+		#else
+			#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+		#endif
 	#endif
 #endif // USART3_CONFIG
 
@@ -647,67 +723,87 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 			default:
 		#ifdef USE_USART0
 			case 0:
-			UBRR0L_REGISTER = (uint8_t) ubbr_value;
+			{
+			#ifdef USART0_RS485_MODE
+				___DDR(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
+			#endif	
+				UBRR0L_REGISTER = (uint8_t) ubbr_value;
 			
-			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
-				UBRR0H_REGISTER = (ubbr_value>>8);
+				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+					UBRR0H_REGISTER = (ubbr_value>>8);
 			
-		#ifdef USART0_U2X_SPEED
-			UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
-		#endif
+			#ifdef USART0_U2X_SPEED
+				UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
+			#endif
 			
-			UCSR0B_REGISTER = USART0_CONFIG_B;
-			// 8n1 is set by default, setting UCSRC is not needed
+				UCSR0B_REGISTER = USART0_CONFIG_B;
+				// 8n1 is set by default, setting UCSRC is not needed
 			
-			break;
+				break;
+			}
 		#endif // NO_USART0
 		#ifdef USE_USART1
 			case 1:
-			UBRR1L_REGISTER = (uint8_t) ubbr_value;
+			{
+			#ifdef USART1_RS485_MODE
+				___DDR(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); // default pin state is low
+			#endif
+				UBRR1L_REGISTER = (uint8_t) ubbr_value;
 			
-			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
-				UBRR1H_REGISTER = (ubbr_value>>8);
+				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+					UBRR1H_REGISTER = (ubbr_value>>8);
 			
-		#ifdef USART1_U2X_SPEED
-			UCSR1A_REGISTER |= (1<<U2X1_BIT); // enable double speed
-		#endif
+			#ifdef USART1_U2X_SPEED
+				UCSR1A_REGISTER |= (1<<U2X1_BIT); // enable double speed
+			#endif
 			
-			UCSR1B_REGISTER = USART1_CONFIG_B;
-			// 8n1 is set by default, setting UCSRC is not needed
+				UCSR1B_REGISTER = USART1_CONFIG_B;
+				// 8n1 is set by default, setting UCSRC is not needed
 			
-			break;
+				break;
+			}
 		#endif // USE_USART1
 		#ifdef USE_USART2
 			case 2:
-			UBRR2L_REGISTER = (uint8_t) ubbr_value;
+			{
+			#ifdef USART2_RS485_MODE
+				___DDR(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); // default pin state is low
+			#endif
+				UBRR2L_REGISTER = (uint8_t) ubbr_value;
 			
-			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
-				UBRR2H_REGISTER = (ubbr_value>>8);
+				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+					UBRR2H_REGISTER = (ubbr_value>>8);
 			
-		#ifdef USART2_U2X_SPEED
-			UCSR2A_REGISTER |= (1<<U2X2_BIT); // enable double speed
-		#endif
+			#ifdef USART2_U2X_SPEED
+				UCSR2A_REGISTER |= (1<<U2X2_BIT); // enable double speed
+			#endif
 			
-			UCSR2B_REGISTER = USART2_CONFIG_B;
-			// 8n1 is set by default, setting UCSRC is not needed
+				UCSR2B_REGISTER = USART2_CONFIG_B;
+				// 8n1 is set by default, setting UCSRC is not needed
 			
-			break;
+				break;
+			}
 		#endif // USE_USART2
 		#ifdef USE_USART3
 			case 3:
-			UBRR3L_REGISTER = (uint8_t) ubbr_value;
+			{
+			#ifdef USART3_RS485_MODE
+				___DDR(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); // default pin state is low
+			#endif
+				UBRR3L_REGISTER = (uint8_t) ubbr_value;
 			
-			if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
-				UBRR3H_REGISTER = (ubbr_value>>8);
+				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+					UBRR3H_REGISTER = (ubbr_value>>8);
 			
-		#ifdef USART3_U2X_SPEED
-			UCSR3A_REGISTER |= (1<<U2X3_BIT); // enable double speed
-		#endif
+			#ifdef USART3_U2X_SPEED
+				UCSR3A_REGISTER |= (1<<U2X3_BIT); // enable double speed
+			#endif
 			
-			UCSR3B_REGISTER = USART3_CONFIG_B;
-			// 8n1 is set by default, setting UCSRC is not needed
+				UCSR3B_REGISTER = USART3_CONFIG_B;
+				// 8n1 is set by default, setting UCSRC is not needed
 			
-			//break;
+				//break;
+			}
 		#endif // USE_USART3
 		}
 	}
@@ -762,6 +858,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	
 	inline void uart_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
 	{
+	#ifdef USART0_RS485_MODE
+		___DDR(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
+	#endif
+		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		
 		if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions

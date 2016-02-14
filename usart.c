@@ -75,6 +75,11 @@
 		#ifdef USE_USART0
 			case 0:
 				UCSR0B_REGISTER = 0; // flush all buffers
+				
+			#ifdef USART0_RS485_MODE
+				___DDR(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN);
+				___PORT(RS485_CONTROL0_PORT) &= ~(1<<RS485_CONTROL0_PIN); //set low
+			#endif
 			
 				UBRR0L_REGISTER = (uint8_t) ubbr_value;
 				UBRR0H_REGISTER = (ubbr_value>>8);
@@ -93,6 +98,11 @@
 		#ifdef USE_USART1
 			case 1:
 				UCSR1B_REGISTER = 0; // flush all buffers
+				
+			#ifdef USART1_RS485_MODE
+				___DDR(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN);
+				___PORT(RS485_CONTROL1_PORT) &= ~(1<<RS485_CONTROL1_PIN); //set low
+			#endif
 			
 				UBRR1L_REGISTER = (uint8_t) ubbr_value;
 				UBRR1H_REGISTER = (ubbr_value>>8);
@@ -100,7 +110,7 @@
 			#ifdef USART1_U2X_SPEED
 				UCSR1A_REGISTER |= (1<<U2X1_BIT); // enable double speed
 			#else
-				UCSR1A_REGISTER &= ~(1<<U2X0_BIT);
+				UCSR1A_REGISTER &= ~(1<<U2X1_BIT);
 			#endif
 				
 				UCSR1B_REGISTER = USART1_CONFIG_B;
@@ -111,6 +121,11 @@
 		#ifdef USE_USART2
 			case 2:
 				UCSR2B_REGISTER = 0; // flush all buffers
+				
+			#ifdef USART2_RS485_MODE
+				___DDR(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN);
+				___PORT(RS485_CONTROL2_PORT) &= ~(1<<RS485_CONTROL2_PIN); //set low
+			#endif
 			
 				UBRR2L_REGISTER = (uint8_t) ubbr_value;
 				UBRR2H_REGISTER = (ubbr_value>>8);
@@ -118,7 +133,7 @@
 			#ifdef USART2_U2X_SPEED
 				UCSR2A_REGISTER |= (1<<U2X2_BIT); // enable double speed
 			#else
-				UCSR2A_REGISTER &= ~(1<<U2X0_BIT);
+				UCSR2A_REGISTER &= ~(1<<U2X2_BIT);
 			#endif
 			
 				UCSR2B_REGISTER = USART2_CONFIG_B;
@@ -129,6 +144,11 @@
 		#ifdef USE_USART3
 			case 3:
 				UCSR3B_REGISTER = 0; // flush all buffers
+				
+			#ifdef USART3_RS485_MODE
+				___DDR(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN);
+				___PORT(RS485_CONTROL3_PORT) &= ~(1<<RS485_CONTROL3_PIN); //set low
+			#endif
 			
 				UBRR3L_REGISTER = (uint8_t) ubbr_value;
 				UBRR3H_REGISTER = (ubbr_value>>8);
@@ -136,7 +156,7 @@
 			#ifdef USART3_U2X_SPEED
 				UCSR3A_REGISTER |= (1<<U2X3_BIT); // enable double speed
 			#else
-				UCSR3A_REGISTER &= ~(1<<U2X0_BIT);
+				UCSR3A_REGISTER &= ~(1<<U2X3_BIT);
 			#endif
 			
 				UCSR3B_REGISTER = USART3_CONFIG_B;
@@ -160,6 +180,11 @@
 	void uart_reinit(uint16_t ubbr_value)
 	{
 		UCSR0B_REGISTER = 0; //flush all buffers
+		
+	#ifdef USART0_RS485_MODE
+		___DDR(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN);
+		___PORT(RS485_CONTROL0_PORT) &= ~(1<<RS485_CONTROL0_PIN); //set low
+	#endif
 		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		UBRR0H_REGISTER = (ubbr_value>>8);
@@ -205,7 +230,10 @@
 						
 				tx0_buffer[tmp_tx_last_byte] = data;
 				tx0_last_byte = tmp_tx_last_byte;
-						
+			
+			#ifdef USART0_RS485_MODE
+				___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+			#endif
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 			break; 
 		#endif // NO_TX0_INTERRUPT
@@ -218,6 +246,9 @@
 				tx1_buffer[tmp_tx_last_byte] = data;
 				tx1_last_byte = tmp_tx_last_byte;
 				
+			#ifdef USART1_RS485_MODE
+				___PORT(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); //set high
+			#endif
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
 			break;
 		#endif // NO_TX1_INTERRUPT
@@ -230,6 +261,9 @@
 				tx2_buffer[tmp_tx_last_byte] = data;
 				tx2_last_byte = tmp_tx_last_byte;
 				
+			#ifdef USART2_RS485_MODE
+				___PORT(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); //set high
+			#endif
 				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
 			break;
 		#endif // NO_TX2_INTERRUPT
@@ -242,6 +276,9 @@
 				tx3_buffer[tmp_tx_last_byte] = data;
 				tx3_last_byte = tmp_tx_last_byte;
 				
+			#ifdef USART3_RS485_MODE
+				___PORT(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); //set high
+			#endif
 				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
 				//break;
 			#endif // NO_TX3_INTERRUPT
@@ -273,6 +310,9 @@
 				tx0_buffer[tmp_tx_last_byte] = data;
 				tx0_last_byte = tmp_tx_last_byte;
 						
+			#ifdef USART0_RS485_MODE
+				___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+			#endif
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 			break; 
 		#endif // NO_TX0_INTERRUPT
@@ -286,6 +326,9 @@
 				tx1_buffer[tmp_tx_last_byte] = data;
 				tx1_last_byte = tmp_tx_last_byte;
 				
+			#ifdef USART1_RS485_MODE
+				___PORT(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); //set high
+			#endif
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
 			break;
 		#endif // NO_TX1_INTERRUPT
@@ -299,6 +342,9 @@
 				tx2_buffer[tmp_tx_last_byte] = data;
 				tx2_last_byte = tmp_tx_last_byte;
 				
+			#ifdef USART2_RS485_MODE
+				___PORT(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); //set high
+			#endif
 				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
 			break;
 		#endif // NO_TX2_INTERRUPT
@@ -312,6 +358,9 @@
 				tx3_buffer[tmp_tx_last_byte] = data;
 				tx3_last_byte = tmp_tx_last_byte;
 				
+			#ifdef USART3_RS485_MODE
+				___PORT(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); //set high
+			#endif
 				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
 				//break;
 		#endif // NO_TX3_INTERRUPT
@@ -544,6 +593,9 @@
 		tx0_buffer[tmp_tx_last_byte] = data;
 		tx0_last_byte = tmp_tx_last_byte;
 		
+	#ifdef USART0_RS485_MODE
+		___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+	#endif
 		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 	}
 	
@@ -563,6 +615,9 @@
 		tx0_buffer[tmp_tx_last_byte] = data;
 		tx0_last_byte = tmp_tx_last_byte;
 		
+	#ifdef USART0_RS485_MODE
+		___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+	#endif
 		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 		
 		return COMPLETED;
@@ -1465,7 +1520,7 @@
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+		"reti \n\t"                              /* 4 ISR return */ // 50 cycles total in worst case
 		
 		: /* output operands */
 		
@@ -1479,6 +1534,15 @@
 		);
 		
 	}	
+	
+#ifdef USART0_RS485_MODE
+	
+	ISR(TXC0_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
+	{
+		___PORT(RS485_CONTROL0_PORT) &= ~(1<<RS485_CONTROL0_PIN); // set low after completed transaction
+	}
+	
+#endif // USART0_RS485_MODE
 	
 #endif // NO_TX0_INTERRUPT
 
@@ -1541,7 +1605,7 @@
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+		"reti \n\t"                              /* 4 ISR return */ // 52 cycles total in worst case
 		
 		: /* output operands */
 		
@@ -1612,7 +1676,7 @@
 		"out   __SREG__ , r0 \n\t"               /* 1 */
 		"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+		"reti \n\t"                              /* 4 ISR return */ // 52 cycles total
 		
 		: /* output operands */
 		
@@ -1626,6 +1690,15 @@
 		);
 		
 	}
+
+#ifdef USART1_RS485_MODE
+
+	ISR(TXC1_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
+	{
+		___PORT(RS485_CONTROL1_PORT) &= ~(1<<RS485_CONTROL1_PIN); // set low after completed transaction
+	}
+
+#endif // USART1_RS485_MODE
 
 #endif // NO_TX1_INTERRUPT
 
@@ -1774,6 +1847,15 @@
 		
 	}
 
+#ifdef USART2_RS485_MODE
+
+	ISR(TXC2_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
+	{
+		___PORT(RS485_CONTROL2_PORT) &= ~(1<<RS485_CONTROL2_PIN); // set low after completed transaction
+	}
+
+#endif // USART2_RS485_MODE
+
 #endif // NO_TX2_INTERRUPT
 
 #ifndef NO_RX2_INTERRUPT
@@ -1920,6 +2002,15 @@
 		);
 		
 	}
+	
+#ifdef USART3_RS485_MODE
+
+	ISR(TXC3_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
+	{
+		___PORT(RS485_CONTROL3_PORT) &= ~(1<<RS485_CONTROL3_PIN); // set low after completed transaction
+	}
+
+#endif // USART0_RS485_MODE	
 	
 #endif // NO_TX3_INTERRUPT
 

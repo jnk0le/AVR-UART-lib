@@ -5,10 +5,11 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 # Features
 - easy to use
 - support for up to 4 USART's
-- allow for binary transmission
-- optimized as much as possible to reduce code size
+- extremly light interrupts (50/52 cycles for tx/rx in worst case)
+- RS 485 compatibility
 - printf()/scanf() streams compatibility
 - partial V-USB compatibility (25 cycle ISR restriction (TX is broken at the moment))
+- optimized as much as possible to reduce code size
 - and much more
 
 simple "hello world" code gives
