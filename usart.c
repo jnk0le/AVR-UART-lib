@@ -232,10 +232,15 @@
 				tx0_last_byte = tmp_tx_last_byte;
 			
 			#ifdef USART0_RS485_MODE
+				cli();
 				___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
 			#endif
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
-			break; 
+				
+			#ifdef USART0_RS485_MODE
+				sei();
+			#endif
+				break; 
 		#endif // NO_TX0_INTERRUPT
 		#ifndef NO_TX1_INTERRUPT 
 			case 1:
@@ -247,10 +252,15 @@
 				tx1_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART1_RS485_MODE
+				cli();
 				___PORT(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); //set high
 			#endif
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
-			break;
+				
+			#ifdef USART1_RS485_MODE
+				sei();
+			#endif
+				break;
 		#endif // NO_TX1_INTERRUPT
 		#ifndef NO_TX2_INTERRUPT 
 			case 2:
@@ -262,10 +272,15 @@
 				tx2_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART2_RS485_MODE
+				cli();
 				___PORT(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); //set high
 			#endif
 				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
-			break;
+				
+			#ifdef USART2_RS485_MODE
+				sei();
+			#endif
+				break;
 		#endif // NO_TX2_INTERRUPT
 		#ifndef NO_TX3_INTERRUPT 
 			case 3:
@@ -277,9 +292,14 @@
 				tx3_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART3_RS485_MODE
+				cli();
 				___PORT(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); //set high
 			#endif
 				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
+				
+			#ifdef USART3_RS485_MODE
+				sei();
+			#endif
 				//break;
 			#endif // NO_TX3_INTERRUPT
 			}
@@ -311,10 +331,15 @@
 				tx0_last_byte = tmp_tx_last_byte;
 						
 			#ifdef USART0_RS485_MODE
+				cli();
 				___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
 			#endif
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
-			break; 
+				
+			#ifdef USART0_RS485_MODE
+				sei();
+			#endif
+				break; 
 		#endif // NO_TX0_INTERRUPT
 		#ifndef NO_TX1_INTERRUPT 
 			case 1:
@@ -327,10 +352,15 @@
 				tx1_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART1_RS485_MODE
+				cli();
 				___PORT(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); //set high
 			#endif
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
-			break;
+				
+			#ifdef USART1_RS485_MODE
+				sei();
+			#endif
+				break;
 		#endif // NO_TX1_INTERRUPT
 		#ifndef NO_TX2_INTERRUPT 
 			case 2:
@@ -343,10 +373,15 @@
 				tx2_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART2_RS485_MODE
+				cli();
 				___PORT(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); //set high
 			#endif
 				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
-			break;
+				
+			#ifdef USART2_RS485_MODE
+				sei();
+			#endif
+				break;
 		#endif // NO_TX2_INTERRUPT
 		#ifndef NO_TX3_INTERRUPT 
 			case 3:
@@ -359,9 +394,14 @@
 				tx3_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART3_RS485_MODE
+				cli();
 				___PORT(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); //set high
 			#endif
 				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
+				
+			#ifdef USART3_RS485_MODE
+				sei();
+			#endif
 				//break;
 		#endif // NO_TX3_INTERRUPT
 		}
@@ -594,9 +634,14 @@
 		tx0_last_byte = tmp_tx_last_byte;
 		
 	#ifdef USART0_RS485_MODE
+		cli();
 		___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
 	#endif
 		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+	
+	#ifdef USART0_RS485_MODE
+		sei();
+	#endif
 	}
 	
 //******************************************************************
@@ -616,10 +661,14 @@
 		tx0_last_byte = tmp_tx_last_byte;
 		
 	#ifdef USART0_RS485_MODE
+		cli();
 		___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
 	#endif
 		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 		
+	#ifdef USART0_RS485_MODE
+		sei();
+	#endif
 		return COMPLETED;
 	}
 

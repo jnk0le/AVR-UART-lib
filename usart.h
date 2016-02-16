@@ -73,14 +73,6 @@
 //#define RS485_CONTROL3_PORT
 //#define RS485_CONTROL3_PIN
 
-
-#define ___DDR(x) ___XDDR(x)
-#define ___XDDR(x) (DDR ## x)
-
-#define ___PORT(x) ___XPORT(x)
-#define ___XPORT(x) (PORT ## x)
-
-
 #include <avr/io.h> // for inline func
 
 #ifndef F_CPU
@@ -204,6 +196,20 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};
 	#if !defined(RS485_CONTROL3_PORT)||!defined(RS485_CONTROL3_PIN)
 		#error "define valid DE/RE output for USART3 RS485 operation"
 	#endif
+#endif
+
+#ifndef ___DDR
+	#define ___DDR(x) ___XDDR(x)
+#endif
+#ifndef ___XDDR
+	#define ___XDDR(x) (DDR ## x)
+#endif
+
+#ifndef ___DDR
+	#define ___PORT(x) ___XPORT(x)
+#endif
+#ifndef ___DDR
+	#define ___XPORT(x) (PORT ## x)
 #endif
 
 #ifdef RX_NEWLINE_MODE
