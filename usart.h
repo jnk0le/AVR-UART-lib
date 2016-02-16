@@ -137,7 +137,7 @@
 #define RX3_BUFFER_MASK (RX3_BUFFER_SIZE - 1)
 
 enum {locked, unlocked};
-enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL};	
+enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};	
 
 #ifdef NO_USART_RX // remove all RX interrupts
 	#define NO_RX0_INTERRUPT
