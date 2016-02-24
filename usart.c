@@ -1477,6 +1477,133 @@
 #endif // NO_USART_RX
 
 
+#ifdef UART_USE_STDIO
+
+#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
+
+	#ifndef NO_USART_TX
+		
+		void uart_putchar(char data, FILE *stream)
+		{
+			if ( data == '\n') uart_putc((uint16_t) stream -> udata, '\r');
+			
+			uart_putc((uint16_t) stream -> udata, data);
+		}
+		
+	#endif // NO_USART_TX
+
+	#ifndef NO_USART_RX
+		
+		char uart_getchar(FILE *stream)
+		{
+			uint8_t data;
+			
+			while( BUFFER_EMPTY == uart_getData((uint16_t) stream -> udata, &data) );
+			
+		#ifdef RX_STDIO_GETCHAR_ECHO
+			uart_putc((uint16_t) stream -> udata, data);
+		#endif
+			
+			return data;
+		}
+		
+	#endif // NO_USART_RX
+
+	
+	#ifdef USE_USART0
+	
+		#if defined(NO_RX0_INTERRUPT)
+			FILE uart0_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 0);
+	
+		#elif defined(NO_TX0_INTERRUPT)
+			FILE uart0_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 0);
+		#else
+			FILE uart0_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 0);
+		#endif
+	
+	#endif // USE_USART0
+	
+	#ifdef USE_USART1
+	
+		#if defined(NO_RX1_INTERRUPT)
+			FILE uart1_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 1);
+	
+		#elif defined(NO_TX1_INTERRUPT)
+			FILE uart1_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 1);
+		#else
+			FILE uart1_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 1);
+		#endif
+	
+	#endif // USE_USART1
+	
+	#ifdef USE_USART2
+	
+		#if defined(NO_RX2_INTERRUPT)
+			FILE uart2_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 2);
+	
+		#elif defined(NO_TX2_INTERRUPT)
+			FILE uart2_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 2);
+		#else
+			FILE uart2_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 2);
+		#endif
+	
+	#endif // USE_USART2
+	
+	#ifdef USE_USART3
+	
+		#if defined(NO_RX3_INTERRUPT)
+			FILE uart3_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 3);
+	
+		#elif defined(NO_TX3_INTERRUPT)
+			FILE uart3_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 3);
+		#else
+			FILE uart3_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 3);
+		#endif
+	
+	#endif // USE_USART3
+
+#else // single USART mcu
+
+	#ifndef NO_TX0_INTERRUPT
+		
+		void uart_putchar(char data, FILE *stream)
+		{
+			if (data == '\n') uart_putc('\r');
+		
+			uart_putc(data);
+		}
+	#endif // NO_TX0_INTERRUPT
+
+	#ifndef NO_RX0_INTERRUPT
+		
+		char uart_getchar(FILE *stream)
+		{
+			uint8_t data;
+		
+			while( BUFFER_EMPTY == uart_getData(&data) );
+		
+		#ifdef RX_STDIO_GETCHAR_ECHO
+			uart_putc(data);
+		#endif
+		
+			return data;
+		}
+	#endif //NO_RX0_INTERRUPT
+	
+	
+	#if defined(NO_RX0_INTERRUPT)
+		FILE uart0_out = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+		
+	#elif defined(NO_TX0_INTERRUPT)
+		FILE uart0_in = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
+	#else
+		FILE uart0_io = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
+	#endif
+
+#endif // single/multi USART
+
+#endif // UART_USE_STDIO
+
 //******************************************************************
 //ISR prototypes
 //******************************************************************

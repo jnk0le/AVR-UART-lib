@@ -27,6 +27,7 @@
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
 //#define USART_UNSAFE_RX_INTERRUPT // modify RX interrupt to meet 25 cycle restriction // UDRE is too hungry, only RX ISRs works now
+//#define USART_USING_BOOTLOADER // trace down corrupted ubbrh by bootloader // if any uses <4800 bps speed at 20MHz
 /*****************************multiple USART mcu's***********************************/
 
 //#define NO_USART0 // disable usage of uart0
@@ -205,10 +206,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define ___XDDR(x) (DDR ## x)
 #endif
 
-#ifndef ___DDR
+#ifndef ___PORT
 	#define ___PORT(x) ___XPORT(x)
 #endif
-#ifndef ___DDR
+#ifndef ___XPORT
 	#define ___XPORT(x) (PORT ## x)
 #endif
 
@@ -735,7 +736,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#endif	
 				UBRR0L_REGISTER = (uint8_t) ubbr_value;
 			
+			#ifndef USART_USING_BOOTLOADER
 				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+			#endif
 					UBRR0H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART0_U2X_SPEED
@@ -756,7 +759,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#endif
 				UBRR1L_REGISTER = (uint8_t) ubbr_value;
 			
+			#ifndef USART_USING_BOOTLOADER
 				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+			#endif
 					UBRR1H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART1_U2X_SPEED
@@ -777,7 +782,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#endif
 				UBRR2L_REGISTER = (uint8_t) ubbr_value;
 			
+			#ifndef USART_USING_BOOTLOADER
 				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+			#endif
 					UBRR2H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART2_U2X_SPEED
@@ -798,7 +805,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#endif
 				UBRR3L_REGISTER = (uint8_t) ubbr_value;
 			
+			#ifndef USART_USING_BOOTLOADER
 				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+			#endif
 					UBRR3H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART3_U2X_SPEED
@@ -870,7 +879,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		
-		if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
+	#ifndef USART_USING_BOOTLOADER
+		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+	#endif
 			UBRR0H_REGISTER = (ubbr_value>>8);
 		
 	#ifdef USART0_U2X_SPEED
@@ -1029,8 +1040,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #endif // NO_USART_RX
 
-
 #ifdef _STDIO_H_
+
+	#define UART_USE_STDIO // force recompilation
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
@@ -1074,12 +1086,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#ifdef USE_USART0
 	
 		#if defined(NO_RX0_INTERRUPT)
-			FILE uart0_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 0);
+			extern FILE uart0_out;
 		
 		#elif defined(NO_TX0_INTERRUPT)
-			FILE uart0_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 0);
+			extern FILE uart0_in;
 		#else
-			FILE uart0_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 0);
+			extern FILE uart0_io;
 		#endif
 		
 	#endif // USE_USART0
@@ -1087,12 +1099,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#ifdef USE_USART1
 	
 		#if defined(NO_RX1_INTERRUPT)
-			FILE uart1_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 1);
+			extern FILE uart1_out;
 		
 		#elif defined(NO_TX1_INTERRUPT)
-			FILE uart1_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 1);
+			extern FILE uart1_in;
 		#else
-			FILE uart1_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 1);
+			extern FILE uart1_io;
 		#endif
 		
 	#endif // USE_USART1
@@ -1100,12 +1112,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#ifdef USE_USART2
 	
 		#if defined(NO_RX2_INTERRUPT)
-			FILE uart2_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 2);
+			extern FILE uart2_out;
 		
 		#elif defined(NO_TX2_INTERRUPT)
-			FILE uart2_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 2);
+			extern FILE uart2_in;
 		#else
-			FILE uart2_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 2);
+			extern FILE uart2_io;
 		#endif
 		
 	#endif // USE_USART2
@@ -1113,12 +1125,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#ifdef USE_USART3
 		
 		#if defined(NO_RX3_INTERRUPT)
-			FILE uart3_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 3);
+			extern FILE uart3_out;
 		
 		#elif defined(NO_TX3_INTERRUPT)
-			FILE uart3_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 3);
+			extern FILE uart3_in;
 		#else
-			FILE uart3_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 3);
+			extern FILE uart3_io;
 		#endif
 		
 	#endif // USE_USART3
@@ -1126,40 +1138,20 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #else // single USART mcu
 
 	#ifndef NO_TX0_INTERRUPT
-	
-		void uart_putchar(char data, FILE *stream)
-		{
-			if (data == '\n') uart_putc('\r');
-			
-			uart_putc(data);
-		}
-		
+		void uart_putchar(char data, FILE *stream);
 	#endif
 
 	#ifndef NO_RX0_INTERRUPT
-	
-		char uart_getchar(FILE *stream) 
-		{
-			uint8_t data;
-		
-			while( BUFFER_EMPTY == uart_getData(&data) );
-			
-		#ifdef RX_STDIO_GETCHAR_ECHO
-			uart_putc(data);
-		#endif
-		
-			return data;
-		}
-	
+		char uart_getchar(FILE *stream);
 	#endif
 	
 	#if defined(NO_RX0_INTERRUPT)
-		FILE uart0_out = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+		extern FILE uart0_out;
 	
 	#elif defined(NO_TX0_INTERRUPT)
-		FILE uart0_in = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
+		extern FILE uart0_in;
 	#else
-		FILE uart0_io = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
+		extern FILE uart0_io;
 	#endif
 	
 #endif // single/multi USART

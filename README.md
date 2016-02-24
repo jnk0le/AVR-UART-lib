@@ -40,3 +40,5 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 - 0 - CR
 - 1 - LF
 - 2 - CRLF (default)
+
+In case of reinitializing uart on the fly with non-constant ubbr try to use uart_reint() or define USART_USING_BOOTLOADER macro.
