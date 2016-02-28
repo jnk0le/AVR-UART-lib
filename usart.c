@@ -1716,6 +1716,7 @@
 	ISR(TXC0_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
 		___PORT(RS485_CONTROL0_PORT) &= ~(1<<RS485_CONTROL0_PIN); // set low after completed transaction
+		reti();
 	}
 	
 #endif // USART0_RS485_MODE
@@ -1872,6 +1873,7 @@
 	ISR(TXC1_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
 		___PORT(RS485_CONTROL1_PORT) &= ~(1<<RS485_CONTROL1_PIN); // set low after completed transaction
+		reti();
 	}
 
 #endif // USART1_RS485_MODE
@@ -2028,6 +2030,7 @@
 	ISR(TXC2_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
 		___PORT(RS485_CONTROL2_PORT) &= ~(1<<RS485_CONTROL2_PIN); // set low after completed transaction
+		reti();
 	}
 
 #endif // USART2_RS485_MODE
@@ -2184,6 +2187,7 @@
 	ISR(TXC3_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
 		___PORT(RS485_CONTROL3_PORT) &= ~(1<<RS485_CONTROL3_PIN); // set low after completed transaction
+		reti();
 	}
 
 #endif // USART0_RS485_MODE	
