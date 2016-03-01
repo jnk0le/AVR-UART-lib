@@ -230,7 +230,40 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define USART_UNSAFE_RX_INTERRUPT
 #endif
 
+#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
+
+#if (TX0_BUFFER_SIZE > 8)||(RX0_BUFFER_SIZE > 8)
+	#warning "TX or RX buffer may be too large for this device"
+#endif
+
+#define USART0_IN_IO_ADDRESS_SPACE
+#define USART0_UCSRB_NOT_ACCESIBLE_FROM_CBI
+
+#ifndef NO_USART0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART0_RXC_vect
+	#define TXC0_INTERRUPT  	USART0_TXC_vect
+	#define UDRE0_INTERRUPT		USART0_DRE_vect
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT      	TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
+	#define RXCIE0_BIT   		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define U2X0_BIT    		U2X0
+	
+#endif //NO_USART0
+#endif
+
 #if defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)||defined(__AVR_ATtiny4313)
+
+#define USART0_IN_IO_ADDRESS_SPACE
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -330,6 +363,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 ||defined(__AVR_ATmega16A__)||defined(__AVR_ATmega32__)||defined(__AVR_ATmega32A__)\
 ||defined(__AVR_ATmega8A__)||defined(__AVR_ATmega8L__)
 
+#define USART0_IN_IO_ADDRESS_SPACE
+
 #ifndef NO_USART0
 #define USE_USART0
 
@@ -354,6 +389,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #if defined(__AVR_ATmega8515__)||defined(__AVR_ATmega8515L__)
 
+#define USART0_IN_IO_ADDRESS_SPACE
+
 #ifndef NO_USART0
 #define USE_USART0
 
@@ -377,6 +414,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif
 
 #if defined(__AVR_ATmega162__)
+
+#define USART0_IN_IO_ADDRESS_SPACE
+#define USART1_IN_IO_ADDRESS_SPACE
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -403,7 +443,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #define USE_USART1
 
 	#define RX1_INTERRUPT		USART1_RXC_vect
-	/#define TXC1_INTERRUPT		USART1_TXC_vect
+	#define TXC1_INTERRUPT		USART1_TXC_vect
 	#define UDRE1_INTERRUPT		USART1_UDRE_vect 
 	#define UDR1_REGISTER		UDR1
 	#define UBRR1L_REGISTER		UBRR1L
@@ -419,6 +459,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define U2X1_BIT    		U2X1
 
 #endif //NO_USART1
+#endif
+
+#if defined(__AVR_ATmega128__)||defined(__AVR_ATmega128A__)||defined(__AVR_ATmega64__)\
+||defined(__AVR_ATmega64A__)
+	#define USART0_IN_IO_ADDRESS_SPACE
 #endif
 
 #if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)||defined(__AVR_ATmega644PA__)\
