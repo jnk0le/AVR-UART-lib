@@ -41,3 +41,6 @@ In case of reinitializing uart on the fly with non-constant ubbr try to use uart
 
 #todo
 - polled tx
+- intuitive frame format settings
+- const __flash strings ?
+- fix stdio stuff again
