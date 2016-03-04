@@ -13,6 +13,7 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "usart.h"
 

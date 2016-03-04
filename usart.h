@@ -85,11 +85,11 @@
 
 #ifndef __OPTIMIZE__
 	#warning "Compiler optimizations disabled; functions from usart.h won't work as designed"
-	//#define USART_DO_NOT_INLINE
+	#define USART_NO_DIRTY_HACKS
 #endif
 	
 #ifdef DEBUG
-	//#define USART_DO_NOT_INLINE
+	#define USART_NO_DIRTY_HACKS
 #endif
 
 #ifndef RX_BUFFER_SIZE

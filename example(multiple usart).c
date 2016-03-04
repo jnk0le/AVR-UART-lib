@@ -1,7 +1,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include <stdio.h> // printf()/scanf()
+#include <avr/pgmspace.h>
+#include <stdio.h>
 
 #include "usart.h"
 
