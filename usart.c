@@ -1476,8 +1476,9 @@
 
 #endif // NO_USART_RX
 
-
-#ifdef UART_USE_STDIO
+/************************************************************************************
+ *                           stdio.h stuff                                          *
+ ************************************************************************************/
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
@@ -1601,8 +1602,6 @@
 	#endif
 
 #endif // single/multi USART
-
-#endif // UART_USE_STDIO
 
 //******************************************************************
 //ISR prototypes

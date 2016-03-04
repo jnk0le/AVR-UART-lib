@@ -12,7 +12,7 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 - optimized as much as possible to reduce code size
 - and much more
 
-simple "hello world" code on mega328p gives:
+simple "hello world" code on mega328p can give:
 
 	Program Memory Usage 	:	414 bytes   1,3 % Full
 	Data Memory Usage 		:	82 bytes   4,0 % Full
@@ -35,12 +35,10 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 - 1 - LF
 - 2 - CRLF (default)
 
-In case of reinitializing uart on the fly with non-constant ubbr try to use uart_reint() or define USART_USING_BOOTLOADER macro.
-
-
+In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint() or define USART_NO_DIRTY_HACKS macro.
 
 #todo
 - polled tx
 - intuitive frame format settings
 - const __flash strings ?
-- fix stdio stuff again
+- uart_peek()

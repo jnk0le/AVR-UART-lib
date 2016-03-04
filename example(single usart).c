@@ -1,10 +1,10 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include <stdio.h> // printf()/scanf()
 
 #include "usart.h"
 
+const char foo_string[] PROGMEM = "Unluckily gcc string polling doesn't work for PROGMEM/PSTR() strings";
 
 void main(void)
 {
@@ -17,7 +17,8 @@ void main(void)
 		
 	uart_puts("hello from usart 0\r\n"); // write const string to usart buffer // C++ restriction, in C its the same as uart_putstr()
 	// if you do not have enough SRAM memory space to keep all strings, try to use puts_P instead
-	uart_puts_P("hello from flashed, usart\r\n"); // write string to usart buffer from flash memory
+	uart_puts_P("hello from flashed, usart\r\n"); // write string to usart buffer from flash memory // string is parsed by PSTR() macro
+	uart_puts_p(foo_string);
 		
 	char buffer[13];
 	uart_gets(buffer, 13) // read at most 13 bytes from buffer (CR,LF will not be cut)

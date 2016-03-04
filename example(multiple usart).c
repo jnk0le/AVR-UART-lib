@@ -5,6 +5,7 @@
 
 #include "usart.h"
 
+const char foo_string[] PROGMEM = "Unluckily gcc string polling doesn't work for PROGMEM/PSTR() strings";
 
 void main(void)
 {
@@ -18,7 +19,8 @@ void main(void)
 	
 	uart_puts(0, "hello from usart 0\r\n"); // write const string to usart buffer // C++ restriction, in C its the same as uart_putstr()
 	// if you do not have enough SRAM memory space to keep all strings, try to use puts_P instead
-	uart_puts_P(1, "hello from flashed, usart 1\r\n"); // write string to usart buffer from flash memory
+	uart_puts_P(1, "hello from flashed, usart 1\r\n"); // write string to usart buffer from flash memory // string is parsed by PSTR() macro
+	uart_puts_p(1, foo_string); 
 	printf("hello from printf\n");
 	
 	char buffer[13];

@@ -27,7 +27,7 @@
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
 //#define USART_UNSAFE_RX_INTERRUPT // modify RX interrupt to meet 25 cycle restriction // UDRE is too hungry, only RX ISRs works now
-//#define USART_USING_BOOTLOADER // trace down corrupted ubbrh by bootloader // if any uses <4800 bps speed at 20MHz
+//#define USART_NO_DIRTY_HACKS // trace down corrupted ubbrh by bootloader // if any uses <=4800 bps speed at 20MHz
 /*****************************multiple USART mcu's***********************************/
 
 //#define NO_USART0 // disable usage of uart0
@@ -781,7 +781,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#endif	
 				UBRR0L_REGISTER = (uint8_t) ubbr_value;
 			
-			#ifndef USART_USING_BOOTLOADER
+			#ifndef USART_NO_DIRTY_HACKS
 				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
 			#endif
 					UBRR0H_REGISTER = (ubbr_value>>8);
@@ -804,7 +804,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#endif
 				UBRR1L_REGISTER = (uint8_t) ubbr_value;
 			
-			#ifndef USART_USING_BOOTLOADER
+			#ifndef USART_NO_DIRTY_HACKS
 				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
 			#endif
 					UBRR1H_REGISTER = (ubbr_value>>8);
@@ -827,7 +827,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#endif
 				UBRR2L_REGISTER = (uint8_t) ubbr_value;
 			
-			#ifndef USART_USING_BOOTLOADER
+			#ifndef USART_NO_DIRTY_HACKS
 				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
 			#endif
 					UBRR2H_REGISTER = (ubbr_value>>8);
@@ -850,7 +850,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#endif
 				UBRR3L_REGISTER = (uint8_t) ubbr_value;
 			
-			#ifndef USART_USING_BOOTLOADER
+			#ifndef USART_NO_DIRTY_HACKS
 				if((ubbr_value>>8) != 0) // requires -Os flag - do not use in non-inline functions
 			#endif
 					UBRR3H_REGISTER = (ubbr_value>>8);
@@ -924,7 +924,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		
-	#ifndef USART_USING_BOOTLOADER
+	#ifndef USART_NO_DIRTY_HACKS
 		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
 			UBRR0H_REGISTER = (ubbr_value>>8);
@@ -1085,9 +1085,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #endif // NO_USART_RX
 
-#ifdef _STDIO_H_
-
-	#define UART_USE_STDIO // force recompilation
+/************************************************************************************
+ *                           stdio.h stuff                                          *
+ ************************************************************************************/
+#include <stdio.h> // avoid compilation errors
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
@@ -1200,8 +1201,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif
 	
 #endif // single/multi USART
-
-#endif // used _STDIO_H_
 
 
 #endif // _USART_H_
