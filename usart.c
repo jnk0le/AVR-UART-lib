@@ -75,6 +75,7 @@
 			default:
 		#ifdef USE_USART0
 			case 0:
+			{
 				UCSR0B_REGISTER = 0; // flush all buffers
 				
 			#ifdef USART0_RS485_MODE
@@ -94,10 +95,12 @@
 				UCSR0B_REGISTER = USART0_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
 			
-			break;
+				break;
+			}
 		#endif // NO_USART0
 		#ifdef USE_USART1
 			case 1:
+			{
 				UCSR1B_REGISTER = 0; // flush all buffers
 				
 			#ifdef USART1_RS485_MODE
@@ -117,10 +120,12 @@
 				UCSR1B_REGISTER = USART1_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
 			
-			break;
+				break;
+			}
 		#endif // USE_USART1
 		#ifdef USE_USART2
 			case 2:
+			{
 				UCSR2B_REGISTER = 0; // flush all buffers
 				
 			#ifdef USART2_RS485_MODE
@@ -140,10 +145,12 @@
 				UCSR2B_REGISTER = USART2_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
 			
-			break;
+				break;
+			}
 		#endif // USE_USART2
 		#ifdef USE_USART3
 			case 3:
+			{
 				UCSR3B_REGISTER = 0; // flush all buffers
 				
 			#ifdef USART3_RS485_MODE
@@ -163,7 +170,8 @@
 				UCSR3B_REGISTER = USART3_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
 			
-			//break;
+				//break;
+			}
 		#endif // USE_USART3
 		}
 	}
@@ -225,6 +233,7 @@
 			default: // first found case as default (byte saving)
 		#ifndef NO_TX0_INTERRUPT 
 			 case 0:
+			 {
 				tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
@@ -241,10 +250,12 @@
 			#ifdef USART0_RS485_MODE
 				sei();
 			#endif
-				break; 
+				break;
+			 }
 		#endif // NO_TX0_INTERRUPT
 		#ifndef NO_TX1_INTERRUPT 
 			case 1:
+			{
 				tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
@@ -262,9 +273,11 @@
 				sei();
 			#endif
 				break;
+			}
 		#endif // NO_TX1_INTERRUPT
 		#ifndef NO_TX2_INTERRUPT 
 			case 2:
+			{
 				tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx2_first_byte == tmp_tx_last_byte); // wait for free space in buffer
@@ -282,9 +295,11 @@
 				sei();
 			#endif
 				break;
+			}
 		#endif // NO_TX2_INTERRUPT
 		#ifndef NO_TX3_INTERRUPT 
 			case 3:
+			{
 				tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx3_first_byte == tmp_tx_last_byte); // wait for free space in buffer
@@ -302,8 +317,9 @@
 				sei();
 			#endif
 				//break;
-			#endif // NO_TX3_INTERRUPT
 			}
+		#endif // NO_TX3_INTERRUPT
+		}
 		
 	}
 	
@@ -323,6 +339,7 @@
 			default: // first found case as default (byte saving)
 		#ifndef NO_TX0_INTERRUPT 
 			 case 0:
+			 {
 				tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				if(tx0_first_byte == tmp_tx_last_byte)
@@ -340,10 +357,12 @@
 			#ifdef USART0_RS485_MODE
 				sei();
 			#endif
-				break; 
+				break;
+			 }
 		#endif // NO_TX0_INTERRUPT
 		#ifndef NO_TX1_INTERRUPT 
 			case 1:
+			{
 				tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				if(tx1_first_byte == tmp_tx_last_byte)
@@ -362,9 +381,11 @@
 				sei();
 			#endif
 				break;
+			}
 		#endif // NO_TX1_INTERRUPT
 		#ifndef NO_TX2_INTERRUPT 
 			case 2:
+			{
 				tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				if(tx2_first_byte == tmp_tx_last_byte)
@@ -383,9 +404,11 @@
 				sei();
 			#endif
 				break;
+			}
 		#endif // NO_TX2_INTERRUPT
 		#ifndef NO_TX3_INTERRUPT 
 			case 3:
+			{
 				tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				if(tx3_first_byte == tmp_tx_last_byte)
@@ -404,6 +427,7 @@
 				sei();
 			#endif
 				//break;
+			}
 		#endif // NO_TX3_INTERRUPT
 		}
 		
@@ -885,6 +909,7 @@
 			default: // first found case as default (byte saving)
 		#ifndef NO_RX0_INTERRUPT
 			case 0:
+			{
 				tmp_rx_first_byte = rx0_first_byte;
 				
 				if(tmp_rx_first_byte == rx0_last_byte) return 0;
@@ -906,10 +931,12 @@
 				
 			#endif // RX0_GETC_ECHO
 				
-			break;
+				break;
+			}
 		#endif // NO_RX0_INTERRUPT
 		#ifndef NO_RX1_INTERRUPT 
-			case 1: 
+			case 1:
+			{ 
 				tmp_rx_first_byte = rx1_first_byte;
 				
 				if(tmp_rx_first_byte == rx1_last_byte) return 0;
@@ -931,10 +958,12 @@
 			
 			#endif // RX1_GETC_ECHO
 				
-			break;
+				break;
+			}
 		#endif // NO_RX1_INTERRUPT
 		#ifndef NO_RX2_INTERRUPT
 			case 2:
+			{
 				tmp_rx_first_byte = rx2_first_byte;
 				
 				if(tmp_rx_first_byte == rx2_last_byte) return 0;
@@ -956,10 +985,12 @@
 			
 			#endif // RX2_GETC_ECHO
 			
-			break;
+				break;
+			}
 		#endif // NO_RX2_INTERRUPT
 		#ifndef NO_RX3_INTERRUPT
 			case 3:
+			{
 				tmp_rx_first_byte = rx3_first_byte;
 				
 				if(tmp_rx_first_byte == rx3_last_byte) return 0;
@@ -980,7 +1011,8 @@
 			#endif
 			
 			#endif // RX3_GETC_ECHO
-				
+				//break;
+			}
 		#endif // NO_RX3_INTERRUPT
 		}
 	
@@ -1172,9 +1204,10 @@
 		
 		switch(usartct)
 		{
-			default: //case 0: // avoid compiler warnings if RX0 is not used
+			default: // first found case as default
 		#ifndef NO_RX0_INTERRUPT
-			
+			case 0:
+			{
 				tmp_rx_first_byte = rx0_first_byte;
 			
 				if(tmp_rx_first_byte == rx0_last_byte) return BUFFER_EMPTY; // result = 0
@@ -1182,10 +1215,12 @@
 				rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 				*data = rx0_buffer[tmp_rx_first_byte];
 				
-			break;
+				break;
+			}
 		#endif // NO_RX0_INTERRUPT
 		#ifndef NO_RX1_INTERRUPT
 			case 1:
+			{
 				tmp_rx_first_byte = rx1_first_byte;
 				
 				if(tmp_rx_first_byte == rx1_last_byte) return BUFFER_EMPTY; // result = 0
@@ -1193,10 +1228,12 @@
 				rx1_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
 				*data = rx1_buffer[tmp_rx_first_byte];
 				
-			break;
+				break;
+			}
 		#endif // NO_RX1_INTERRUPT
 		#ifndef NO_RX2_INTERRUPT
 			case 2:
+			{
 				tmp_rx_first_byte = rx2_first_byte;
 				
 				if(tmp_rx_first_byte == rx2_last_byte) return BUFFER_EMPTY; // result = 0
@@ -1204,17 +1241,21 @@
 				rx2_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
 				*data = rx2_buffer[tmp_rx_first_byte];
 				
-			break;
+				break;
+			}
 		#endif // NO_RX2_INTERRUPT
 		#ifndef NO_RX3_INTERRUPT
 			case 3:
+			{
 				tmp_rx_first_byte = rx3_first_byte;
 				
 				if(tmp_rx_first_byte == rx3_last_byte) return BUFFER_EMPTY; // result = 0
 				
 				rx3_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
 				*data = rx3_buffer[tmp_rx_first_byte];
-				
+			
+				//break;
+			}
 		#endif // NO_RX3_INTERRUPT
 		}
 		
@@ -1230,8 +1271,9 @@
 	{
 		switch(usartct)
 		{
+			default: // first found case as default
 		#ifndef NO_RX0_INTERRUPT
-			default: return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
+			case 0: return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
 		#endif // NO_RX0_INTERRUPT
 		#ifndef NO_RX1_INTERRUPT
 			case 1: return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK;
@@ -1244,6 +1286,31 @@
 		#endif // NO_RX3_INTERRUPT
 		}
 		
+	}
+	
+//******************************************************************
+//Function  : Peek at the next byte in buffer.
+//Arguments : Id of selected USART interface.
+//Return    : Next byte in buffer.
+//******************************************************************
+	uint8_t uart_peek(uint8_t usartct)
+	{
+		switch(usartct)
+		{
+			default: // first found case as default
+		#ifndef NO_RX0_INTERRUPT
+			case 0: return rx0_buffer[(rx0_first_byte+1) & RX0_BUFFER_MASK];
+		#endif // NO_RX0_INTERRUPT
+		#ifndef NO_RX1_INTERRUPT
+			case 1: return rx1_buffer[(rx1_first_byte+1) & RX1_BUFFER_MASK];
+		#endif // NO_RX1_INTERRUPT
+		#ifndef NO_RX2_INTERRUPT
+			case 2: return rx2_buffer[(rx2_first_byte+1) & RX2_BUFFER_MASK];
+		#endif // NO_RX2_INTERRUPT
+		#ifndef NO_RX3_INTERRUPT
+			case 3: return rx3_buffer[(rx3_first_byte+1) & RX3_BUFFER_MASK];
+		#endif // NO_RX3_INTERRUPT
+		}
 	}
 
 #else // single USART mcu
@@ -1471,6 +1538,16 @@
 	uint8_t uart_AvailableBytes(void)
 	{
 		return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
+	}
+	
+//******************************************************************
+//Function  : Peek at the next byte in buffer.
+//Arguments : none
+//Return    : Next byte in buffer.
+//******************************************************************
+	uint8_t uart_peek(void)
+	{
+		return rx0_buffer[(rx0_first_byte+1) & RX0_BUFFER_MASK];
 	}
 
 #endif // single/multi USART

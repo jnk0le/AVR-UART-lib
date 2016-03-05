@@ -1057,7 +1057,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	uint8_t uart_getData(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
 	// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 	uint8_t uart_AvailableBytes(uint8_t usartct); // returns number of bytes waiting in the receiver buffer
-	//uint8_t uart_peek(uint8_t usartct); 
+	uint8_t uart_peek(uint8_t usartct); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 
 #else // single USART mcu
 
@@ -1079,7 +1079,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	uint8_t uart_getData(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
 	// in case of empty buffers returning flag is set to BUFFER_EMPTY - NULL
 	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
-	//uint8_t uart_peek(void); 
+	uint8_t uart_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 
 #endif // single/multi USART
 
