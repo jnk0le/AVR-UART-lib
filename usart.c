@@ -638,6 +638,63 @@
 		uart_putstr(usartct, p);
 	}
 	
+//******************************************************************
+//Function  : Wait until all data in TX buffer are flushed.
+//Arguments : Id of selected USART interface.
+//Return    : none
+//******************************************************************	
+	void uart_flush(uint8_t usartct)
+	{
+		switch(usartct)
+		{
+			default:
+		#ifdef USE_USART0
+			case 0:
+			{
+				while(tx0_first_byte != tx0_last_byte); // flush ring buffer
+				
+			#ifdef USART0_RS485_MODE // flush UDR buffer
+				while (___PORT(RS485_CONTROL0_PORT) & (1<<RS485_CONTROL0_PIN))
+			#endif
+				break;
+			} 
+		#endif // USE_USART0
+		#ifdef USE_USART1
+			case 1:
+			{
+				while(tx1_first_byte != tx1_last_byte); // flush ring buffer
+				
+			#ifdef USART1_RS485_MODE // flush UDR buffer
+				while (___PORT(RS485_CONTROL1_PORT) & (1<<RS485_CONTROL1_PIN))
+			#endif
+				break;
+			}
+		#endif // USE_USART1
+		#ifdef USE_USART2
+			case 2:
+			{
+				while(tx2_first_byte != tx2_last_byte); // flush ring buffer
+				
+			#ifdef USART2_RS485_MODE // flush UDR buffer
+				while (___PORT(RS485_CONTROL2_PORT) & (1<<RS485_CONTROL2_PIN))
+			#endif
+				break;
+			}
+		#endif // USE_USART2
+		#ifdef USE_USART3
+			case 3:
+			{
+				while(tx3_first_byte != tx3_last_byte); // flush ring buffer
+				
+			#ifdef USART3_RS485_MODE // flush UDR buffer
+				while (___PORT(RS485_CONTROL3_PORT) & (1<<RS485_CONTROL3_PIN))
+			#endif	
+				//break;
+			}
+		#endif // USE_USART3
+		}
+	}
+	
 #else // single USART mcu
 
 //******************************************************************
@@ -885,6 +942,20 @@
 			p++;
 		
 		uart_putstr(p);
+	}
+	
+//******************************************************************
+//Function  : Wait until all data in TX buffer are flushed.
+//Arguments : none
+//Return    : none
+//******************************************************************	
+	void uart_flush(void)
+	{
+		while(tx0_first_byte != tx0_last_byte); // flush ring buffer 
+		
+	#ifdef USART0_RS485_MODE // flush UDR buffer
+		while (___PORT(RS485_CONTROL0_PORT) & (1<<RS485_CONTROL0_PIN))
+	#endif
 	}
 
 #endif // single/multi USART

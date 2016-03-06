@@ -991,6 +991,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	
 	void uart_putfloat(uint8_t usartct, float data);
 	void uart_fputfloat(uint8_t usartct, float data, uint8_t precision);
+	
+	void uart_flush(uint8_t usartct); // flush tx buffer
 
 #else // single USART mcu
 
@@ -1027,6 +1029,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	
 	void uart_putfloat(float data);
 	void uart_fputfloat(float data, uint8_t precision);
+	
+	void uart_flush(void); // flush tx buffer
 
 #endif // single/multi USART
 

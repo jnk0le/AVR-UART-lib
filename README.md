@@ -41,3 +41,4 @@ In case of reinitializing uart on the fly (especially with non-constant ubbr) tr
 - polled tx
 - intuitive frame format settings
 - const __flash strings ?
+- mpcm
