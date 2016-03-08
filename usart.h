@@ -138,7 +138,32 @@
 #define RX3_BUFFER_MASK (RX3_BUFFER_SIZE - 1)
 
 enum {locked, unlocked};
-enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};	
+enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
+	
+#define USART_XCK_RISING_EDGE 0x00
+#define USART_XCK_FALLING_EDGE 0x01
+
+#define USART_5BIT_DATA 0x00
+#define USART_6BIT_DATA 0x02
+#define USART_7BIT_DATA 0x04
+#define USART_8BIT_DATA 0x06
+
+#define USART_1STOP_BIT 0x00
+#define USART_2STOP_BITS 0x08
+
+#define USART_NO_PARITY 0x00
+#define USART_EVEN_PARITY 0x20
+#define USART_ODD_PARITY 0x30
+
+#if defined(URSEL)||defined(URSEL0)||defined(URSEL1)||defined(URSEL2)||defined(URSEL3)
+
+	#define USART_ASYNC_MODE 0x80
+	#define USART_SYNC_MODE 0xC0
+#else
+	#define USART_ASYNC_MODE 0x00
+	#define USART_SYNC_MODE 0x40
+	#define USART_MSPI_MODE 0xC0
+#endif
 
 #ifdef NO_USART_RX // remove all RX interrupts
 	#define NO_RX0_INTERRUPT
@@ -869,7 +894,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 	
 	// UCSRC_reg can be used to set other than 8n1 transmission
-	inline void uart_set_UCSRC(uint8_t usartct, uint8_t UCSRC_reg)
+	inline void uart_set_FrameFormat(uint8_t usartct, uint8_t UCSRC_reg)
 	{
 		switch(usartct)
 		{
@@ -938,7 +963,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 
 	// UCSRC_reg can be used to set other than 8n1 transmission
-	inline void uart_set_UCSRC(uint8_t UCSRC_reg) 
+	inline void uart_set_FrameFormat(uint8_t UCSRC_reg) 
 	{
 		UCSR0C_REGISTER = UCSRC_reg;
 	} 

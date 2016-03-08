@@ -10,6 +10,7 @@ const char foo_string[] PROGMEM = "Unluckily gcc string polling doesn't work for
 
 void main(void)
 {
+	//uart_set_FrameFormat(0, USART_8BIT_DATA|USART_1STOP_BIT|USART_NO_PARITY|USART_ASYNC_MODE); // default settings
 	uart_init(0, BAUD_CALC(19200)); // 8n1 transmission is set as default 
 	uart_init(1, BAUD_CALC(115200));
 	
