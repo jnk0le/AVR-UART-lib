@@ -87,9 +87,14 @@
 				UBRR0H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART0_U2X_SPEED
-				UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
-			#else
-				UCSR0A_REGISTER &= ~(1<<U2X0_BIT);
+				#ifdef USART0_MPCM_MODE
+					UCSR0A_REGISTER = (1<<U2X0_BIT)|(1<<MPCM0_BIT);
+				#else
+					UCSR0A_REGISTER = (1<<U2X0_BIT); // enable double speed
+				#endif
+			#elif defined(USART0_MPCM_MODE)
+	
+				UCSR0A_REGISTER = (1<<MPCM0_BIT);
 			#endif
 			
 				UCSR0B_REGISTER = USART0_CONFIG_B;
@@ -112,9 +117,14 @@
 				UBRR1H_REGISTER = (ubbr_value>>8);
 				
 			#ifdef USART1_U2X_SPEED
-				UCSR1A_REGISTER |= (1<<U2X1_BIT); // enable double speed
-			#else
-				UCSR1A_REGISTER &= ~(1<<U2X1_BIT);
+				#ifdef USART1_MPCM_MODE
+					UCSR1A_REGISTER = (1<<U2X1_BIT)|(1<<MPCM1_BIT);
+				#else
+					UCSR1A_REGISTER = (1<<U2X1_BIT); // enable double speed
+				#endif
+			#elif defined(USART1_MPCM_MODE)
+				
+				UCSR1A_REGISTER = (1<<MPCM1_BIT);
 			#endif
 				
 				UCSR1B_REGISTER = USART1_CONFIG_B;
@@ -137,9 +147,14 @@
 				UBRR2H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART2_U2X_SPEED
-				UCSR2A_REGISTER |= (1<<U2X2_BIT); // enable double speed
-			#else
-				UCSR2A_REGISTER &= ~(1<<U2X2_BIT);
+				#ifdef USART2_MPCM_MODE
+					UCSR2A_REGISTER = (1<<U2X2_BIT)|(1<<MPCM2_BIT);
+				#else
+					UCSR2A_REGISTER = (1<<U2X2_BIT); // enable double speed
+				#endif
+			#elif defined(USART2_MPCM_MODE)
+				
+				UCSR2A_REGISTER = (1<<MPCM2_BIT);
 			#endif
 			
 				UCSR2B_REGISTER = USART2_CONFIG_B;
@@ -162,9 +177,14 @@
 				UBRR3H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART3_U2X_SPEED
-				UCSR3A_REGISTER |= (1<<U2X3_BIT); // enable double speed
-			#else
-				UCSR3A_REGISTER &= ~(1<<U2X3_BIT);
+				#ifdef USART3_MPCM_MODE
+					UCSR3A_REGISTER = (1<<U2X3_BIT)|(1<<MPCM3_BIT);
+				#else
+					UCSR3A_REGISTER = (1<<U2X3_BIT); // enable double speed
+				#endif
+			#elif defined(USART3_MPCM_MODE)
+	
+				UCSR3A_REGISTER = (1<<MPCM3_BIT);
 			#endif
 			
 				UCSR3B_REGISTER = USART3_CONFIG_B;
@@ -197,12 +217,18 @@
 		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		UBRR0H_REGISTER = (ubbr_value>>8);
-			
+
 	#ifdef USART0_U2X_SPEED
-		UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
-	#else
-		UCSR0A_REGISTER &= ~(1<<U2X0_BIT);
+		#ifdef USART0_MPCM_MODE
+			UCSR0A_REGISTER = (1<<U2X0_BIT)|(1<<MPCM0_BIT);
+		#else
+			UCSR0A_REGISTER = (1<<U2X0_BIT); // enable double speed
+		#endif
+	#elif defined(USART0_MPCM_MODE)
+		
+		UCSR0A_REGISTER = (1<<MPCM0_BIT);
 	#endif
+	
 			
 		UCSR0B_REGISTER = USART0_CONFIG_B;
 		// 8n1 is set by default, setting UCSRC is not needed
@@ -242,14 +268,19 @@
 				tx0_last_byte = tmp_tx_last_byte;
 			
 			#ifdef USART0_RS485_MODE
-				cli();
-				___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 			#endif
-				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
-				
-			#ifdef USART0_RS485_MODE
-				sei();
-			#endif
+				{
+				#ifdef USART0_RS485_MODE
+					___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+				#endif
+					
+				#ifdef USART0_DISABLE_TRANSMITTER_ON_TXC
+					UCSR0B_REGISTER |= (1<<UDRIE0_BIT)|(1<<TXEN0_BIT);
+				#else
+					UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+				#endif
+				}
 				break;
 			 }
 		#endif // NO_TX0_INTERRUPT
@@ -264,14 +295,19 @@
 				tx1_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART1_RS485_MODE
-				cli();
-				___PORT(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); //set high
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 			#endif
-				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
-				
-			#ifdef USART1_RS485_MODE
-				sei();
-			#endif
+				{
+				#ifdef USART1_RS485_MODE
+					___PORT(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); //set high
+				#endif
+					
+				#ifdef USART1_DISABLE_TRANSMITTER_ON_TXC
+					UCSR1B_REGISTER |= (1<<UDRIE1_BIT)|(1<<TXEN1_BIT);
+				#else
+					UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
+				#endif
+				}
 				break;
 			}
 		#endif // NO_TX1_INTERRUPT
@@ -286,14 +322,19 @@
 				tx2_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART2_RS485_MODE
-				cli();
-				___PORT(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); //set high
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 			#endif
-				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
-				
-			#ifdef USART2_RS485_MODE
-				sei();
-			#endif
+				{
+				#ifdef USART2_RS485_MODE
+					___PORT(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); //set high
+				#endif
+					
+				#ifdef USART2_DISABLE_TRANSMITTER_ON_TXC
+					UCSR2B_REGISTER |= (1<<UDRIE2_BIT)|(1<<TXEN2_BIT);
+				#else
+					UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
+				#endif
+				}
 				break;
 			}
 		#endif // NO_TX2_INTERRUPT
@@ -308,14 +349,19 @@
 				tx3_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART3_RS485_MODE
-				cli();
-				___PORT(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); //set high
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 			#endif
-				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
-				
-			#ifdef USART3_RS485_MODE
-				sei();
-			#endif
+				{
+				#ifdef USART3_RS485_MODE
+					___PORT(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); //set high
+				#endif
+					
+				#ifdef USART3_DISABLE_TRANSMITTER_ON_TXC
+					UCSR3B_REGISTER |= (1<<UDRIE3_BIT)|(1<<TXEN3_BIT);
+				#else
+					UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
+				#endif
+				}
 				//break;
 			}
 		#endif // NO_TX3_INTERRUPT
@@ -349,14 +395,19 @@
 				tx0_last_byte = tmp_tx_last_byte;
 						
 			#ifdef USART0_RS485_MODE
-				cli();
-				___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 			#endif
-				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
-				
-			#ifdef USART0_RS485_MODE
-				sei();
-			#endif
+				{
+				#ifdef USART0_RS485_MODE
+					___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+				#endif
+					
+				#ifdef USART0_DISABLE_TRANSMITTER_ON_TXC
+					UCSR0B_REGISTER |= (1<<UDRIE0_BIT)|(1<<TXEN0_BIT);
+				#else
+					UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+				#endif
+				}
 				break;
 			 }
 		#endif // NO_TX0_INTERRUPT
@@ -372,14 +423,19 @@
 				tx1_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART1_RS485_MODE
-				cli();
-				___PORT(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); //set high
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 			#endif
-				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
-				
-			#ifdef USART1_RS485_MODE
-				sei();
-			#endif
+				{
+				#ifdef USART1_RS485_MODE
+					___PORT(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); //set high
+				#endif
+					
+				#ifdef USART1_DISABLE_TRANSMITTER_ON_TXC
+					UCSR1B_REGISTER |= (1<<UDRIE1_BIT)|(1<<TXEN1_BIT);
+				#else
+					UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
+				#endif
+				}
 				break;
 			}
 		#endif // NO_TX1_INTERRUPT
@@ -395,14 +451,19 @@
 				tx2_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART2_RS485_MODE
-				cli();
-				___PORT(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); //set high
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 			#endif
-				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
-				
-			#ifdef USART2_RS485_MODE
-				sei();
-			#endif
+				{
+				#ifdef USART2_RS485_MODE
+					___PORT(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); //set high
+				#endif
+					
+				#ifdef USART2_DISABLE_TRANSMITTER_ON_TXC
+					UCSR2B_REGISTER |= (1<<UDRIE2_BIT)|(1<<TXEN2_BIT);
+				#else
+					UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
+				#endif
+				}
 				break;
 			}
 		#endif // NO_TX2_INTERRUPT
@@ -418,14 +479,19 @@
 				tx3_last_byte = tmp_tx_last_byte;
 				
 			#ifdef USART3_RS485_MODE
-				cli();
-				___PORT(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); //set high
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 			#endif
-				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
-				
-			#ifdef USART3_RS485_MODE
-				sei();
-			#endif
+				{
+				#ifdef USART3_RS485_MODE
+					___PORT(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); //set high
+				#endif
+					
+				#ifdef USART3_DISABLE_TRANSMITTER_ON_TXC
+					UCSR3B_REGISTER |= (1<<UDRIE3_BIT)|(1<<TXEN3_BIT);
+				#else
+					UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
+				#endif
+				}
 				//break;
 			}
 		#endif // NO_TX3_INTERRUPT
@@ -651,10 +717,12 @@
 		#ifdef USE_USART0
 			case 0:
 			{
-				while(tx0_first_byte != tx0_last_byte); // flush ring buffer
-				
 			#ifdef USART0_RS485_MODE // flush UDR buffer
-				while (___PORT(RS485_CONTROL0_PORT) & (1<<RS485_CONTROL0_PIN))
+				while (___PORT(RS485_CONTROL0_PORT) & (1<<RS485_CONTROL0_PIN));
+			#elif defined(USART0_DISABLE_TRANSMITTER_ON_TXC)
+				while(UCSR0B_REGISTER & TXEN0_BIT);
+			#else
+				while(tx0_first_byte != tx0_last_byte); // just flush the buffer
 			#endif
 				break;
 			} 
@@ -662,10 +730,12 @@
 		#ifdef USE_USART1
 			case 1:
 			{
-				while(tx1_first_byte != tx1_last_byte); // flush ring buffer
-				
 			#ifdef USART1_RS485_MODE // flush UDR buffer
-				while (___PORT(RS485_CONTROL1_PORT) & (1<<RS485_CONTROL1_PIN))
+				while (___PORT(RS485_CONTROL1_PORT) & (1<<RS485_CONTROL1_PIN));
+			#elif defined(USART1_DISABLE_TRANSMITTER_ON_TXC)
+				while(UCSR1B_REGISTER & TXEN1_BIT);
+			#else
+				while(tx1_first_byte != tx1_last_byte); // just flush the buffer
 			#endif
 				break;
 			}
@@ -673,10 +743,12 @@
 		#ifdef USE_USART2
 			case 2:
 			{
-				while(tx2_first_byte != tx2_last_byte); // flush ring buffer
-				
 			#ifdef USART2_RS485_MODE // flush UDR buffer
-				while (___PORT(RS485_CONTROL2_PORT) & (1<<RS485_CONTROL2_PIN))
+				while (___PORT(RS485_CONTROL2_PORT) & (1<<RS485_CONTROL2_PIN));
+			#elif defined(USART2_DISABLE_TRANSMITTER_ON_TXC)
+				while(UCSR2B_REGISTER & TXEN2_BIT);
+			#else
+				while(tx2_first_byte != tx2_last_byte); // just flush the buffer
 			#endif
 				break;
 			}
@@ -684,16 +756,85 @@
 		#ifdef USE_USART3
 			case 3:
 			{
-				while(tx3_first_byte != tx3_last_byte); // flush ring buffer
-				
 			#ifdef USART3_RS485_MODE // flush UDR buffer
-				while (___PORT(RS485_CONTROL3_PORT) & (1<<RS485_CONTROL3_PIN))
-			#endif	
+				while (___PORT(RS485_CONTROL3_PORT) & (1<<RS485_CONTROL3_PIN));
+			#elif defined(USART3_DISABLE_TRANSMITTER_ON_TXC)
+				while(UCSR3B_REGISTER & TXEN3_BIT);
+				
+			#else
+				while(tx3_first_byte != tx3_last_byte); // just flush the buffer
+			#endif
 				//break;
 			}
 		#endif // USE_USART3
 		}
 	}
+	
+#ifdef USART0_MPCM_MODE
+
+//******************************************************************
+//Function  : Transmit address of selected slave in MPCM mode.
+//Arguments : 1. Id of selected USART interface.
+//          : 2. Address of selected slave.
+//Return    : none
+//******************************************************************
+	void uart_mpcm_transmit_addres_Frame(uint8_t usartct, uint8_t dat)
+	{
+		switch(usartct)
+		{
+			default:
+		#if defined(USE_USART0)&&defined(USART0_MPCM_MODE)
+			case 0:
+			{
+				while(tx0_first_byte != tx0_last_byte);
+				UCSR0B_REGISTER |= (1<<TXB80_BIT);
+				uart_putc(dat);
+				while(tx0_first_byte != tx0_last_byte);
+				UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
+				
+				break;
+			} 
+		#endif // mpcm0
+		#if defined(USE_USART1)&&defined(USART1_MPCM_MODE)
+			case 1:
+			{
+				while(tx1_first_byte != tx1_last_byte);
+				UCSR1B_REGISTER |= (1<<TXB81_BIT);
+				uart_putc(dat);
+				while(tx1_first_byte != tx1_last_byte);
+				UCSR1B_REGISTER &= ~(1<<TXB81_BIT); // not sure if necessary
+				
+				break;
+			}
+		#endif // mpcm1
+		#if defined(USE_USART2)&&defined(USART2_MPCM_MODE)
+			case 2: 
+			{
+				while(tx2_first_byte != tx2_last_byte);
+				UCSR2B_REGISTER |= (1<<TXB82_BIT);
+				uart_putc(dat);
+				while(tx2_first_byte != tx2_last_byte);
+				UCSR2B_REGISTER &= ~(1<<TXB82_BIT); // not sure if necessary
+				
+				break;
+			}
+		#endif // mpcm2
+		#if defined(USE_USART3)&&defined(USART3_MPCM_MODE)
+			case 3:
+			{
+				while(tx3_first_byte != tx3_last_byte);
+				UCSR3B_REGISTER |= (1<<TXB83_BIT);
+				uart_putc(dat);
+				while(tx3_first_byte != tx3_last_byte);
+				UCSR3B_REGISTER &= ~(1<<TXB83_BIT); // not sure if necessary
+				
+				//break;
+			}
+		#endif // mpcm3
+		}
+	}
+
+#endif // mpcm
 	
 #else // single USART mcu
 
@@ -714,16 +855,21 @@
 		
 		tx0_buffer[tmp_tx_last_byte] = data;
 		tx0_last_byte = tmp_tx_last_byte;
-		
-	#ifdef USART0_RS485_MODE
-		cli();
-		___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
-	#endif
-		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 	
 	#ifdef USART0_RS485_MODE
-		sei();
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 	#endif
+		{
+		#ifdef USART0_RS485_MODE
+			___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+		#endif
+	
+		#ifdef USART0_DISABLE_TRANSMITTER_ON_TXC
+			UCSR0B_REGISTER |= (1<<UDRIE0_BIT)|(1<<TXEN0_BIT);
+		#else
+			UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+		#endif
+		}
 	}
 	
 //******************************************************************
@@ -743,14 +889,19 @@
 		tx0_last_byte = tmp_tx_last_byte;
 		
 	#ifdef USART0_RS485_MODE
-		cli();
-		___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 	#endif
-		UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
-		
-	#ifdef USART0_RS485_MODE
-		sei();
-	#endif
+		{
+		#ifdef USART0_RS485_MODE
+			___PORT(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); //set high
+		#endif
+			
+		#ifdef USART0_DISABLE_TRANSMITTER_ON_TXC
+			UCSR0B_REGISTER |= (1<<UDRIE0_BIT)|(1<<TXEN0_BIT);
+		#else
+			UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+		#endif
+		}
 		return COMPLETED;
 	}
 
@@ -951,12 +1102,32 @@
 //******************************************************************	
 	void uart_flush(void)
 	{
-		while(tx0_first_byte != tx0_last_byte); // flush ring buffer 
-		
 	#ifdef USART0_RS485_MODE // flush UDR buffer
-		while (___PORT(RS485_CONTROL0_PORT) & (1<<RS485_CONTROL0_PIN))
+		while (___PORT(RS485_CONTROL0_PORT) & (1<<RS485_CONTROL0_PIN));
+	#elif defined(USART0_DISABLE_TRANSMITTER_ON_TXC)
+		while(UCSR0B_REGISTER & TXEN0_BIT);
+	#else	
+		while(tx0_first_byte != tx0_last_byte); // just flush the buffer 
 	#endif
 	}
+
+#ifdef USART0_MPCM_MODE
+
+//******************************************************************
+//Function  : Transmit address of selected slave in MPCM mode.
+//Arguments : Address of selected slave.
+//Return    : none
+//******************************************************************
+	void uart_mpcm_transmit_addres_Frame(uint8_t dat)
+	{
+		while(tx0_first_byte != tx0_last_byte);
+		UCSR0B_REGISTER |= (1<<TXB80_BIT);
+		uart_putc(dat);
+		while(tx0_first_byte != tx0_last_byte);
+		UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
+	}
+
+#endif // mpcm
 
 #endif // single/multi USART
 
@@ -1847,18 +2018,16 @@
 		/* UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT) */
 	"USART0_DISABLE_UDRIE_%=: "
 	#ifdef USART0_IN_IO_ADDRESS_SPACE
-	
-	#ifdef USART0_UCSRB_NOT_ACCESIBLE_FROM_CBI
-		"in   r24, %M[control_reg] \n\t"        /* 1 */
-		"andi  r24, 0xDF \n\t"                   /* 1 */
-		"out   %M[control_reg], r24\n\t"         /* 1 */
-	#else // cbi
-		"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
-	#endif // to cbi or not to cbi
-	
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+			"in   r24, %M[control_reg] \n\t"        /* 1 */
+			"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
+			"out   %M[control_reg], r24\n\t"         /* 1 */
+		#else // cbi
+			"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+		#endif // to cbi or not to cbi
 	#else
 		"lds   r24, %M[control_reg] \n\t"        /* 2 */
-		"andi  r24, 0xDF \n\t"                   /* 1 */
+		"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 	#endif
 		"rjmp   USART0_TX_EXIT_%= \n\t"          /* 2 */
@@ -1870,7 +2039,6 @@
 		[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
 		[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
 		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
-		//[udrie_mask_disable] "M" ( ~(1<<UDRIE0_BIT) ), //no way
 		[udrie_bit] "M"		(UDRIE0_BIT),
 		[mask]        "M"    (TX0_BUFFER_MASK)
 		
@@ -1878,11 +2046,43 @@
 		);
 	}	
 	
-#ifdef USART0_RS485_MODE
+#if defined(USART0_RS485_MODE)||defined(USART0_DISABLE_TRANSMITTER_ON_TXC)
 	
 	ISR(TXC0_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
+	#ifdef USART0_RS485_MODE
 		___PORT(RS485_CONTROL0_PORT) &= ~(1<<RS485_CONTROL0_PIN); // set low after completed transaction
+	#endif
+	
+	#ifdef USART0_DISABLE_TRANSMITTER_ON_TXC
+		asm volatile("\n\t"
+	#ifdef USART0_IN_IO_ADDRESS_SPACE
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+			"push  r24 \n\t"  
+			"in   r24, %M[UCSRB_reg_IO] \n\t"        /* 1 */
+			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"                   /* 1 */
+			"out   %M[UCSRB_reg_IO], r24\n\t"         /* 1 */
+			"pop   r24 \n\t"                         /* 2 */
+		#else // cbi
+			"cbi   %M[UCSRB_reg_IO], %M[TXEN_bit] \n\t"    /* 2 */
+		#endif // to cbi or not to cbi
+	#else
+			"push  r24 \n\t"                         /* 2 */ 
+			"lds   r24, %M[UCSRB_reg] \n\t"        /* 2 */
+			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"                   /* 1 */
+			"sts   %M[UCSRB_reg], r24\n\t"         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
+	#endif
+		: /* output operands */
+		
+		: /* input operands */
+		[UCSRB_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
+		[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+		[TXEN_bit]   "M"    (TXEN0_BIT)
+		
+		/* no clobbers */
+		);
+	#endif
 		reti();
 	}
 	
@@ -1911,9 +2111,37 @@
 	#else
 		"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
 	#endif
-
+	
 	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
 		"sei \n\t"                               /* 1 */
+	#endif
+	
+	#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
+		
+		#ifdef USART0_IN_IO_ADDRESS_SPACE
+			"in 	r24, %M[UCSRA_reg_IO] \n\t"      /* 1 */
+		#else
+			"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+		#endif
+			
+			"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
+			"rjmp   USART0_RX_CONTINUE_%= \n\t"      /* 2 */
+			"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+		#ifdef MPCM0_GCALL_ADDRESS
+			"breq	p_%= \n\t"                      /* 1/2 */
+			"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
+		#endif
+			"brne	USART0_RX_EXIT_%= \n\t"          /* 1/2 */
+		"p_%=: "
+			"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
+			
+		#ifdef USART0_IN_IO_ADDRESS_SPACE
+			"out	%M[UCSRA_reg_IO], r24 \n\t"         /* 2 */
+		#else
+			"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
+		#endif
+		
+	"USART0_RX_CONTINUE_%=: "
 	#endif
 		/* load globals */
 		"lds   r24, (rx0_last_byte) \n\t"        /* 2 */
@@ -1929,7 +2157,7 @@
 		
 		/* if(rx0_first_byte != tmp_rx_last_byte) */
 		"cp    r18, r24 \n\t"                    /* 1 */
-		"breq  USART0_RX_EXIT_%= \n\t"                        /* 1/2 */
+		"breq  USART0_RX_EXIT_%= \n\t"           /* 1/2 */
 		
 		/* rx0_buffer[tmp_rx_last_byte] = tmp */
 		"mov   r30, r24 \n\t"                    /* 1 */
@@ -1955,13 +2183,20 @@
 		"pop   r0 \n\t"                          /* 2 */
 
 		"reti \n\t"                              /* 4 ISR return */ // 52 cycles total in worst case
-		
+
 		: /* output operands */
 		
 		: /* input operands */
 		[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
 		[UDR_reg]	"M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
-		[mask]      "M"    (RX0_BUFFER_MASK)
+		[mask]      "M"    (RX0_BUFFER_MASK),
+		[mpcm_address]      "M"    (MPCM0_ADDRESS),
+	#ifdef MPCM0_GCALL_ADDRESS
+		[mpcm_gcall_address]      "M"    (MPCM0_GCALL_ADDRESS),
+	#endif
+		[mpcm_bit]      "M"    (MPCM0_BIT),
+		[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
+		[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0A_REGISTER))
 		
 		/* no clobbers */
 		);
@@ -2032,7 +2267,7 @@
 		"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
 	#else
 		"lds   r24, %M[control_reg] \n\t"        /* 2 */
-		"andi  r24, 0xDF \n\t"                   /* 1 */
+		"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 	#endif
 		"rjmp   USART1_TX_EXIT_%= \n\t"          /* 2 */
@@ -2044,7 +2279,6 @@
 		[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
 		[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
 		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
-		//[udrie_mask_disable] "M" ( ~(1<<UDRIE1_BIT) ), //no way
 		[udrie_bit] "M"		(UDRIE1_BIT),
 		[mask]        "M"    (TX1_BUFFER_MASK)
 		
@@ -2053,11 +2287,35 @@
 		
 	}
 
-#ifdef USART1_RS485_MODE
+#ifdef defined(USART1_RS485_MODE)||defined(USART1_DISABLE_TRANSMITTER_ON_TXC)
 
 	ISR(TXC1_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
+	#ifdef USART1_RS485_MODE
 		___PORT(RS485_CONTROL1_PORT) &= ~(1<<RS485_CONTROL1_PIN); // set low after completed transaction
+	#endif
+		
+	#ifdef USART1_DISABLE_TRANSMITTER_ON_TXC
+		asm volatile("\n\t"
+		#ifdef USART1_IN_IO_ADDRESS_SPACE
+			"cbi   %M[UCSRB_reg_IO], %M[TXEN_bit] \n\t"    /* 2 */
+		#else
+			"push  r24 \n\t"                         /* 2 */ 
+			"lds   r24, %M[UCSRB_reg] \n\t"        /* 2 */
+			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"                   /* 1 */
+			"sts   %M[UCSRB_reg], r24\n\t"         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
+		#endif
+		: /* output operands */
+		
+		: /* input operands */
+		[UCSRB_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
+		[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+		[TXEN_bit]   "M"    (TXEN1_BIT)
+		
+		/* no clobbers */
+		);
+	#endif
 		reti();
 	}
 
@@ -2089,6 +2347,34 @@
 		
 	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
 		"sei \n\t"                               /* 1 */
+	#endif
+	
+	#if defined(USART1_MPCM_MODE)&&!defined(MPCM1_MASTER_ONLY)
+		
+		#ifdef USART1_IN_IO_ADDRESS_SPACE
+			"in 	r24, %M[UCSRA_reg_IO] \n\t"      /* 1 */
+		#else
+			"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+		#endif
+		
+			"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
+			"rjmp   USART1_RX_CONTINUE_%= \n\t"      /* 2 */
+			"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+		#ifdef MPCM1_GCALL_ADDRESS
+			"breq	p_%= \n\t"                      /* 1/2 */
+			"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
+		#endif
+			"brne	USART1_RX_EXIT_%= \n\t"          /* 1/2 */
+		"p_%=: "
+			"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
+		
+		#ifdef USART1_IN_IO_ADDRESS_SPACE
+			"out	%M[UCSRA_reg_IO], r24 \n\t"         /* 2 */
+		#else
+			"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
+		#endif
+		
+	"USART1_RX_CONTINUE_%=: "
 	#endif
 		/* load globals */
 		"lds   r24, (rx1_last_byte) \n\t"        /* 2 */
@@ -2136,7 +2422,14 @@
 		: /* input operands */
 		[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
 		[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
-		[mask]      "M"    (RX1_BUFFER_MASK)
+		[mask]      "M"    (RX1_BUFFER_MASK),
+		[mpcm_address]      "M"    (MPCM1_ADDRESS),
+	#ifdef MPCM1_GCALL_ADDRESS
+		[mpcm_gcall_address]      "M"    (MPCM1_GCALL_ADDRESS),
+	#endif
+		[mpcm_bit]      "M"    (MPCM1_BIT),
+		[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
+		[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1A_REGISTER))
 		
 		/* no clobbers */
 		);
@@ -2201,7 +2494,7 @@
 	"USART2_DISABLE_UDRIE_%=: "
 		
 		"lds   r24, %M[control_reg] \n\t"        /* 2 */
-		"andi  r24, 0xDF \n\t"                   /* 1 */
+		"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 				
 		"rjmp   USART2_TX_EXIT_%= \n\t"          /* 2 */
@@ -2211,7 +2504,7 @@
 		: /* input operands */
 		[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
 		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
-		//[udrie_mask_disable] "M" ( ~(1<<UDRIE2_BIT) ), //no way
+		[udrie_bit] "M"		(UDRIE2_BIT),
 		[mask]        "M"    (TX2_BUFFER_MASK)
 		
 		/* no clobbers */
@@ -2219,11 +2512,31 @@
 		
 	}
 
-#ifdef USART2_RS485_MODE
+#if define(USART2_RS485_MODE)||defined(USART2_DISABLE_TRANSMITTER_ON_TXC)
 
 	ISR(TXC2_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
+	#ifdef USART2_RS485_MODE
 		___PORT(RS485_CONTROL2_PORT) &= ~(1<<RS485_CONTROL2_PIN); // set low after completed transaction
+	#endif
+	
+	#ifdef USART2_DISABLE_TRANSMITTER_ON_TXC
+		asm volatile("\n\t"
+			"push  r24 \n\t"                         /* 2 */ 
+			"lds   r24, %M[UCSRB_reg] \n\t"        /* 2 */
+			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"   /* 1 */
+			"sts   %M[UCSRB_reg], r24\n\t"         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
+		: /* output operands */
+		
+		: /* input operands */
+		[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+		[TXEN_bit]   "M"    (TXEN2_BIT)
+		
+		/* no clobbers */
+		);
+	#endif
+		
 		reti();
 	}
 
@@ -2251,6 +2564,25 @@
 		
 	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
 		"sei \n\t"                               /* 1 */
+	#endif
+	
+	#if defined(USART2_MPCM_MODE)&&!defined(MPCM2_MASTER_ONLY)
+		"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+		
+		"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
+		"rjmp   USART2_RX_CONTINUE_%= \n\t"      /* 2 */
+		"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+	#ifdef MPCM2_GCALL_ADDRESS
+		"breq	p_%= \n\t"                      /* 1/2 */
+		"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
+	#endif
+		"brne	USART2_RX_EXIT_%= \n\t"          /* 1/2 */
+	"p_%=: "
+		"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
+		
+		"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
+		
+	"USART2_RX_CONTINUE_%=: "
 	#endif
 		/* load globals */
 		"lds   r24, (rx2_last_byte) \n\t"        /* 2 */
@@ -2297,7 +2629,13 @@
 		
 		: /* input operands */
 		[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
-		[mask]      "M"    (RX2_BUFFER_MASK)
+		[mask]      "M"    (RX2_BUFFER_MASK),
+		[mpcm_address]      "M"    (MPCM2_ADDRESS),
+	#ifdef MPCM2_GCALL_ADDRESS
+		[mpcm_gcall_address]      "M"    (MPCM2_GCALL_ADDRESS),
+	#endif
+		[mpcm_bit]      "M"    (MPCM2_BIT),
+		[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR2A_REGISTER))
 		
 		/* no clobbers */
 		);
@@ -2362,7 +2700,7 @@
 	"USART3_DISABLE_UDRIE_%=: "
 		
 		"lds   r24, %M[control_reg] \n\t"        /* 2 */
-		"andi  r24, 0xDF \n\t"                   /* 1 */
+		"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
 		"sts   %M[control_reg], r24\n\t"         /* 2 */
 		
 		"rjmp   USART3_TX_EXIT_%= \n\t"          /* 2 */
@@ -2372,7 +2710,7 @@
 		: /* input operands */
 		[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
 		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
-		//[udrie_mask_disable] "M" ( ~(1<<UDRIE3_BIT) ), //no way
+		[udrie_bit] "M"		(UDRIE3_BIT),
 		[mask]        "M"    (TX3_BUFFER_MASK)
 		
 		/* no clobbers */
@@ -2380,11 +2718,31 @@
 		
 	}
 	
-#ifdef USART3_RS485_MODE
+#if defined(USART3_RS485_MODE)||defined(USART3_DISABLE_TRANSMITTER_ON_TXC)
 
 	ISR(TXC3_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
+	#ifdef USART3_RS485_MODE
 		___PORT(RS485_CONTROL3_PORT) &= ~(1<<RS485_CONTROL3_PIN); // set low after completed transaction
+	#endif
+		
+	#ifdef USART3_DISABLE_TRANSMITTER_ON_TXC
+		asm volatile("\n\t"
+			"push  r24 \n\t"                         /* 2 */ 
+			"lds   r24, %M[UCSRB_reg] \n\t"        /* 2 */
+			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"   /* 1 */
+			"sts   %M[UCSRB_reg], r24\n\t"         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
+		: /* output operands */
+		
+		: /* input operands */
+		[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+		[TXEN_bit]   "M"    (TXEN3_BIT)
+		
+		/* no clobbers */
+		);
+	#endif
+		
 		reti();
 	}
 
@@ -2412,6 +2770,25 @@
 		
 	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
 		"sei \n\t"                               /* 1 */
+	#endif
+	
+	#if defined(USART3_MPCM_MODE)&&!defined(MPCM3_MASTER_ONLY)
+		"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+		
+		"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
+		"rjmp   USART3_RX_CONTINUE_%= \n\t"      /* 2 */
+		"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+	#ifdef MPCM3_GCALL_ADDRESS
+		"breq	p_%= \n\t"                      /* 1/2 */
+		"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
+	#endif
+		"brne	USART3_RX_EXIT_%= \n\t"          /* 1/2 */
+	"p_%=: "
+		"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
+		
+		"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
+	
+	"USART3_RX_CONTINUE_%=: "
 	#endif
 		/* load globals */
 		"lds   r24, (rx3_last_byte) \n\t"        /* 2 */
@@ -2458,7 +2835,13 @@
 		
 		: /* input operands */
 		[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
-		[mask]      "M"    (RX3_BUFFER_MASK)
+		[mask]      "M"    (RX3_BUFFER_MASK),
+		[mpcm_address]      "M"    (MPCM3_ADDRESS),
+	#ifdef MPCM3_GCALL_ADDRESS
+		[mpcm_gcall_address]      "M"    (MPCM3_GCALL_ADDRESS),
+	#endif
+		[mpcm_bit]      "M"    (MPCM3_BIT),
+		[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR3A_REGISTER))
 		
 		/* no clobbers */
 		);

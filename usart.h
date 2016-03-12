@@ -15,6 +15,8 @@
 //#define NO_USART_TX // disable all transmitter code and dependencies
 
 //#define USART_RS485_MODE // globally enable rs485 operation mode // RE have to be shorted with DE
+//#define USART_MPCM_MODE // globally enable MPCM operation mode // 9 bit data frame only // always set frame format to 8 data bits
+//#define USART_DISABLE_TRANSMITTER_ON_TXC // especially in case of multiple slaves connected directly to each other // requires pullup resistor on master rx line
 
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces 
 
@@ -55,6 +57,16 @@
 //#define RX2_GETC_ECHO
 //#define RX3_GETC_ECHO
 
+//#define USART0_MPCM_MODE
+//#define USART1_MPCM_MODE
+//#define USART2_MPCM_MODE
+//#define USART3_MPCM_MODE
+
+//#define USART0_DISABLE_TRANSMITTER_ON_TXC
+//#define USART1_DISABLE_TRANSMITTER_ON_TXC
+//#define USART2_DISABLE_TRANSMITTER_ON_TXC
+//#define USART3_DISABLE_TRANSMITTER_ON_TXC
+
 //#define USART0_RS485_MODE // set correct DE pin first 
 //#define USART1_RS485_MODE	// set correct DE pin first 
 //#define USART2_RS485_MODE	// set correct DE pin first 
@@ -73,6 +85,23 @@
 
 //#define RS485_CONTROL3_PORT
 //#define RS485_CONTROL3_PIN
+
+/*****************************MPCM config***********************************/
+
+#define MPCM0_ADDRESS 0x01
+#define MPCM1_ADDRESS 0x02
+#define MPCM2_ADDRESS 0x03
+#define MPCM3_ADDRESS 0x04
+
+//#define MPCM0_GCALL_ADDRESS 0x00
+//#define MPCM1_GCALL_ADDRESS 0x00
+//#define MPCM2_GCALL_ADDRESS 0x00
+//#define MPCM3_GCALL_ADDRESS 0x00
+
+//#define MPCM0_MASTER_ONLY // do not include slave code
+//#define MPCM1_MASTER_ONLY // do not include slave code
+//#define MPCM2_MASTER_ONLY // do not include slave code
+//#define MPCM3_MASTER_ONLY // do not include slave code
 
 #include <avr/io.h> // for inline func
 
@@ -200,6 +229,20 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define USART3_RS485_MODE
 #endif
 
+#ifdef USART_MPCM_MODE
+	#define USART0_MPCM_MODE
+	#define USART1_MPCM_MODE
+	#define USART2_MPCM_MODE
+	#define USART3_MPCM_MODE
+#endif
+
+#ifdef USART_DISABLE_TRANSMITTER_ON_TXC
+	#define USART0_DISABLE_TRANSMITTER_ON_TXC
+	#define USART1_DISABLE_TRANSMITTER_ON_TXC
+	#define USART2_DISABLE_TRANSMITTER_ON_TXC
+	#define USART3_DISABLE_TRANSMITTER_ON_TXC
+#endif
+
 #ifdef USART0_RS485_MODE
 	#if !defined(RS485_CONTROL0_PORT)||!defined(RS485_CONTROL0_PIN)
 		#error "define valid DE/RE output for USART0 RS485 operation"
@@ -262,7 +305,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif
 
 #define USART0_IN_IO_ADDRESS_SPACE
-#define USART0_UCSRB_NOT_ACCESIBLE_FROM_CBI
+#define USART0_NOT_ACCESIBLE_FROM_CBI
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -282,6 +325,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
+	
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80
 	
 #endif //NO_USART0
 #endif
@@ -309,6 +356,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
 	
+	#define MPCM0_BIT           MPCM
+	#define UCSZ02_BIT          UCSZ2
+	#define TXB80_BIT           TXB8
+
 #endif //NO_USART0
 #endif
 
@@ -335,6 +386,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
+	
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80	
 
 #endif //NO_USART0
 #endif
@@ -359,6 +414,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
+	
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80
 
 #endif //NO_USART0
 
@@ -380,6 +439,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define U2X1_BIT    		U2X1
+	
+	#define MPCM1_BIT           MPCM1
+	#define UCSZ12_BIT          UCSZ12
+	#define TXB81_BIT           TXB81	
 
 #endif //NO_USART1
 #endif
@@ -409,6 +472,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
 	
+	#define MPCM0_BIT           MPCM
+	#define UCSZ02_BIT          UCSZ2
+	#define TXB80_BIT           TXB8
+	
 #endif //NO_USART0
 #endif
 
@@ -434,6 +501,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
+	
+	#define MPCM0_BIT           MPCM
+	#define UCSZ02_BIT          UCSZ2
+	#define TXB80_BIT           TXB8
 
 #endif //NO_USART0
 #endif
@@ -461,6 +532,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
+	
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80
 
 #endif //NO_USART0
 
@@ -482,6 +557,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define U2X1_BIT    		U2X1
+	
+	#define MPCM1_BIT           MPCM1
+	#define UCSZ12_BIT          UCSZ12
+	#define TXB81_BIT           TXB81
 
 #endif //NO_USART1
 #endif
@@ -516,6 +595,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
+	
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80
 
 #endif
 
@@ -537,6 +620,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define U2X1_BIT    		U2X1
+	
+	#define MPCM1_BIT           MPCM1
+	#define UCSZ12_BIT          UCSZ12
+	#define TXB81_BIT           TXB81
 	
 #endif // NO_USART1 && 644
 
@@ -563,6 +650,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXEN2_BIT   		RXEN2
 	#define U2X2_BIT    		U2X2
 	
+	#define MPCM2_BIT           MPCM2
+	#define UCSZ22_BIT          UCSZ22
+	#define TXB82_BIT           TXB82
+	
 #endif // NO_USART2
 
 #ifndef NO_USART3
@@ -583,6 +674,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN3_BIT   		TXEN3
 	#define RXEN3_BIT   		RXEN3
 	#define U2X3_BIT    		U2X3
+	
+	#define MPCM3_BIT           MPCM3
+	#define UCSZ32_BIT          UCSZ32
+	#define TXB83_BIT           TXB83
 	
 #endif // NO_USART3
 
@@ -609,6 +704,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN1
 	#define RXEN0_BIT   		RXEN1
 	#define U2X0_BIT    		U2X1
+	
+	#define MPCM0_BIT           MPCM1
+	#define UCSZ02_BIT          UCSZ12
+	#define TXB80_BIT           TXB81
 
 #endif // NO_USART0
 #endif
@@ -633,6 +732,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
+	
+	#define MPCM0_BIT           MPCM
+	#define UCSZ02_BIT          UCSZ2
+	#define TXB80_BIT           TXB8
 
 #endif //NO_USART0
 #endif
@@ -663,6 +766,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
+	
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80
 
 #endif //NO_USART0
 #endif
@@ -691,6 +798,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
+	
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80
 
 #endif //NO_USART0
 #endif
@@ -721,64 +832,124 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #ifndef USART0_CONFIG_B // set config bytes for UCSR0B_REGISTER
 	
-	#if defined(NO_RX0_INTERRUPT)
-		#define USART0_CONFIG_B (1<<TXEN0_BIT)
-	
-	#elif defined(NO_TX0_INTERRUPT)
-		#define USART0_CONFIG_B (1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
-	#else
-		#ifdef USART0_RS485_MODE
-			#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+	#ifdef USART0_MPCM_MODE
+		#if defined(NO_RX0_INTERRUPT)
+			#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<UCSZ02_BIT)
+		
+		#elif defined(NO_TX0_INTERRUPT)
+			#define USART0_CONFIG_B (1<<RXEN0_BIT)|(1<<RXCIE0_BIT)|(1<<UCSZ02_BIT)
 		#else
-			#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+			#ifdef USART0_RS485_MODE
+				#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)|(1<<UCSZ02_BIT)
+			#else
+				#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)|(1<<UCSZ02_BIT)
+			#endif
 		#endif
-	#endif 
+	#else
+		#if defined(NO_RX0_INTERRUPT)
+			#define USART0_CONFIG_B (1<<TXEN0_BIT)
+		
+		#elif defined(NO_TX0_INTERRUPT)
+			#define USART0_CONFIG_B (1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+		#else
+			#ifdef USART0_RS485_MODE
+				#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<TXCIE0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+			#else
+				#define USART0_CONFIG_B (1<<TXEN0_BIT)|(1<<RXEN0_BIT)|(1<<RXCIE0_BIT)
+			#endif
+		#endif
+	#endif
 #endif // USART0_CONFIG
 
 #ifndef USART1_CONFIG_B // set config bytes for UCSR1B_REGISTER
 	
-	#if defined(NO_RX1_INTERRUPT)
-		#define USART1_CONFIG_B (1<<TXEN1_BIT)
-
-	#elif defined(NO_TX1_INTERRUPT)
-		#define USART1_CONFIG_B (1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
-	#else
-		#ifdef USART1_RS485_MODE
-			#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<TXCIE1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+	#ifdef USART1_MPCM_MODE
+		#if defined(NO_RX1_INTERRUPT)
+			#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<UCSZ12_BIT)
+	
+		#elif defined(NO_TX1_INTERRUPT)
+			#define USART1_CONFIG_B (1<<RXEN1_BIT)|(1<<RXCIE1_BIT)|(1<<UCSZ12_BIT)
 		#else
-			#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+			#ifdef USART1_RS485_MODE
+				#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<TXCIE1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)|(1<<UCSZ12_BIT)
+			#else
+				#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)|(1<<UCSZ12_BIT)
+			#endif
+		#endif
+	#else
+		#if defined(NO_RX1_INTERRUPT)
+			#define USART1_CONFIG_B (1<<TXEN1_BIT)
+
+		#elif defined(NO_TX1_INTERRUPT)
+			#define USART1_CONFIG_B (1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+		#else
+			#ifdef USART1_RS485_MODE
+				#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<TXCIE1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+			#else
+				#define USART1_CONFIG_B (1<<TXEN1_BIT)|(1<<RXEN1_BIT)|(1<<RXCIE1_BIT)
+			#endif
 		#endif
 	#endif
 #endif // USART1_CONFIG
 
 #ifndef USART2_CONFIG_B // set config bytes for UCSR2B_REGISTER
 
-	#if defined(NO_RX2_INTERRUPT)
-		#define USART2_CONFIG_B (1<<TXEN2_BIT)
-
-	#elif defined(NO_TX2_INTERRUPT)
-		#define USART2_CONFIG_B (1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+	#ifdef USART2_MPCM_MODE
+		#if defined(NO_RX2_INTERRUPT)
+			#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<UCSZ22_BIT)
+	
+		#elif defined(NO_TX2_INTERRUPT)
+			#define USART2_CONFIG_B (1<<RXEN2_BIT)|(1<<RXCIE2_BIT)|(1<<UCSZ22_BIT)
+		#else
+			#ifdef USART2_RS485_MODE
+				#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)|(1<<UCSZ22_BIT)
+			#else
+				#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)|(1<<UCSZ22_BIT)
+			#endif
+		#endif
 	#else
-		#ifdef USART2_RS485_MODE
-			#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
-		#else	
-			#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+		#if defined(NO_RX2_INTERRUPT)
+			#define USART2_CONFIG_B (1<<TXEN2_BIT)
+
+		#elif defined(NO_TX2_INTERRUPT)
+			#define USART2_CONFIG_B (1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+		#else
+			#ifdef USART2_RS485_MODE
+				#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<TXCIE2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+			#else	
+				#define USART2_CONFIG_B (1<<TXEN2_BIT)|(1<<RXEN2_BIT)|(1<<RXCIE2_BIT)
+			#endif
 		#endif
 	#endif
 #endif // USART2_CONFIG
 
 #ifndef USART3_CONFIG_B // set config bytes for UCSR3B_REGISTER
 
-	#if defined(NO_RX3_INTERRUPT)
-		#define USART3_CONFIG_B (1<<TXEN3_BIT)
-
-	#elif defined(NO_TX3_INTERRUPT)
-		#define USART3_CONFIG_B (1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
-	#else
-		#ifdef USART3_RS485_MODE
-			#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+	#ifdef USART3_MPCM_MODE
+		#if defined(NO_RX3_INTERRUPT)
+			#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<UCSZ32_BIT)
+	
+		#elif defined(NO_TX3_INTERRUPT)
+			#define USART3_CONFIG_B (1<<RXEN3_BIT)|(1<<RXCIE3_BIT)|(1<<UCSZ32_BIT)
 		#else
-			#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+			#ifdef USART3_RS485_MODE
+				#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)|(1<<UCSZ32_BIT)
+			#else
+				#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)|(1<<UCSZ32_BIT)
+			#endif
+		#endif
+	#else	
+		#if defined(NO_RX3_INTERRUPT)
+			#define USART3_CONFIG_B (1<<TXEN3_BIT)
+		
+		#elif defined(NO_TX3_INTERRUPT)
+			#define USART3_CONFIG_B (1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+		#else
+			#ifdef USART3_RS485_MODE
+				#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<TXCIE3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+			#else
+				#define USART3_CONFIG_B (1<<TXEN3_BIT)|(1<<RXEN3_BIT)|(1<<RXCIE3_BIT)
+			#endif
 		#endif
 	#endif
 #endif // USART3_CONFIG
@@ -812,7 +983,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 					UBRR0H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART0_U2X_SPEED
-				UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
+				#ifdef USART0_MPCM_MODE
+					UCSR0A_REGISTER = (1<<U2X0_BIT)|(1<<MPCM0_BIT);
+				#else
+					UCSR0A_REGISTER = (1<<U2X0_BIT); // enable double speed
+				#endif
+			#elif defined(USART0_MPCM_MODE)
+			
+				UCSR0A_REGISTER |= (1<<MPCM0_BIT);
 			#endif
 			
 				UCSR0B_REGISTER = USART0_CONFIG_B;
@@ -835,7 +1013,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 					UBRR1H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART1_U2X_SPEED
-				UCSR1A_REGISTER |= (1<<U2X1_BIT); // enable double speed
+				#ifdef USART1_MPCM_MODE
+					UCSR1A_REGISTER = (1<<U2X1_BIT)|(1<<MPCM1_BIT);
+				#else
+					UCSR1A_REGISTER = (1<<U2X1_BIT); // enable double speed
+				#endif
+			#elif defined(USART1_MPCM_MODE)
+			
+				UCSR1A_REGISTER |= (1<<MPCM1_BIT);
 			#endif
 			
 				UCSR1B_REGISTER = USART1_CONFIG_B;
@@ -858,7 +1043,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 					UBRR2H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART2_U2X_SPEED
-				UCSR2A_REGISTER |= (1<<U2X2_BIT); // enable double speed
+				#ifdef USART2_MPCM_MODE
+					UCSR2A_REGISTER = (1<<U2X2_BIT)|(1<<MPCM2_BIT);
+				#else
+					UCSR2A_REGISTER = (1<<U2X2_BIT); // enable double speed
+				#endif
+			#elif defined(USART2_MPCM_MODE)
+			
+				UCSR2A_REGISTER |= (1<<MPCM2_BIT);
 			#endif
 			
 				UCSR2B_REGISTER = USART2_CONFIG_B;
@@ -881,7 +1073,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 					UBRR3H_REGISTER = (ubbr_value>>8);
 			
 			#ifdef USART3_U2X_SPEED
-				UCSR3A_REGISTER |= (1<<U2X3_BIT); // enable double speed
+				#ifdef USART3_MPCM_MODE
+					UCSR3A_REGISTER = (1<<U2X3_BIT)|(1<<MPCM3_BIT);
+				#else
+					UCSR3A_REGISTER = (1<<U2X3_BIT); // enable double speed
+				#endif
+			#elif defined(USART3_MPCM_MODE)
+			
+			UCSR3A_REGISTER |= (1<<MPCM3_BIT);
 			#endif
 			
 				UCSR3B_REGISTER = USART3_CONFIG_B;
@@ -934,6 +1133,29 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		}
 	}
 	
+#ifdef USART0_MPCM_MODE
+	void uart_mpcm_transmit_addres_Frame(uint8_t usartct, uint8_t dat);
+	void uart_mpcm_slave_return_idle(uint8_t usartct) // return slave to mpcm idle mode (wait for own addres frame)
+	{
+		switch(usartct)
+		{
+			default:
+		#if defined(USE_USART0)&&defined(USART0_MPCM_MODE)
+			case 0: UCSR0A_REGISTER |= (1<<MPCM0_BIT); break;
+		#endif // mpcm0
+		#if defined(USE_USART1)&&defined(USART1_MPCM_MODE)
+			case 1: UCSR1A_REGISTER |= (1<<MPCM1_BIT); break;
+		#endif // mpcm1
+		#if defined(USE_USART2)&&defined(USART2_MPCM_MODE)
+			case 2: UCSR2A_REGISTER |= (1<<MPCM2_BIT); break;
+		#endif // mpcm2
+		#if defined(USE_USART3)&&defined(USART3_MPCM_MODE)
+			case 3: UCSR3A_REGISTER |= (1<<MPCM3_BIT); //break;
+		#endif // mpcm3
+		}
+	}
+#endif
+	
 #else // single USART mcu
 	
 	// functions smaller then calling routines or executed once are inline for reducing 
@@ -955,7 +1177,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			UBRR0H_REGISTER = (ubbr_value>>8);
 		
 	#ifdef USART0_U2X_SPEED
-		UCSR0A_REGISTER |= (1<<U2X0_BIT); // enable double speed
+		#ifdef USART0_MPCM_MODE
+			UCSR0A_REGISTER = (1<<U2X0_BIT)|(1<<MPCM0_BIT);
+		#else
+			UCSR0A_REGISTER = (1<<U2X0_BIT); // enable double speed
+		#endif
+	#elif defined(USART0_MPCM_MODE)
+		
+		UCSR0A_REGISTER |= (1<<MPCM0_BIT);
 	#endif
 		
 		UCSR0B_REGISTER = USART0_CONFIG_B;
@@ -972,6 +1201,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	{
 		UCSR0A_REGISTER |= (1<<U2X0_BIT);
 	} 
+
+#ifdef USART0_MPCM_MODE
+	void uart_mpcm_transmit_addres_Frame(uint8_t dat);
+	void uart_mpcm_slave_return_idle(void) // return slave to mpcm idle mode (wait for own addres frame)
+	{
+		UCSR0A_REGISTER |= (1<<MPCM0_BIT);
+	}
+#endif
 
 #endif // single/multi USART
 	
@@ -1131,31 +1368,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 	
 	#ifndef NO_USART_TX
-	
-		void uart_putchar(char data, FILE *stream)
-		{
-			if ( data == '\n') uart_putc((uint16_t) stream -> udata, '\r');
-				
-			uart_putc((uint16_t) stream -> udata, data);
-		}
-	
+		void uart_putchar(char data, FILE *stream);
 	#endif
 
 	#ifndef NO_USART_RX
-	
-		char uart_getchar(FILE *stream)
-		{
-			uint8_t data;
-		
-			while( BUFFER_EMPTY == uart_getData((uint16_t) stream -> udata, &data) );
-			
-		#ifdef RX_STDIO_GETCHAR_ECHO
-			uart_putc((uint16_t) stream -> udata, data);
-		#endif
-		
-			return data;
-		}
-	
+		char uart_getchar(FILE *stream);
 	#endif
 	
 	#ifdef USE_USART0
