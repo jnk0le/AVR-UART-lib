@@ -770,7 +770,7 @@
 		}
 	}
 	
-#ifdef USART0_MPCM_MODE
+#if defined(USART0_MPCM_MODE)||defined(USART1_MPCM_MODE)||defined(USART2_MPCM_MODE)||defined(USART3_MPCM_MODE)
 
 //******************************************************************
 //Function  : Transmit address of selected slave in MPCM mode.
@@ -1965,8 +1965,8 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
+		"push  r16 \n\t"                          /* 2 */
+		"in    r16, __SREG__ \n\t"                /* 1 */
 
 		"push  r24 \n\t"                         /* 2 */ 
 		"push  r25 \n\t"                         /* 2 */
@@ -2010,8 +2010,8 @@
 		"pop   r25 \n\t"                         /* 2 */
 		"pop   r24 \n\t"                         /* 2 */
 		
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
+		"out   __SREG__ , r16 \n\t"               /* 1 */
+		"pop   r16 \n\t"                          /* 2 */
 
 		"reti \n\t"                              /* 4 ISR return */ // 49 cycles total in worst case
 		
@@ -2096,8 +2096,8 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
+		"push  r16 \n\t"                          /* 2 */
+		"in    r16, __SREG__ \n\t"                /* 1 */
 		
 		"push  r18 \n\t"                         /* 2 */
 		"push  r24 \n\t"                         /* 2 */
@@ -2179,8 +2179,8 @@
 		"pop   r24 \n\t"                         /* 2 */
 		"pop   r18 \n\t"                         /* 2 */
 		
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
+		"out   __SREG__ , r16 \n\t"               /* 1 */
+		"pop   r16 \n\t"                          /* 2 */
 
 		"reti \n\t"                              /* 4 ISR return */ // 52 cycles total in worst case
 

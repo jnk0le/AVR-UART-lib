@@ -41,4 +41,3 @@ In case of reinitializing uart on the fly (especially with non-constant ubbr) tr
 #todo
 - polled tx
 - const __flash strings ?
-- mpcm

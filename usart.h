@@ -305,7 +305,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif
 
 #define USART0_IN_IO_ADDRESS_SPACE
-#define USART0_NOT_ACCESIBLE_FROM_CBI
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -325,7 +324,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
-	
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
 	#define TXB80_BIT           TXB80
@@ -355,7 +353,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
-	
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
 	#define TXB80_BIT           TXB8
@@ -386,7 +383,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
-	
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
 	#define TXB80_BIT           TXB80	
@@ -414,7 +410,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
-	
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
 	#define TXB80_BIT           TXB80
@@ -439,7 +434,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define U2X1_BIT    		U2X1
-	
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
 	#define TXB81_BIT           TXB81	
@@ -471,7 +465,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
-	
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
 	#define TXB80_BIT           TXB8
@@ -501,7 +494,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
-	
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
 	#define TXB80_BIT           TXB8
@@ -532,7 +524,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
-	
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
 	#define TXB80_BIT           TXB80
@@ -557,7 +548,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define U2X1_BIT    		U2X1
-	
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
 	#define TXB81_BIT           TXB81
@@ -595,7 +585,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
-	
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
 	#define TXB80_BIT           TXB80
@@ -620,7 +609,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define U2X1_BIT    		U2X1
-	
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
 	#define TXB81_BIT           TXB81
@@ -649,7 +637,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN2_BIT   		TXEN2
 	#define RXEN2_BIT   		RXEN2
 	#define U2X2_BIT    		U2X2
-	
 	#define MPCM2_BIT           MPCM2
 	#define UCSZ22_BIT          UCSZ22
 	#define TXB82_BIT           TXB82
@@ -674,7 +661,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN3_BIT   		TXEN3
 	#define RXEN3_BIT   		RXEN3
 	#define U2X3_BIT    		U2X3
-	
 	#define MPCM3_BIT           MPCM3
 	#define UCSZ32_BIT          UCSZ32
 	#define TXB83_BIT           TXB83
@@ -704,7 +690,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN1
 	#define RXEN0_BIT   		RXEN1
 	#define U2X0_BIT    		U2X1
-	
 	#define MPCM0_BIT           MPCM1
 	#define UCSZ02_BIT          UCSZ12
 	#define TXB80_BIT           TXB81
@@ -732,7 +717,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define U2X0_BIT    		U2X
-	
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
 	#define TXB80_BIT           TXB8
@@ -766,7 +750,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
-	
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
 	#define TXB80_BIT           TXB80
@@ -798,7 +781,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define U2X0_BIT    		U2X0
-	
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
 	#define TXB80_BIT           TXB80
