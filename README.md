@@ -8,6 +8,7 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 - support for up to 4 USART's
 - extremly light interrupts (48/52 cycles for tx/rx in worst case, or 47/51 if uart is placed in IO address space)
 - RS 485 compatibility
+- MPCM mode
 - printf()/scanf() streams compatibility
 - partial V-USB compatibility (25 cycle ISR restriction (TX is broken at the moment))
 - optimized as much as possible to reduce code size
