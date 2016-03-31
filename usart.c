@@ -1965,84 +1965,84 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-		"push  r16 \n\t"                          /* 2 */
-		"in    r16, __SREG__ \n\t"                /* 1 */
+			"push  r16 \n\t"                         /* 2 */
+			"in    r16, __SREG__ \n\t"               /* 1 */
 
-		"push  r24 \n\t"                         /* 2 */ 
-		"push  r25 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r31 \n\t"                         /* 2 */
+			"push  r24 \n\t"                         /* 2 */ 
+			"push  r25 \n\t"                         /* 2 */
+			"push  r30 \n\t"                         /* 2 */
+			"push  r31 \n\t"                         /* 2 */
 		
-		/* load globals */
-		"lds   r24, (tx0_first_byte) \n\t"       /* 2 */
-		"lds   r25, (tx0_last_byte) \n\t"        /* 2 */
+			/* load globals */
+			"lds   r24, (tx0_first_byte) \n\t"       /* 2 */
+			"lds   r25, (tx0_last_byte) \n\t"        /* 2 */
 		
-		/* if(tmp_tx_first_byte != tx0_last_byte) */
-		"cp    r24, r25 \n\t"                    /* 1 */
-		"breq  USART0_DISABLE_UDRIE_%= \n\t"                        /* 1/2 */
+			/* if(tmp_tx_first_byte != tx0_last_byte) */
+			"cp    r24, r25 \n\t"                    /* 1 */
+			"breq  USART0_DISABLE_UDRIE_%= \n\t"     /* 1/2 */
 		
-		/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
-		"subi  r24, 0xFF \n\t"                   /* 1 */
+			/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
+			"subi  r24, 0xFF \n\t"                   /* 1 */
 	
-		/* tmp_tx_first_byte &= TX0_BUFFER_MASK */
-	#if (TX0_BUFFER_MASK != 0xff)
-		"andi  r24, %M[mask]\n\t"                /* 1 */
-	#endif
+			/* tmp_tx_first_byte &= TX0_BUFFER_MASK */
+		#if (TX0_BUFFER_MASK != 0xff)
+			"andi  r24, %M[mask]\n\t"                /* 1 */
+		#endif
 		
-		/* tx0_buffer[tmp_tx_first_byte] */
-		"mov   r30, r24 \n\t"                    /* 1 */
-		"ldi   r31, 0x00 \n\t"                   /* 1 */
-		"subi  r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
-		"sbci  r31, hi8(-(tx0_buffer)) \n\t"     /* 1 */
-		"ld    r25, Z \n\t"                      /* 2 */
+			/* tx0_buffer[tmp_tx_first_byte] */
+			"mov   r30, r24 \n\t"                    /* 1 */
+			"ldi   r31, 0x00 \n\t"                   /* 1 */
+			"subi  r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
+			"sbci  r31, hi8(-(tx0_buffer)) \n\t"     /* 1 */
+			"ld    r25, Z \n\t"                      /* 2 */
 		
-		/* UDR0_REGISTER = tx0_buffer[tmp_tx_first_byte] */
-	#ifdef USART0_IN_IO_ADDRESS_SPACE
-		"out   %M[UDR_reg_IO], r25 \n\t"          /* 1 */
-	#else
-		"sts   %M[UDR_reg], r25 \n\t"          /* 2 */
-	#endif
-		"sts   (tx0_first_byte), r24 \n\t"       /* 2 */
+			/* UDR0_REGISTER = tx0_buffer[tmp_tx_first_byte] */
+		#ifdef USART0_IN_IO_ADDRESS_SPACE
+			"out   %M[UDR_reg_IO], r25 \n\t"         /* 1 */
+		#else
+			"sts   %M[UDR_reg], r25 \n\t"            /* 2 */
+		#endif
+			"sts   (tx0_first_byte), r24 \n\t"       /* 2 */
 		
-	"USART0_TX_EXIT_%=: "
-		"pop   r31 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
+		"USART0_TX_EXIT_%=: "
+			"pop   r31 \n\t"                         /* 2 */
+			"pop   r30 \n\t"                         /* 2 */
+			"pop   r25 \n\t"                         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
 		
-		"out   __SREG__ , r16 \n\t"               /* 1 */
-		"pop   r16 \n\t"                          /* 2 */
+			"out   __SREG__ , r16 \n\t"              /* 1 */
+			"pop   r16 \n\t"                         /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */ // 49 cycles total in worst case
+			"reti \n\t"                              /* 4 ISR return */ // 49 cycles total in worst case
 		
-		/* UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT) */
-	"USART0_DISABLE_UDRIE_%=: "
-	#ifdef USART0_IN_IO_ADDRESS_SPACE
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-			"in   r24, %M[control_reg] \n\t"        /* 1 */
-			"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
-			"out   %M[control_reg], r24\n\t"         /* 1 */
-		#else // cbi
-			"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
-		#endif // to cbi or not to cbi
-	#else
-		"lds   r24, %M[control_reg] \n\t"        /* 2 */
-		"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
-		"sts   %M[control_reg], r24\n\t"         /* 2 */
-	#endif
-		"rjmp   USART0_TX_EXIT_%= \n\t"          /* 2 */
+			/* UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT) */
+		"USART0_DISABLE_UDRIE_%=: "
+		#ifdef USART0_IN_IO_ADDRESS_SPACE
+			#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+				"in   r24, %M[control_reg] \n\t"                  /* 1 */
+				"andi  r24, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
+				"out   %M[control_reg], r24\n\t"                  /* 1 */
+			#else // cbi
+				"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+			#endif // to cbi or not to cbi
+		#else
+			"lds   r24, %M[control_reg] \n\t"        /* 2 */
+			"andi  r24, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r24\n\t"         /* 2 */
+		#endif
+			"rjmp   USART0_TX_EXIT_%= \n\t"          /* 2 */
 		
-		: /* output operands */
+			: /* output operands */
 		
-		: /* input operands */
-		[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
-		[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
-		[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
-		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
-		[udrie_bit] "M"		(UDRIE0_BIT),
-		[mask]        "M"    (TX0_BUFFER_MASK)
+			: /* input operands */
+			[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
+			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
+			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+			[udrie_bit] "M"		(UDRIE0_BIT),
+			[mask]        "M"    (TX0_BUFFER_MASK)
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 	}	
 	
@@ -2056,31 +2056,31 @@
 	
 	#ifdef USART0_DISABLE_TRANSMITTER_ON_TXC
 		asm volatile("\n\t"
-	#ifdef USART0_IN_IO_ADDRESS_SPACE
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-			"push  r24 \n\t"  
-			"in   r24, %M[UCSRB_reg_IO] \n\t"        /* 1 */
-			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"                   /* 1 */
-			"out   %M[UCSRB_reg_IO], r24\n\t"         /* 1 */
-			"pop   r24 \n\t"                         /* 2 */
-		#else // cbi
-			"cbi   %M[UCSRB_reg_IO], %M[TXEN_bit] \n\t"    /* 2 */
-		#endif // to cbi or not to cbi
-	#else
+		#ifdef USART0_IN_IO_ADDRESS_SPACE
+			#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+				"push  r24 \n\t"  
+				"in   r24, %M[UCSRB_reg_IO] \n\t"              /* 1 */
+				"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"           /* 1 */
+				"out   %M[UCSRB_reg_IO], r24\n\t"              /* 1 */
+				"pop   r24 \n\t"                               /* 2 */
+			#else // cbi
+				"cbi   %M[UCSRB_reg_IO], %M[TXEN_bit] \n\t"    /* 2 */
+			#endif // to cbi or not to cbi
+		#else
 			"push  r24 \n\t"                         /* 2 */ 
-			"lds   r24, %M[UCSRB_reg] \n\t"        /* 2 */
-			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"                   /* 1 */
-			"sts   %M[UCSRB_reg], r24\n\t"         /* 2 */
+			"lds   r24, %M[UCSRB_reg] \n\t"          /* 2 */
+			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"     /* 1 */
+			"sts   %M[UCSRB_reg], r24\n\t"           /* 2 */
 			"pop   r24 \n\t"                         /* 2 */
-	#endif
-		: /* output operands */
+		#endif
+			: /* output operands */
 		
-		: /* input operands */
-		[UCSRB_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
-		[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
-		[TXEN_bit]   "M"    (TXEN0_BIT)
+			: /* input operands */
+			[UCSRB_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
+			[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+			[TXEN_bit]   "M"    (TXEN0_BIT)
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 	#endif
 		reti();
@@ -2096,109 +2096,109 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-		"push  r16 \n\t"                          /* 2 */
-		"in    r16, __SREG__ \n\t"                /* 1 */
+			"push  r16 \n\t"                         /* 2 */
+			"in    r16, __SREG__ \n\t"               /* 1 */
 		
-		"push  r18 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r31 \n\t"                         /* 2 */
+			"push  r18 \n\t"                         /* 2 */
+			"push  r24 \n\t"                         /* 2 */
+			"push  r25 \n\t"                         /* 2 */
+			"push  r30 \n\t"                         /* 2 */
+			"push  r31 \n\t"                         /* 2 */
 		
-		/* read byte from UDR register */
-	#ifdef USART0_IN_IO_ADDRESS_SPACE
-		"in   r25, %M[UDR_reg_IO] \n\t"          /* 1 */
-	#else
-		"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
-	#endif
-	
-	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
-		"sei \n\t"                               /* 1 */
-	#endif
-	
-	#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
-		
+			/* read byte from UDR register */
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"in 	r24, %M[UCSRA_reg_IO] \n\t"      /* 1 */
+			"in   r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 		#else
-			"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+			"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
 		#endif
+	
+		#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+			"sei \n\t"                               /* 1 */
+		#endif
+	
+		#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
+		
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+				"in 	r24, %M[UCSRA_reg_IO] \n\t"      /* 1 */
+			#else
+				"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+			#endif
 			
-			"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
-			"rjmp   USART0_RX_CONTINUE_%= \n\t"      /* 2 */
-			"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+				"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
+				"rjmp   USART0_RX_CONTINUE_%= \n\t"      /* 2 */
+				"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+			#ifdef MPCM0_GCALL_ADDRESS
+				"breq	p_%= \n\t"                       /* 1/2 */
+				"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
+			#endif
+				"brne	USART0_RX_EXIT_%= \n\t"          /* 1/2 */
+			"p_%=: "
+				"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
+			
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+				"out	%M[UCSRA_reg_IO], r24 \n\t"      /* 2 */
+			#else
+				"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
+			#endif
+		
+		"USART0_RX_CONTINUE_%=: "
+		#endif
+			/* load globals */
+			"lds   r24, (rx0_last_byte) \n\t"        /* 2 */
+			"lds   r18, (rx0_first_byte) \n\t"       /* 2 */
+		
+			/* tmp_rx_last_byte = rx0_last_byte + 1 */
+			"subi  r24, 0xFF \n\t"                   /* 1 */
+		
+			/* tmp_rx_last_byte &= RX0_BUFFER_MASK */
+		#if (RX0_BUFFER_MASK != 0xff)
+			"andi  r24, %M[mask]\n\t"                /* 1 */
+		#endif
+		
+			/* if(rx0_first_byte != tmp_rx_last_byte) */
+			"cp    r18, r24 \n\t"                    /* 1 */
+			"breq  USART0_RX_EXIT_%= \n\t"           /* 1/2 */
+		
+			/* rx0_buffer[tmp_rx_last_byte] = tmp */
+			"mov   r30, r24 \n\t"                    /* 1 */
+			"ldi   r31, 0x00 \n\t"                   /* 1 */
+			"subi  r30, lo8(-(rx0_buffer))\n\t"      /* 1 */
+			"sbci  r31, hi8(-(rx0_buffer))\n\t"      /* 1 */
+			"st    Z, r25 \n\t"                      /* 2 */
+		
+			/* rx0_last_byte = tmp_rx_last_byte */
+			"sts   (rx0_last_byte), r24 \n\t"        /* 2 */
+
+		"USART0_RX_EXIT_%=: "
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"cli \n\t"                               /* 1 */
+		#endif
+			"pop   r31 \n\t"                         /* 2 */
+			"pop   r30 \n\t"                         /* 2 */
+			"pop   r25 \n\t"                         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
+			"pop   r18 \n\t"                         /* 2 */
+		
+			"out   __SREG__ , r16 \n\t"               /* 1 */
+			"pop   r16 \n\t"                          /* 2 */
+
+			"reti \n\t"                              /* 4 ISR return */ // 52 cycles total in worst case
+
+			: /* output operands */
+		
+			: /* input operands */
+			[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[UDR_reg]	"M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
+			[mask]      "M"    (RX0_BUFFER_MASK),
+			[mpcm_address]      "M"    (MPCM0_ADDRESS),
 		#ifdef MPCM0_GCALL_ADDRESS
-			"breq	p_%= \n\t"                      /* 1/2 */
-			"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
+			[mpcm_gcall_address]      "M"    (MPCM0_GCALL_ADDRESS),
 		#endif
-			"brne	USART0_RX_EXIT_%= \n\t"          /* 1/2 */
-		"p_%=: "
-			"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
-			
-		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"out	%M[UCSRA_reg_IO], r24 \n\t"         /* 2 */
-		#else
-			"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
-		#endif
+			[mpcm_bit]      "M"    (MPCM0_BIT),
+			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
+			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0A_REGISTER))
 		
-	"USART0_RX_CONTINUE_%=: "
-	#endif
-		/* load globals */
-		"lds   r24, (rx0_last_byte) \n\t"        /* 2 */
-		"lds   r18, (rx0_first_byte) \n\t"       /* 2 */
-		
-		/* tmp_rx_last_byte = rx0_last_byte + 1 */
-		"subi  r24, 0xFF \n\t"                   /* 1 */
-		
-		/* tmp_rx_last_byte &= RX0_BUFFER_MASK */
-	#if (RX0_BUFFER_MASK != 0xff)
-		"andi  r24, %M[mask]\n\t"                /* 1 */
-	#endif
-		
-		/* if(rx0_first_byte != tmp_rx_last_byte) */
-		"cp    r18, r24 \n\t"                    /* 1 */
-		"breq  USART0_RX_EXIT_%= \n\t"           /* 1/2 */
-		
-		/* rx0_buffer[tmp_rx_last_byte] = tmp */
-		"mov   r30, r24 \n\t"                    /* 1 */
-		"ldi   r31, 0x00 \n\t"                   /* 1 */
-		"subi  r30, lo8(-(rx0_buffer))\n\t"      /* 1 */
-		"sbci  r31, hi8(-(rx0_buffer))\n\t"      /* 1 */
-		"st    Z, r25 \n\t"                      /* 2 */
-		
-		/* rx0_last_byte = tmp_rx_last_byte */
-		"sts   (rx0_last_byte), r24 \n\t"        /* 2 */
-
-	"USART0_RX_EXIT_%=: "
-	#ifdef USART_UNSAFE_RX_INTERRUPT
-		"cli \n\t"                               /* 1 */
-	#endif
-		"pop   r31 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r18 \n\t"                         /* 2 */
-		
-		"out   __SREG__ , r16 \n\t"               /* 1 */
-		"pop   r16 \n\t"                          /* 2 */
-
-		"reti \n\t"                              /* 4 ISR return */ // 52 cycles total in worst case
-
-		: /* output operands */
-		
-		: /* input operands */
-		[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
-		[UDR_reg]	"M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
-		[mask]      "M"    (RX0_BUFFER_MASK),
-		[mpcm_address]      "M"    (MPCM0_ADDRESS),
-	#ifdef MPCM0_GCALL_ADDRESS
-		[mpcm_gcall_address]      "M"    (MPCM0_GCALL_ADDRESS),
-	#endif
-		[mpcm_bit]      "M"    (MPCM0_BIT),
-		[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
-		[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0A_REGISTER))
-		
-		/* no clobbers */
+			/* no clobbers */
 		);
 		
 	}
@@ -2211,78 +2211,78 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 		
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
+			"push  r0 \n\t"                          /* 2 */
+			"in    r0, __SREG__ \n\t"                /* 1 */
 
-		"push  r24 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r31 \n\t"                         /* 2 */
+			"push  r24 \n\t"                         /* 2 */
+			"push  r25 \n\t"                         /* 2 */
+			"push  r30 \n\t"                         /* 2 */
+			"push  r31 \n\t"                         /* 2 */
 		
-		/* load globals */
-		"lds   r24, (tx1_first_byte) \n\t"       /* 2 */
-		"lds   r25, (tx1_last_byte) \n\t"        /* 2 */
+			/* load globals */
+			"lds   r24, (tx1_first_byte) \n\t"       /* 2 */
+			"lds   r25, (tx1_last_byte) \n\t"        /* 2 */
 		
-		/* if(tmp_tx_first_byte != tx1_last_byte) */
-		"cp    r24, r25 \n\t"                    /* 1 */
-		"breq  USART1_DISABLE_UDRIE_%= \n\t"                        /* 1/2 */
+			/* if(tmp_tx_first_byte != tx1_last_byte) */
+			"cp    r24, r25 \n\t"                    /* 1 */
+			"breq  USART1_DISABLE_UDRIE_%= \n\t"     /* 1/2 */
 		
-		/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
-		"subi  r24, 0xFF \n\t"                   /* 1 */
+			/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
+			"subi  r24, 0xFF \n\t"                   /* 1 */
 				
-		/* tmp_tx_first_byte &= TX1_BUFFER_MASK */
-	#if (TX1_BUFFER_MASK != 0xff)
-		"andi  r24, %M[mask]\n\t"                /* 1 */
-	#endif
+			/* tmp_tx_first_byte &= TX1_BUFFER_MASK */
+		#if (TX1_BUFFER_MASK != 0xff)
+			"andi  r24, %M[mask]\n\t"                /* 1 */
+		#endif
 		
-		/* tx1_buffer[tmp_tx_first_byte] */
-		"mov   r30, r24 \n\t"                    /* 1 */
-		"ldi   r31, 0x00 \n\t"                   /* 1 */
-		"subi  r30, lo8(-(tx1_buffer)) \n\t"     /* 1 */
-		"sbci  r31, hi8(-(tx1_buffer)) \n\t"     /* 1 */
-		"ld    r25, Z \n\t"                      /* 2 */
+			/* tx1_buffer[tmp_tx_first_byte] */
+			"mov   r30, r24 \n\t"                    /* 1 */
+			"ldi   r31, 0x00 \n\t"                   /* 1 */
+			"subi  r30, lo8(-(tx1_buffer)) \n\t"     /* 1 */
+			"sbci  r31, hi8(-(tx1_buffer)) \n\t"     /* 1 */
+			"ld    r25, Z \n\t"                      /* 2 */
 		
-		/* UDR1_REGISTER = tx1_buffer[tmp_tx_first_byte] */
-		#ifdef USART0_IN_IO_ADDRESS_SPACE
-		"out   %M[UDR_reg_IO], r25 \n\t"          /* 1 */
-	#else
-		"sts   %M[UDR_reg], r25 \n\t"          /* 2 */
-	#endif
-		"sts   (tx1_first_byte), r24 \n\t"       /* 2 */
+			/* UDR1_REGISTER = tx1_buffer[tmp_tx_first_byte] */
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+			"out   %M[UDR_reg_IO], r25 \n\t"         /* 1 */
+		#else
+			"sts   %M[UDR_reg], r25 \n\t"            /* 2 */
+		#endif
+			"sts   (tx1_first_byte), r24 \n\t"       /* 2 */
 		
-	"USART1_TX_EXIT_%=: "
-		"pop   r31 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
+		"USART1_TX_EXIT_%=: "
+			"pop   r31 \n\t"                         /* 2 */
+			"pop   r30 \n\t"                         /* 2 */
+			"pop   r25 \n\t"                         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
 		
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
+			"out   __SREG__ , r0 \n\t"               /* 1 */
+			"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+			"reti \n\t"                              /* 4 ISR return */
 		
-		/* UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT) */
-	"USART1_DISABLE_UDRIE_%=: "
-	#ifdef USART0_IN_IO_ADDRESS_SPACE
-		"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
-	#else
-		"lds   r24, %M[control_reg] \n\t"        /* 2 */
-		"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
-		"sts   %M[control_reg], r24\n\t"         /* 2 */
-	#endif
-		"rjmp   USART1_TX_EXIT_%= \n\t"          /* 2 */
+			/* UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT) */
+		"USART1_DISABLE_UDRIE_%=: "
+		#ifdef USART0_IN_IO_ADDRESS_SPACE
+			"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+		#else
+			"lds   r24, %M[control_reg] \n\t"        /* 2 */
+			"andi  r24, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r24\n\t"         /* 2 */
+		#endif
+			"rjmp   USART1_TX_EXIT_%= \n\t"          /* 2 */
 		
-		: /* output operands */
+			: /* output operands */
 		
-		: /* input operands */
-		[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR1_REGISTER)),
-		[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
-		[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
-		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
-		[udrie_bit] "M"		(UDRIE1_BIT),
-		[mask]        "M"    (TX1_BUFFER_MASK)
+			: /* input operands */
+			[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR1_REGISTER)),
+			[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
+			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
+			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+			[udrie_bit] "M"		(UDRIE1_BIT),
+			[mask]        "M"    (TX1_BUFFER_MASK)
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 		
 	}
@@ -2300,20 +2300,20 @@
 		#ifdef USART1_IN_IO_ADDRESS_SPACE
 			"cbi   %M[UCSRB_reg_IO], %M[TXEN_bit] \n\t"    /* 2 */
 		#else
-			"push  r24 \n\t"                         /* 2 */ 
-			"lds   r24, %M[UCSRB_reg] \n\t"        /* 2 */
-			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"                   /* 1 */
-			"sts   %M[UCSRB_reg], r24\n\t"         /* 2 */
-			"pop   r24 \n\t"                         /* 2 */
+			"push  r24 \n\t"                               /* 2 */ 
+			"lds   r24, %M[UCSRB_reg] \n\t"                /* 2 */
+			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"           /* 1 */
+			"sts   %M[UCSRB_reg], r24\n\t"                 /* 2 */
+			"pop   r24 \n\t"                               /* 2 */
 		#endif
-		: /* output operands */
+			: /* output operands */
 		
-		: /* input operands */
-		[UCSRB_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
-		[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
-		[TXEN_bit]   "M"    (TXEN1_BIT)
+			: /* input operands */
+			[UCSRB_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
+			[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+			[TXEN_bit]   "M"    (TXEN1_BIT)
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 	#endif
 		reti();
@@ -2329,109 +2329,109 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-		"push  r0 \n\t"                         /* 2 */
-		"in    r0, __SREG__ \n\t"               /* 1 */
+			"push  r0 \n\t"                          /* 2 */
+			"in    r0, __SREG__ \n\t"                /* 1 */
 	
-		"push  r18 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r31 \n\t"                         /* 2 */
+			"push  r18 \n\t"                         /* 2 */
+			"push  r24 \n\t"                         /* 2 */
+			"push  r25 \n\t"                         /* 2 */
+			"push  r30 \n\t"                         /* 2 */
+			"push  r31 \n\t"                         /* 2 */
 
-		/* read byte from UDR register */
-	#ifdef USART1_IN_IO_ADDRESS_SPACE
-		"in   r25, %M[UDR_reg_IO] \n\t"          /* 1 */
-	#else
-		"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
-	#endif
+			/* read byte from UDR register */
+		#ifdef USART1_IN_IO_ADDRESS_SPACE
+			"in   r25, %M[UDR_reg_IO] \n\t"          /* 1 */
+		#else
+			"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
+		#endif
 		
-	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
-		"sei \n\t"                               /* 1 */
-	#endif
+		#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+			"sei \n\t"                               /* 1 */
+		#endif
 	
-	#if defined(USART1_MPCM_MODE)&&!defined(MPCM1_MASTER_ONLY)
+		#if defined(USART1_MPCM_MODE)&&!defined(MPCM1_MASTER_ONLY)
 		
-		#ifdef USART1_IN_IO_ADDRESS_SPACE
-			"in 	r24, %M[UCSRA_reg_IO] \n\t"      /* 1 */
-		#else
-			"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+			#ifdef USART1_IN_IO_ADDRESS_SPACE
+				"in 	r24, %M[UCSRA_reg_IO] \n\t"         /* 1 */
+			#else
+				"lds	r24, %M[UCSRA_reg] \n\t"            /* 2 */
+			#endif
+		
+				"sbrs	r24, %M[mpcm_bit] \n\t"             /* 1 */
+				"rjmp   USART1_RX_CONTINUE_%= \n\t"         /* 2 */
+				"cpi	r25, %M[mpcm_address] \n\t"         /* 1 */
+			#ifdef MPCM1_GCALL_ADDRESS
+				"breq	p_%= \n\t"                          /* 1/2 */
+				"cpi	r25, %M[mpcm_gcall_address] \n\t"   /* 1 */
+			#endif
+				"brne	USART1_RX_EXIT_%= \n\t"             /* 1/2 */
+			"p_%=: "
+				"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"       /* 1 */
+		
+			#ifdef USART1_IN_IO_ADDRESS_SPACE
+				"out	%M[UCSRA_reg_IO], r24 \n\t"         /* 2 */
+			#else
+				"sts	%M[UCSRA_reg], r24 \n\t"            /* 2 */
+			#endif
+		
+		"USART1_RX_CONTINUE_%=: "
 		#endif
+			/* load globals */
+			"lds   r24, (rx1_last_byte) \n\t"        /* 2 */
+			"lds   r18, (rx1_first_byte) \n\t"       /* 2 */
 		
-			"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
-			"rjmp   USART1_RX_CONTINUE_%= \n\t"      /* 2 */
-			"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
-		#ifdef MPCM1_GCALL_ADDRESS
-			"breq	p_%= \n\t"                      /* 1/2 */
-			"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
-		#endif
-			"brne	USART1_RX_EXIT_%= \n\t"          /* 1/2 */
-		"p_%=: "
-			"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
-		
-		#ifdef USART1_IN_IO_ADDRESS_SPACE
-			"out	%M[UCSRA_reg_IO], r24 \n\t"         /* 2 */
-		#else
-			"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
-		#endif
-		
-	"USART1_RX_CONTINUE_%=: "
-	#endif
-		/* load globals */
-		"lds   r24, (rx1_last_byte) \n\t"        /* 2 */
-		"lds   r18, (rx1_first_byte) \n\t"       /* 2 */
-		
-		/* tmp_rx_last_byte = rx1_last_byte + 1 */
-		"subi  r24, 0xFF \n\t"                   /* 1 */
+			/* tmp_rx_last_byte = rx1_last_byte + 1 */
+			"subi  r24, 0xFF \n\t"                   /* 1 */
 				
-		/* tmp_rx_last_byte &= RX1_BUFFER_MASK */
-	#if (RX1_BUFFER_MASK != 0xff)
-		"andi  r24, %M[mask]\n\t"                /* 1 */
-	#endif
+			/* tmp_rx_last_byte &= RX1_BUFFER_MASK */
+		#if (RX1_BUFFER_MASK != 0xff)
+			"andi  r24, %M[mask]\n\t"                /* 1 */
+		#endif
 		
-		/* if(rx1_first_byte != tmp_rx_last_byte) */
-		"cp    r18, r24 \n\t"                    /* 1 */
-		"breq  USART1_RX_EXIT_%= \n\t"                        /* 1/2 */
+			/* if(rx1_first_byte != tmp_rx_last_byte) */
+			"cp    r18, r24 \n\t"                    /* 1 */
+			"breq  USART1_RX_EXIT_%= \n\t"           /* 1/2 */
 		
-		/* rx1_buffer[tmp_rx_last_byte] = tmp */
-		"mov   r30, r24 \n\t"                    /* 1 */
-		"ldi   r31, 0x00 \n\t"                   /* 1 */
-		"subi  r30, lo8(-(rx1_buffer))\n\t"      /* 1 */
-		"sbci  r31, hi8(-(rx1_buffer))\n\t"      /* 1 */
-		"st    Z, r25 \n\t"                      /* 2 */
+			/* rx1_buffer[tmp_rx_last_byte] = tmp */
+			"mov   r30, r24 \n\t"                    /* 1 */
+			"ldi   r31, 0x00 \n\t"                   /* 1 */
+			"subi  r30, lo8(-(rx1_buffer))\n\t"      /* 1 */
+			"sbci  r31, hi8(-(rx1_buffer))\n\t"      /* 1 */
+			"st    Z, r25 \n\t"                      /* 2 */
 		
-		/* rx1_last_byte = tmp_rx_last_byte */
-		"sts   (rx1_last_byte), r24 \n\t"        /* 2 */
+			/* rx1_last_byte = tmp_rx_last_byte */
+			"sts   (rx1_last_byte), r24 \n\t"        /* 2 */
 
-	"USART1_RX_EXIT_%=: "
-	#ifdef USART_UNSAFE_RX_INTERRUPT
-		"cli \n\t"                               /* 1 */
-	#endif
-		"pop   r31 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r18 \n\t"                         /* 2 */
+		"USART1_RX_EXIT_%=: "
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"cli \n\t"                               /* 1 */
+		#endif
+			"pop   r31 \n\t"                         /* 2 */
+			"pop   r30 \n\t"                         /* 2 */
+			"pop   r25 \n\t"                         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
+			"pop   r18 \n\t"                         /* 2 */
 
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
+			"out   __SREG__ , r0 \n\t"               /* 1 */
+			"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+			"reti \n\t"                              /* 4 ISR return */
 		
-		: /* output operands */
+			: /* output operands */
 		
-		: /* input operands */
-		[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
-		[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
-		[mask]      "M"    (RX1_BUFFER_MASK),
-		[mpcm_address]      "M"    (MPCM1_ADDRESS),
-	#ifdef MPCM1_GCALL_ADDRESS
-		[mpcm_gcall_address]      "M"    (MPCM1_GCALL_ADDRESS),
-	#endif
-		[mpcm_bit]      "M"    (MPCM1_BIT),
-		[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
-		[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1A_REGISTER))
+			: /* input operands */
+			[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
+			[mask]      "M"    (RX1_BUFFER_MASK),
+			[mpcm_address]      "M"    (MPCM1_ADDRESS),
+		#ifdef MPCM1_GCALL_ADDRESS
+			[mpcm_gcall_address]      "M"    (MPCM1_GCALL_ADDRESS),
+		#endif
+			[mpcm_bit]      "M"    (MPCM1_BIT),
+			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
+			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1A_REGISTER))
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 		
 	}
@@ -2444,70 +2444,70 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-		"push  r0 \n\t"                         /* 2 */
-		"in    r0, __SREG__ \n\t"               /* 1 */
+			"push  r0 \n\t"                          /* 2 */
+			"in    r0, __SREG__ \n\t"                /* 1 */
 	
-		"push  r24 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r31 \n\t"                         /* 2 */
+			"push  r24 \n\t"                         /* 2 */
+			"push  r25 \n\t"                         /* 2 */
+			"push  r30 \n\t"                         /* 2 */
+			"push  r31 \n\t"                         /* 2 */
 	
-		/* load globals */
-		"lds   r24, (tx2_first_byte) \n\t"       /* 2 */
-		"lds   r25, (tx2_last_byte) \n\t"        /* 2 */
+			/* load globals */
+			"lds   r24, (tx2_first_byte) \n\t"       /* 2 */
+			"lds   r25, (tx2_last_byte) \n\t"        /* 2 */
 		
-		/* if(tmp_tx_first_byte != tx2_last_byte) */
-		"cp    r24, r25 \n\t"                    /* 1 */
-		"breq  USART2_DISABLE_UDRIE_%= \n\t"                        /* 1/2 */
+			/* if(tmp_tx_first_byte != tx2_last_byte) */
+			"cp    r24, r25 \n\t"                    /* 1 */
+			"breq  USART2_DISABLE_UDRIE_%= \n\t"     /* 1/2 */
 		
-		/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
-		"subi  r24, 0xFF \n\t"                   /* 1 */
+			/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
+			"subi  r24, 0xFF \n\t"                   /* 1 */
 		
-		/* tmp_tx_first_byte &= TX2_BUFFER_MASK */
-	#if (TX2_BUFFER_MASK != 0xff)
-		"andi  r24, %M[mask]\n\t"                /* 1 */
-	#endif
+			/* tmp_tx_first_byte &= TX2_BUFFER_MASK */
+		#if (TX2_BUFFER_MASK != 0xff)
+			"andi  r24, %M[mask]\n\t"                /* 1 */
+		#endif
 		
-		/* tx2_buffer[tmp_tx_first_byte] */
-		"mov   r30, r24 \n\t"                    /* 1 */
-		"ldi   r31, 0x00 \n\t"                   /* 1 */
-		"subi  r30, lo8(-(tx2_buffer)) \n\t"     /* 1 */
-		"sbci  r31, hi8(-(tx2_buffer)) \n\t"     /* 1 */
-		"ld    r25, Z \n\t"                      /* 2 */
+			/* tx2_buffer[tmp_tx_first_byte] */
+			"mov   r30, r24 \n\t"                    /* 1 */
+			"ldi   r31, 0x00 \n\t"                   /* 1 */
+			"subi  r30, lo8(-(tx2_buffer)) \n\t"     /* 1 */
+			"sbci  r31, hi8(-(tx2_buffer)) \n\t"     /* 1 */
+			"ld    r25, Z \n\t"                      /* 2 */
 		
-		/* UDR2_REGISTER = tx2_buffer[tmp_tx_first_byte] */
-		"sts   %M[UDR_reg], r25 \n\t"          /* 2 */
-		"sts   (tx2_first_byte), r24 \n\t"       /* 2 */
+			/* UDR2_REGISTER = tx2_buffer[tmp_tx_first_byte] */
+			"sts   %M[UDR_reg], r25 \n\t"            /* 2 */
+			"sts   (tx2_first_byte), r24 \n\t"       /* 2 */
 
-	"USART2_TX_EXIT_%=: "
-		"pop   r31 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
+		"USART2_TX_EXIT_%=: "
+			"pop   r31 \n\t"                         /* 2 */
+			"pop   r30 \n\t"                         /* 2 */
+			"pop   r25 \n\t"                         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
 		
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
+			"out   __SREG__ , r0 \n\t"               /* 1 */
+			"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+			"reti \n\t"                              /* 4 ISR return */
 		
-		/* UCSR2B_REGISTER &= ~(1<<UDRIE2_BIT) */
-	"USART2_DISABLE_UDRIE_%=: "
+			/* UCSR2B_REGISTER &= ~(1<<UDRIE2_BIT) */
+		"USART2_DISABLE_UDRIE_%=: "
 		
-		"lds   r24, %M[control_reg] \n\t"        /* 2 */
-		"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
-		"sts   %M[control_reg], r24\n\t"         /* 2 */
+			"lds   r24, %M[control_reg] \n\t"        /* 2 */
+			"andi  r24, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r24\n\t"         /* 2 */
 				
-		"rjmp   USART2_TX_EXIT_%= \n\t"          /* 2 */
+			"rjmp   USART2_TX_EXIT_%= \n\t"          /* 2 */
 		
-		: /* output operands */
+			: /* output operands */
 		
-		: /* input operands */
-		[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
-		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
-		[udrie_bit] "M"		(UDRIE2_BIT),
-		[mask]        "M"    (TX2_BUFFER_MASK)
+			: /* input operands */
+			[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
+			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+			[udrie_bit] "M"		(UDRIE2_BIT),
+			[mask]        "M"    (TX2_BUFFER_MASK)
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 		
 	}
@@ -2522,18 +2522,18 @@
 	
 	#ifdef USART2_DISABLE_TRANSMITTER_ON_TXC
 		asm volatile("\n\t"
-			"push  r24 \n\t"                         /* 2 */ 
+			"push  r24 \n\t"                       /* 2 */ 
 			"lds   r24, %M[UCSRB_reg] \n\t"        /* 2 */
 			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"   /* 1 */
 			"sts   %M[UCSRB_reg], r24\n\t"         /* 2 */
-			"pop   r24 \n\t"                         /* 2 */
-		: /* output operands */
+			"pop   r24 \n\t"                       /* 2 */
+			: /* output operands */
 		
-		: /* input operands */
-		[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
-		[TXEN_bit]   "M"    (TXEN2_BIT)
+			: /* input operands */
+			[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+			[TXEN_bit]   "M"    (TXEN2_BIT)
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 	#endif
 		
@@ -2550,94 +2550,94 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 		
-		"push  r0 \n\t"                         /* 2 */
-		"in    r0, __SREG__ \n\t"               /* 1 */
+			"push  r0 \n\t"                          /* 2 */
+			"in    r0, __SREG__ \n\t"                /* 1 */
 
-		"push  r18 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r31 \n\t"                         /* 2 */
+			"push  r18 \n\t"                         /* 2 */
+			"push  r24 \n\t"                         /* 2 */
+			"push  r25 \n\t"                         /* 2 */
+			"push  r30 \n\t"                         /* 2 */
+			"push  r31 \n\t"                         /* 2 */
 
-		/* read byte from UDR register */
-		"lds   r25, %M[UDR_reg] \n\t"          /* 2 */
+			/* read byte from UDR register */
+			"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
 		
-	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
-		"sei \n\t"                               /* 1 */
-	#endif
+		#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+			"sei \n\t"                               /* 1 */
+		#endif
 	
-	#if defined(USART2_MPCM_MODE)&&!defined(MPCM2_MASTER_ONLY)
-		"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+		#if defined(USART2_MPCM_MODE)&&!defined(MPCM2_MASTER_ONLY)
+			"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
 		
-		"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
-		"rjmp   USART2_RX_CONTINUE_%= \n\t"      /* 2 */
-		"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
-	#ifdef MPCM2_GCALL_ADDRESS
-		"breq	p_%= \n\t"                      /* 1/2 */
-		"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
-	#endif
-		"brne	USART2_RX_EXIT_%= \n\t"          /* 1/2 */
-	"p_%=: "
-		"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
+			"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
+			"rjmp   USART2_RX_CONTINUE_%= \n\t"      /* 2 */
+			"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+		#ifdef MPCM2_GCALL_ADDRESS
+			"breq	p_%= \n\t"                      /* 1/2 */
+			"cpi	r25, %M[mpcm_gcall_address] \n\t"  /* 1 */
+		#endif
+			"brne	USART2_RX_EXIT_%= \n\t"          /* 1/2 */
+		"p_%=: "
+			"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
 		
-		"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
+			"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
 		
-	"USART2_RX_CONTINUE_%=: "
-	#endif
-		/* load globals */
-		"lds   r24, (rx2_last_byte) \n\t"        /* 2 */
-		"lds   r18, (rx2_first_byte) \n\t"       /* 2 */
+		"USART2_RX_CONTINUE_%=: "
+		#endif
+			/* load globals */
+			"lds   r24, (rx2_last_byte) \n\t"        /* 2 */
+			"lds   r18, (rx2_first_byte) \n\t"       /* 2 */
 		
-		/* tmp_rx_last_byte = rx2_last_byte + 1 */
-		"subi  r24, 0xFF \n\t"                   /* 1 */
+			/* tmp_rx_last_byte = rx2_last_byte + 1 */
+			"subi  r24, 0xFF \n\t"                   /* 1 */
 		
-		/* tmp_rx_last_byte &= RX2_BUFFER_MASK */
-	#if (RX2_BUFFER_MASK != 0xff)
-		"andi  r24, %M[mask]\n\t"                /* 1 */
-	#endif
+			/* tmp_rx_last_byte &= RX2_BUFFER_MASK */
+		#if (RX2_BUFFER_MASK != 0xff)
+			"andi  r24, %M[mask]\n\t"                /* 1 */
+		#endif
 		
-		/* if(rx2_first_byte != tmp_rx_last_byte) */
-		"cp    r18, r24 \n\t"                    /* 1 */
-		"breq  USART2_RX_EXIT_%= \n\t"                        /* 1/2 */
+			/* if(rx2_first_byte != tmp_rx_last_byte) */
+			"cp    r18, r24 \n\t"                    /* 1 */
+			"breq  USART2_RX_EXIT_%= \n\t"           /* 1/2 */
 		
-		/* rx2_buffer[tmp_rx_last_byte] = tmp */
-		"mov   r30, r24 \n\t"                    /* 1 */
-		"ldi   r31, 0x00 \n\t"                   /* 1 */
-		"subi  r30, lo8(-(rx2_buffer))\n\t"      /* 1 */
-		"sbci  r31, hi8(-(rx2_buffer))\n\t"      /* 1 */
-		"st    Z, r25 \n\t"                      /* 2 */
+			/* rx2_buffer[tmp_rx_last_byte] = tmp */
+			"mov   r30, r24 \n\t"                    /* 1 */
+			"ldi   r31, 0x00 \n\t"                   /* 1 */
+			"subi  r30, lo8(-(rx2_buffer))\n\t"      /* 1 */
+			"sbci  r31, hi8(-(rx2_buffer))\n\t"      /* 1 */
+			"st    Z, r25 \n\t"                      /* 2 */
 		
-		/* rx2_last_byte = tmp_rx_last_byte */
-		"sts   (rx2_last_byte), r24 \n\t"        /* 2 */
+			/* rx2_last_byte = tmp_rx_last_byte */
+			"sts   (rx2_last_byte), r24 \n\t"        /* 2 */
 
-	"USART2_RX_EXIT_%=: "
-	#ifdef USART_UNSAFE_RX_INTERRUPT
-		"cli \n\t"                               /* 1 */
-	#endif
-		"pop   r31 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r18 \n\t"                         /* 2 */
+		"USART2_RX_EXIT_%=: "
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"cli \n\t"                               /* 1 */
+		#endif
+			"pop   r31 \n\t"                         /* 2 */
+			"pop   r30 \n\t"                         /* 2 */
+			"pop   r25 \n\t"                         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
+			"pop   r18 \n\t"                         /* 2 */
 	
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
+			"out   __SREG__ , r0 \n\t"               /* 1 */
+			"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+			"reti \n\t"                              /* 4 ISR return */
 		
-		: /* output operands */
+			: /* output operands */
 		
-		: /* input operands */
-		[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
-		[mask]      "M"    (RX2_BUFFER_MASK),
-		[mpcm_address]      "M"    (MPCM2_ADDRESS),
-	#ifdef MPCM2_GCALL_ADDRESS
-		[mpcm_gcall_address]      "M"    (MPCM2_GCALL_ADDRESS),
-	#endif
-		[mpcm_bit]      "M"    (MPCM2_BIT),
-		[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR2A_REGISTER))
+			: /* input operands */
+			[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
+			[mask]      "M"    (RX2_BUFFER_MASK),
+			[mpcm_address]      "M"    (MPCM2_ADDRESS),
+		#ifdef MPCM2_GCALL_ADDRESS
+			[mpcm_gcall_address]      "M"    (MPCM2_GCALL_ADDRESS),
+		#endif
+			[mpcm_bit]      "M"    (MPCM2_BIT),
+			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR2A_REGISTER))
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 		
 	}
@@ -2650,70 +2650,70 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 	
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
+			"push  r0 \n\t"                          /* 2 */
+			"in    r0, __SREG__ \n\t"                /* 1 */
 	
-		"push  r24 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r31 \n\t"                         /* 2 */
+			"push  r24 \n\t"                         /* 2 */
+			"push  r25 \n\t"                         /* 2 */
+			"push  r30 \n\t"                         /* 2 */
+			"push  r31 \n\t"                         /* 2 */
 		
-		/* load globals */
-		"lds   r24, (tx3_first_byte) \n\t"       /* 2 */
-		"lds   r25, (tx3_last_byte) \n\t"        /* 2 */
+			/* load globals */
+			"lds   r24, (tx3_first_byte) \n\t"       /* 2 */
+			"lds   r25, (tx3_last_byte) \n\t"        /* 2 */
 		
-		/* if(tmp_tx_first_byte != tx3_last_byte) */
-		"cp    r24, r25 \n\t"                    /* 1 */
-		"breq  USART3_DISABLE_UDRIE_%= \n\t"                        /* 1/2 */
+			/* if(tmp_tx_first_byte != tx3_last_byte) */
+			"cp    r24, r25 \n\t"                    /* 1 */
+			"breq  USART3_DISABLE_UDRIE_%= \n\t"     /* 1/2 */
 		
-		/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
-		"subi  r24, 0xFF \n\t"                   /* 1 */
+			/* tmp_tx_first_byte = tmp_tx_first_byte + 1 */
+			"subi  r24, 0xFF \n\t"                   /* 1 */
 		
-		/* tmp_tx_first_byte &= TX3_BUFFER_MASK */
-	#if (TX3_BUFFER_MASK != 0xff)
-		"andi  r24, %M[mask]\n\t"                /* 1 */
-	#endif
+			/* tmp_tx_first_byte &= TX3_BUFFER_MASK */
+		#if (TX3_BUFFER_MASK != 0xff)
+			"andi  r24, %M[mask]\n\t"                /* 1 */
+		#endif
 		
-		/* tx3_buffer[tmp_tx_first_byte] */
-		"mov   r30, r24 \n\t"                    /* 1 */
-		"ldi   r31, 0x00 \n\t"                   /* 1 */
-		"subi  r30, lo8(-(tx3_buffer)) \n\t"     /* 1 */
-		"sbci  r31, hi8(-(tx3_buffer)) \n\t"     /* 1 */
-		"ld    r25, Z \n\t"                      /* 2 */
+			/* tx3_buffer[tmp_tx_first_byte] */
+			"mov   r30, r24 \n\t"                    /* 1 */
+			"ldi   r31, 0x00 \n\t"                   /* 1 */
+			"subi  r30, lo8(-(tx3_buffer)) \n\t"     /* 1 */
+			"sbci  r31, hi8(-(tx3_buffer)) \n\t"     /* 1 */
+			"ld    r25, Z \n\t"                      /* 2 */
 		
-		/* UDR3_REGISTER = tx3_buffer[tmp_tx_first_byte] */
-		"sts   %M[UDR_reg], r25 \n\t"          /* 2 */
-		"sts   (tx3_first_byte), r24 \n\t"       /* 2 */
+			/* UDR3_REGISTER = tx3_buffer[tmp_tx_first_byte] */
+			"sts   %M[UDR_reg], r25 \n\t"            /* 2 */
+			"sts   (tx3_first_byte), r24 \n\t"       /* 2 */
 		
-	"USART3_TX_EXIT_%=: "
-		"pop   r31 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
+		"USART3_TX_EXIT_%=: "
+			"pop   r31 \n\t"                         /* 2 */
+			"pop   r30 \n\t"                         /* 2 */
+			"pop   r25 \n\t"                         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
 	
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
+			"out   __SREG__ , r0 \n\t"               /* 1 */
+			"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+			"reti \n\t"                              /* 4 ISR return */
 		
-		/* UCSR3B_REGISTER &= ~(1<<UDRIE3_BIT) */
-	"USART3_DISABLE_UDRIE_%=: "
+			/* UCSR3B_REGISTER &= ~(1<<UDRIE3_BIT) */
+		"USART3_DISABLE_UDRIE_%=: "
 		
-		"lds   r24, %M[control_reg] \n\t"        /* 2 */
-		"andi  r24, ~(1<<%M[udrie_bit]) \n\t"                   /* 1 */
-		"sts   %M[control_reg], r24\n\t"         /* 2 */
+			"lds   r24, %M[control_reg] \n\t"        /* 2 */
+			"andi  r24, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r24\n\t"         /* 2 */
 		
-		"rjmp   USART3_TX_EXIT_%= \n\t"          /* 2 */
+			"rjmp   USART3_TX_EXIT_%= \n\t"          /* 2 */
 		
-		: /* output operands */
+			: /* output operands */
 		
-		: /* input operands */
-		[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
-		[control_reg] "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
-		[udrie_bit] "M"		(UDRIE3_BIT),
-		[mask]        "M"    (TX3_BUFFER_MASK)
+			: /* input operands */
+			[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
+			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+			[udrie_bit] "M"		(UDRIE3_BIT),
+			[mask]        "M"    (TX3_BUFFER_MASK)
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 		
 	}
@@ -2728,18 +2728,18 @@
 		
 	#ifdef USART3_DISABLE_TRANSMITTER_ON_TXC
 		asm volatile("\n\t"
-			"push  r24 \n\t"                         /* 2 */ 
+			"push  r24 \n\t"                       /* 2 */ 
 			"lds   r24, %M[UCSRB_reg] \n\t"        /* 2 */
 			"andi  r24, ~(1<<%M[TXEN_bit]) \n\t"   /* 1 */
 			"sts   %M[UCSRB_reg], r24\n\t"         /* 2 */
-			"pop   r24 \n\t"                         /* 2 */
-		: /* output operands */
+			"pop   r24 \n\t"                       /* 2 */
+			: /* output operands */
 		
-		: /* input operands */
-		[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
-		[TXEN_bit]   "M"    (TXEN3_BIT)
+			: /* input operands */
+			[UCSRB_reg]   "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+			[TXEN_bit]   "M"    (TXEN3_BIT)
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 	#endif
 		
@@ -2756,94 +2756,94 @@
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
 		
-		"push  r0 \n\t"                          /* 2 */
-		"in    r0, __SREG__ \n\t"                /* 1 */
+			"push  r0 \n\t"                          /* 2 */
+			"in    r0, __SREG__ \n\t"                /* 1 */
 	
-		"push  r18 \n\t"                         /* 2 */
-		"push  r24 \n\t"                         /* 2 */
-		"push  r25 \n\t"                         /* 2 */
-		"push  r30 \n\t"                         /* 2 */
-		"push  r31 \n\t"                         /* 2 */
+			"push  r18 \n\t"                         /* 2 */
+			"push  r24 \n\t"                         /* 2 */
+			"push  r25 \n\t"                         /* 2 */
+			"push  r30 \n\t"                         /* 2 */
+			"push  r31 \n\t"                         /* 2 */
 
-		/* read byte from UDR register */
-		"lds   r25, %M[UDR_reg] \n\t"          /* 2 */
+			/* read byte from UDR register */
+			"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
 		
-	#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
-		"sei \n\t"                               /* 1 */
-	#endif
+		#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+			"sei \n\t"                               /* 1 */
+		#endif
 	
-	#if defined(USART3_MPCM_MODE)&&!defined(MPCM3_MASTER_ONLY)
-		"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
+		#if defined(USART3_MPCM_MODE)&&!defined(MPCM3_MASTER_ONLY)
+			"lds	r24, %M[UCSRA_reg] \n\t"         /* 2 */
 		
-		"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
-		"rjmp   USART3_RX_CONTINUE_%= \n\t"      /* 2 */
-		"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
-	#ifdef MPCM3_GCALL_ADDRESS
-		"breq	p_%= \n\t"                      /* 1/2 */
-		"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
-	#endif
-		"brne	USART3_RX_EXIT_%= \n\t"          /* 1/2 */
-	"p_%=: "
-		"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
+			"sbrs	r24, %M[mpcm_bit] \n\t"          /* 1 */
+			"rjmp   USART3_RX_CONTINUE_%= \n\t"      /* 2 */
+			"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+		#ifdef MPCM3_GCALL_ADDRESS
+			"breq	p_%= \n\t"                      /* 1/2 */
+			"cpi	r25, %M[mpcm_gcall_address] \n\t"   /* 1 */
+		#endif
+			"brne	USART3_RX_EXIT_%= \n\t"          /* 1/2 */
+		"p_%=: "
+			"andi	r24, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
 		
-		"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
+			"sts	%M[UCSRA_reg], r24 \n\t"         /* 2 */
 	
-	"USART3_RX_CONTINUE_%=: "
-	#endif
-		/* load globals */
-		"lds   r24, (rx3_last_byte) \n\t"        /* 2 */
-		"lds   r18, (rx3_first_byte) \n\t"       /* 2 */
+		"USART3_RX_CONTINUE_%=: "
+		#endif
+			/* load globals */
+			"lds   r24, (rx3_last_byte) \n\t"        /* 2 */
+			"lds   r18, (rx3_first_byte) \n\t"       /* 2 */
 		
-		/* tmp_rx_last_byte = rx3_last_byte + 1 */
-		"subi  r24, 0xFF \n\t"                   /* 1 */
+			/* tmp_rx_last_byte = rx3_last_byte + 1 */
+			"subi  r24, 0xFF \n\t"                   /* 1 */
 		
-		/* tmp_rx_last_byte &= RX3_BUFFER_MASK */
-	#if (RX3_BUFFER_MASK != 0xff)
-		"andi  r24, %M[mask]\n\t"                /* 1 */
-	#endif
+			/* tmp_rx_last_byte &= RX3_BUFFER_MASK */
+		#if (RX3_BUFFER_MASK != 0xff)
+			"andi  r24, %M[mask]\n\t"                /* 1 */
+		#endif
 		
-		/* if(rx3_first_byte != tmp_rx_last_byte) */
-		"cp    r18, r24 \n\t"                    /* 1 */
-		"breq  USART3_RX_EXIT_%= \n\t"                        /* 1/2 */
+			/* if(rx3_first_byte != tmp_rx_last_byte) */
+			"cp    r18, r24 \n\t"                    /* 1 */
+			"breq  USART3_RX_EXIT_%= \n\t"           /* 1/2 */
 		
-		/* rx3_buffer[tmp_rx_last_byte] = tmp */
-		"mov   r30, r24 \n\t"                    /* 1 */
-		"ldi   r31, 0x00 \n\t"                   /* 1 */
-		"subi  r30, lo8(-(rx3_buffer))\n\t"      /* 1 */
-		"sbci  r31, hi8(-(rx3_buffer))\n\t"      /* 1 */
-		"st    Z, r25 \n\t"                      /* 2 */
+			/* rx3_buffer[tmp_rx_last_byte] = tmp */
+			"mov   r30, r24 \n\t"                    /* 1 */
+			"ldi   r31, 0x00 \n\t"                   /* 1 */
+			"subi  r30, lo8(-(rx3_buffer))\n\t"      /* 1 */
+			"sbci  r31, hi8(-(rx3_buffer))\n\t"      /* 1 */
+			"st    Z, r25 \n\t"                      /* 2 */
 		
-		/* rx3_last_byte = tmp_rx_last_byte */
-		"sts   (rx3_last_byte), r24 \n\t"        /* 2 */
+			/* rx3_last_byte = tmp_rx_last_byte */
+			"sts   (rx3_last_byte), r24 \n\t"        /* 2 */
 		
-	"USART3_RX_EXIT_%=: "
-	#ifdef USART_UNSAFE_RX_INTERRUPT
-		"cli \n\t"                               /* 1 */
-	#endif
-		"pop   r31 \n\t"                         /* 2 */
-		"pop   r30 \n\t"                         /* 2 */
-		"pop   r25 \n\t"                         /* 2 */
-		"pop   r24 \n\t"                         /* 2 */
-		"pop   r18 \n\t"                         /* 2 */
+		"USART3_RX_EXIT_%=: "
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"cli \n\t"                               /* 1 */
+		#endif
+			"pop   r31 \n\t"                         /* 2 */
+			"pop   r30 \n\t"                         /* 2 */
+			"pop   r25 \n\t"                         /* 2 */
+			"pop   r24 \n\t"                         /* 2 */
+			"pop   r18 \n\t"                         /* 2 */
 	
-		"out   __SREG__ , r0 \n\t"               /* 1 */
-		"pop   r0 \n\t"                          /* 2 */
+			"out   __SREG__ , r0 \n\t"               /* 1 */
+			"pop   r0 \n\t"                          /* 2 */
 
-		"reti \n\t"                              /* 4 ISR return */
+			"reti \n\t"                              /* 4 ISR return */
 		
-		: /* output operands */
+			: /* output operands */
 		
-		: /* input operands */
-		[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
-		[mask]      "M"    (RX3_BUFFER_MASK),
-		[mpcm_address]      "M"    (MPCM3_ADDRESS),
-	#ifdef MPCM3_GCALL_ADDRESS
-		[mpcm_gcall_address]      "M"    (MPCM3_GCALL_ADDRESS),
-	#endif
-		[mpcm_bit]      "M"    (MPCM3_BIT),
-		[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR3A_REGISTER))
+			: /* input operands */
+			[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
+			[mask]      "M"    (RX3_BUFFER_MASK),
+			[mpcm_address]      "M"    (MPCM3_ADDRESS),
+		#ifdef MPCM3_GCALL_ADDRESS
+			[mpcm_gcall_address]      "M"    (MPCM3_GCALL_ADDRESS),
+		#endif
+			[mpcm_bit]      "M"    (MPCM3_BIT),
+			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR3A_REGISTER))
 		
-		/* no clobbers */
+			/* no clobbers */
 		);
 		
 	}
