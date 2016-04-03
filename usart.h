@@ -360,6 +360,111 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif //NO_USART0
 #endif
 
+#if defined(__AVR_ATtiny1634__)
+
+#define USART0_IN_IO_ADDRESS_SPACE
+
+#ifndef NO_USART0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART0_RX_vect
+	#define TXC0_INTERRUPT  	USART0_TX_vect
+	#define UDRE0_INTERRUPT		USART0_UDRE_vect
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT      	TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
+	#define RXCIE0_BIT  		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define U2X0_BIT    		U2X0
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80
+
+#endif //NO_USART0
+
+#ifndef NO_USART1
+#define USE_USART1
+
+	#define RX1_INTERRUPT		USART1_RX_vect
+	#define TXC1_INTERRUPT  	USART1_TX_vect
+	#define UDRE1_INTERRUPT		USART1_UDRE_vect
+	#define UDR1_REGISTER		UDR1
+	#define UBRR1L_REGISTER		UBRR1L
+	#define UBRR1H_REGISTER		UBRR1H
+	#define UCSR1A_REGISTER		UCSR1A
+	#define UCSR1B_REGISTER		UCSR1B
+	#define UCSR1C_REGISTER		UCSR1C
+	#define TXCIE1_BIT      	TXCIE1
+	#define UDRIE1_BIT    		UDRIE1
+	#define RXCIE1_BIT  		RXCIE1
+	#define TXEN1_BIT   		TXEN1
+	#define RXEN1_BIT   		RXEN1
+	#define U2X1_BIT    		U2X1
+	#define MPCM1_BIT           MPCM1
+	#define UCSZ12_BIT          UCSZ12
+	#define TXB81_BIT           TXB81
+
+#endif //NO_USART1
+#endif
+
+
+#if defined(__AVR_ATtiny441__)||defined(__AVR_ATtiny841__)
+
+#ifndef NO_USART0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART0_RX_vect
+	#define TXC0_INTERRUPT  	USART0_TX_vect
+	#define UDRE0_INTERRUPT		USART0_UDRE_vect
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT      	TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
+	#define RXCIE0_BIT  		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define U2X0_BIT    		U2X0
+	#define MPCM0_BIT           MPCM0
+	#define UCSZ02_BIT          UCSZ02
+	#define TXB80_BIT           TXB80
+
+#endif //NO_USART0
+
+#ifndef NO_USART1
+#define USE_USART1
+
+	#define RX1_INTERRUPT		USART1_RX_vect
+	#define TXC1_INTERRUPT  	USART1_TX_vect
+	#define UDRE1_INTERRUPT		USART1_UDRE_vect
+	#define UDR1_REGISTER		UDR1
+	#define UBRR1L_REGISTER		UBRR1L
+	#define UBRR1H_REGISTER		UBRR1H
+	#define UCSR1A_REGISTER		UCSR1A
+	#define UCSR1B_REGISTER		UCSR1B
+	#define UCSR1C_REGISTER		UCSR1C
+	#define TXCIE1_BIT      	TXCIE1
+	#define UDRIE1_BIT    		UDRIE1
+	#define RXCIE1_BIT  		RXCIE1
+	#define TXEN1_BIT   		TXEN1
+	#define RXEN1_BIT   		RXEN1
+	#define U2X1_BIT    		U2X1
+	#define MPCM1_BIT           MPCM1
+	#define UCSZ12_BIT          UCSZ12
+	#define TXB81_BIT           TXB81
+
+#endif //NO_USART1
+#endif
+
 #if defined(__AVR_ATmega48__)||defined(__AVR_ATmega48P__)||defined(__AVR_ATmega48PA__)||defined(__AVR_ATmega48PB__)\
 ||defined(__AVR_ATmega88__)||defined(__AVR_ATmega88P__)||defined(__AVR_ATmega88PA__)||defined(__AVR_ATmega88PB__)\
 ||defined(__AVR_ATmega168__)||defined(__AVR_ATmega168P__)||defined(__AVR_ATmega168PA__)||defined(__AVR_ATmega168PB__)\
