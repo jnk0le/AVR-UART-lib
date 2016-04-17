@@ -294,8 +294,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RX_NEWLINE_MODE_RN // 2
 #endif
 
-#ifdef __usbdrv_h_included__ // V-USB
-	#define USART_UNSAFE_RX_INTERRUPT
+#if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_RX_INTERRUPT)
+	#warning "RX may not work with usb"
+#endif
+
+#if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_TX_INTERRUPT)
+	#warning "TX may not work with usb"
 #endif
 
 #if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
