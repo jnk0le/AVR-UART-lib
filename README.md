@@ -6,7 +6,7 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 - easy to use
 - intuitive frame format settings
 - support for up to 4 USART's
-- extremly light interrupts (48/52 cycles for tx/rx in worst case, or 47/51 if uart is placed in IO address space)
+- extremly light interrupts (43 cycles for tx/rx in worst case, or 42 if uart is placed in IO address space)
 - RS 485 compatibility
 - MPCM master and slave mode support
 - printf()/scanf() streams compatibility
@@ -16,12 +16,12 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 
 simple "hello world" code on mega328p can give:
 
-	Program Memory Usage 	:	414 bytes   1,3 % Full
+	Program Memory Usage 	:	402 bytes   1,2 % Full
 	Data Memory Usage 		:	82 bytes   4,0 % Full
 
 same code on mega8 gives:
 
-	Program Memory Usage 	:	324 bytes   4,0 % Full
+	Program Memory Usage 	:	312 bytes   3,9 % Full
 	Data Memory Usage 		:	82 bytes   8,0 % Full
 
 Meanwhile Arduino generates 2KB of code.
