@@ -38,6 +38,3 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 - 2 - CRLF (default)
 
 In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint() or define USART_NO_DIRTY_HACKS macro.
-
-#todo
-- polled tx
