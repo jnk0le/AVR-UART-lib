@@ -28,7 +28,9 @@
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
-//#define USART_UNSAFE_RX_INTERRUPT // modify RX interrupt to meet 25 cycle restriction // UDRE is too hungry, only RX ISRs works now
+//#define USART_UNSAFE_TX_INTERRUPT // modify TX interrupt to meet 25 cycle restriction
+//#define USART_UNSAFE_RX_INTERRUPT // modify RX interrupt to meet 25 cycle restriction
+//#define USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE // modify TX interrupt to meet 33 cycle restriction // doesn't overwrite or reverse received bytes
 //#define USART_NO_DIRTY_HACKS // trace down corrupted ubbrh by bootloader // if any uses <=4800 bps speed at 20MHz
 /*****************************multiple USART mcu's***********************************/
 
@@ -169,26 +171,41 @@
 enum {locked, unlocked};
 enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	
-#define USART_XCK_RISING_EDGE 0x00
-#define USART_XCK_FALLING_EDGE 0x01
-
-#define USART_5BIT_DATA 0x00
-#define USART_6BIT_DATA 0x02
-#define USART_7BIT_DATA 0x04
-#define USART_8BIT_DATA 0x06
-
-#define USART_1STOP_BIT 0x00
-#define USART_2STOP_BITS 0x08
-
-#define USART_NO_PARITY 0x00
-#define USART_EVEN_PARITY 0x20
-#define USART_ODD_PARITY 0x30
-
 #if defined(URSEL)||defined(URSEL0)||defined(URSEL1)||defined(URSEL2)||defined(URSEL3)
 
+	#define USART_XCK_RISING_EDGE 0x80
+	#define USART_XCK_FALLING_EDGE 0x81
+
+	#define USART_5BIT_DATA 0x80
+	#define USART_6BIT_DATA 0x82
+	#define USART_7BIT_DATA 0x84
+	#define USART_8BIT_DATA 0x86
+
+	#define USART_1STOP_BIT 0x80
+	#define USART_2STOP_BITS 0x88
+
+	#define USART_NO_PARITY 0x80
+	#define USART_EVEN_PARITY 0xA0
+	#define USART_ODD_PARITY 0xB0
+	
 	#define USART_ASYNC_MODE 0x80
 	#define USART_SYNC_MODE 0xC0
 #else
+	#define USART_XCK_RISING_EDGE 0x00
+	#define USART_XCK_FALLING_EDGE 0x01
+
+	#define USART_5BIT_DATA 0x00
+	#define USART_6BIT_DATA 0x02
+	#define USART_7BIT_DATA 0x04
+	#define USART_8BIT_DATA 0x06
+
+	#define USART_1STOP_BIT 0x00
+	#define USART_2STOP_BITS 0x08
+
+	#define USART_NO_PARITY 0x00
+	#define USART_EVEN_PARITY 0x20
+	#define USART_ODD_PARITY 0x30
+	
 	#define USART_ASYNC_MODE 0x00
 	#define USART_SYNC_MODE 0x40
 	#define USART_MSPI_MODE 0xC0
@@ -309,6 +326,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif
 
 #define USART0_IN_IO_ADDRESS_SPACE
+#define USART0_NOT_ACCESIBLE_FROM_CBI
 
 #ifndef NO_USART0
 #define USE_USART0
