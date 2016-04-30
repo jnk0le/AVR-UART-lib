@@ -31,7 +31,7 @@
 //#define USART_UNSAFE_TX_INTERRUPT // modify TX interrupt to meet 25 cycle restriction
 //#define USART_UNSAFE_RX_INTERRUPT // modify RX interrupt to meet 25 cycle restriction
 //#define USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE // modify TX interrupt to meet 33 cycle restriction // doesn't overwrite or reverse received bytes
-//#define USART_NO_DIRTY_HACKS // trace down corrupted ubbrh by bootloader // if any uses <=4800 bps speed at 20MHz
+//#define USART_NO_DIRTY_HACKS // if any bootloader uses <=4800 bps speed at 20MHz
 /*****************************multiple USART mcu's***********************************/
 
 //#define NO_USART0 // disable usage of uart0
@@ -100,10 +100,10 @@
 //#define MPCM2_GCALL_ADDRESS 0x00
 //#define MPCM3_GCALL_ADDRESS 0x00
 
-//#define MPCM0_MASTER_ONLY // do not include slave code
-//#define MPCM1_MASTER_ONLY // do not include slave code
-//#define MPCM2_MASTER_ONLY // do not include slave code
-//#define MPCM3_MASTER_ONLY // do not include slave code
+//#define MPCM0_MASTER_ONLY // do not include slave code into RX ISR
+//#define MPCM1_MASTER_ONLY // do not include slave code into RX ISR
+//#define MPCM2_MASTER_ONLY // do not include slave code into RX ISR
+//#define MPCM3_MASTER_ONLY // do not include slave code into RX ISR
 
 #include <avr/io.h> // for inline func
 
@@ -311,12 +311,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RX_NEWLINE_MODE_RN // 2
 #endif
 
-#if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_RX_INTERRUPT)
-	#warning "RX may not work with usb"
+#if defined(__usbdrv_h_included__)&&(!defined(USART_UNSAFE_RX_INTERRUPT)||!defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE))
+	#warning "usb may not work with RX ISR's"
 #endif
 
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_TX_INTERRUPT)
-	#warning "TX may not work with usb"
+	#warning "usb may not work with TX ISR's"
 #endif
 
 #if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
@@ -385,6 +385,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #if defined(__AVR_ATtiny1634__)
 
 #define USART0_IN_IO_ADDRESS_SPACE
+#define USART0_NOT_ACCESIBLE_FROM_CBI
 
 #ifndef NO_USART0
 #define USE_USART0
