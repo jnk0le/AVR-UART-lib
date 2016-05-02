@@ -29,7 +29,9 @@ typedef enum {
 uint8_t HandleIncomingData(uint8_t dat);
 uint8_t validate_packet(uint8_t *bufptr, uint8_t *packet_number);
 uint16_t calcrc(uint8_t *bufptr, uint8_t size);
+
 uint8_t calchecksum(uint8_t *bufptr, uint8_t size);
+
 void MoveData(uint8_t *bufptr, uint8_t BytesToMove);
 void HexDump16(uint8_t *bufptr, uint16_t ByteCount);
 
@@ -175,6 +177,7 @@ uint8_t HandleIncomingData(uint8_t dat)
 				return transmission_in_progres;
 			
 			default:
+				uart_putc(CAN);
 				uart_putc(CAN);
 				return transmission_aborted;
 					// bad, timeout or error -

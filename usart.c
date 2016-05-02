@@ -855,7 +855,7 @@
 		
 		tx0_buffer[tmp_tx_last_byte] = data;
 		tx0_last_byte = tmp_tx_last_byte;
-	
+		
 	#ifdef USART0_RS485_MODE
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 	#endif
@@ -1155,21 +1155,22 @@
 				tmp_rx_first_byte = rx0_first_byte;
 				
 				if(tmp_rx_first_byte == rx0_last_byte) return 0;
-				rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+				tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 				
 				tmp = rx0_buffer[tmp_rx_first_byte];
+				rx0_first_byte = tmp_rx_first_byte;
 			
 			#ifdef RX0_GETC_ECHO
 			
-			#ifdef RX_NEWLINE_MODE_N
-				if(tmp == '\n') uart_putc(usartct,'\r');
-			#endif
+				#ifdef RX_NEWLINE_MODE_N
+					if(tmp == '\n') uart_putc(usartct,'\r');
+				#endif
 				
 				uart_putc(usartct, tmp);
 				
-			#ifdef RX_NEWLINE_MODE_R
-				if(tmp == '\r') uart_putc(usartct,'\n');
-			#endif
+				#ifdef RX_NEWLINE_MODE_R
+					if(tmp == '\r') uart_putc(usartct,'\n');
+				#endif
 				
 			#endif // RX0_GETC_ECHO
 				
@@ -1182,21 +1183,22 @@
 				tmp_rx_first_byte = rx1_first_byte;
 				
 				if(tmp_rx_first_byte == rx1_last_byte) return 0;
-				rx1_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
+				tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
 				
 				tmp = rx1_buffer[tmp_rx_first_byte];
+				rx1_first_byte = tmp_rx_first_byte;
 			
 			#ifdef RX1_GETC_ECHO
 			
-			#ifdef RX_NEWLINE_MODE_N
-				if(tmp == '\n') uart_putc(usartct,'\r');
-			#endif
+				#ifdef RX_NEWLINE_MODE_N
+					if(tmp == '\n') uart_putc(usartct,'\r');
+				#endif
 			
 				uart_putc(usartct, tmp);
 			
-			#ifdef RX_NEWLINE_MODE_R
-				if(tmp == '\r') uart_putc(usartct,'\n');
-			#endif
+				#ifdef RX_NEWLINE_MODE_R
+					if(tmp == '\r') uart_putc(usartct,'\n');
+				#endif
 			
 			#endif // RX1_GETC_ECHO
 				
@@ -1209,21 +1211,22 @@
 				tmp_rx_first_byte = rx2_first_byte;
 				
 				if(tmp_rx_first_byte == rx2_last_byte) return 0;
-				rx2_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
+				tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
 				
 				tmp = rx2_buffer[tmp_rx_first_byte];
+				rx2_first_byte = tmp_rx_first_byte;
 			
 			#ifdef RX2_GETC_ECHO
 			
-			#ifdef RX_NEWLINE_MODE_N
-				if(tmp == '\n') uart_putc(usartct,'\r');
-			#endif
+				#ifdef RX_NEWLINE_MODE_N
+					if(tmp == '\n') uart_putc(usartct,'\r');
+				#endif
 			
 				uart_putc(usartct, tmp);
 			
-			#ifdef RX_NEWLINE_MODE_R
-				if(tmp == '\r') uart_putc(usartct,'\n');
-			#endif
+				#ifdef RX_NEWLINE_MODE_R
+					if(tmp == '\r') uart_putc(usartct,'\n');
+				#endif
 			
 			#endif // RX2_GETC_ECHO
 			
@@ -1236,21 +1239,22 @@
 				tmp_rx_first_byte = rx3_first_byte;
 				
 				if(tmp_rx_first_byte == rx3_last_byte) return 0;
-				rx3_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
+				tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
 				
 				tmp = rx3_buffer[tmp_rx_first_byte];
+				rx3_first_byte = tmp_rx_first_byte;
 				
 			#ifdef RX3_GETC_ECHO
 			
-			#ifdef RX_NEWLINE_MODE_N
-				if(tmp == '\n') uart_putc(usartct,'\r');
-			#endif
+				#ifdef RX_NEWLINE_MODE_N
+					if(tmp == '\n') uart_putc(usartct,'\r');
+				#endif
 			
 				uart_putc(usartct, tmp);
 			
-			#ifdef RX_NEWLINE_MODE_R
-				if(tmp == '\r') uart_putc(usartct,'\n');
-			#endif
+				#ifdef RX_NEWLINE_MODE_R
+					if(tmp == '\r') uart_putc(usartct,'\n');
+				#endif
 			
 			#endif // RX3_GETC_ECHO
 				//break;
@@ -1567,21 +1571,22 @@
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
 		
 		if(tmp_rx_first_byte == rx0_last_byte) return 0;
-		rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 		
 		register char tmp = rx0_buffer[tmp_rx_first_byte];
+		rx0_first_byte = tmp_rx_first_byte
 	
 	#ifdef RX0_GETC_ECHO
 		
-	#ifdef RX_NEWLINE_MODE_N
-		if(tmp == '\n') uart_putc('\r');
-	#endif
+		#ifdef RX_NEWLINE_MODE_N
+			if(tmp == '\n') uart_putc('\r');
+		#endif
 		
 		uart_putc(tmp);
 		
-	#ifdef RX_NEWLINE_MODE_R
-		if(tmp == '\r') uart_putc('\n');
-	#endif
+		#ifdef RX_NEWLINE_MODE_R
+			if(tmp == '\r') uart_putc('\n');
+		#endif
 
 	#endif // RX0_GETC_ECHO
 		
