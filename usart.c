@@ -1574,7 +1574,7 @@
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 		
 		register char tmp = rx0_buffer[tmp_rx_first_byte];
-		rx0_first_byte = tmp_rx_first_byte
+		rx0_first_byte = tmp_rx_first_byte;
 	
 	#ifdef RX0_GETC_ECHO
 		
