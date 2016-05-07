@@ -1,12 +1,12 @@
 # Easy-AVR-USART-C-Library
 An interrupt-driven USART (RS232) library for AVR microcontrollers, with support for multiple UARTs, using ring
-buffers for receive/transmit. Designed to be easy to use, especially like arduino libraries (with less overload).
+buffers for receive/transmit. Designed to be easy to use, with absolutely minimum "feature-overhead".
 
 # Features
 - easy to use
 - intuitive frame format settings
 - support for up to 4 USART's
-- extremly light interrupts (43 cycles for tx/rx in worst case, +2 on >128k and -1 if uart is placed in IO address space)
+- extremly light interrupts (39/43 cycles for tx/rx in worst case, +2 on >128k, -1 if uart is placed in IO address space, -1 for 256 byte buffers)
 - RS 485 compatibility
 - MPCM master and slave mode support
 - printf()/scanf() streams compatibility
@@ -16,17 +16,17 @@ buffers for receive/transmit. Designed to be easy to use, especially like arduin
 
 simple "hello world" code on mega328p can give:
 
-	Program Memory Usage 	:	402 bytes   1,2 % Full
+	Program Memory Usage 	:	398 bytes   1,2 % Full
 	Data Memory Usage 		:	82 bytes   4,0 % Full
 
 same code on mega8 gives:
 
-	Program Memory Usage 	:	312 bytes   3,8 % Full
+	Program Memory Usage 	:	308 bytes   3,8 % Full
 	Data Memory Usage 		:	82 bytes   8,0 % Full
 
 Meanwhile Arduino generates 2KB of code.
 
-For this result additional flag -mrelax is required in many IDE's (Atmel studio 7, Arduino etc.)
+For this result additional flag -mrelax is required in many IDE's (Atmel studio, Arduino etc.)
 
 # Notes
 Lot of terminals sends only CR character as a newline terminator, instead of CRLF or even unix style LF

@@ -1,6 +1,7 @@
 // TODO: add timeouts error handling
 
 #include <util/delay.h>
+#include <util/crc16.h>
 
 #include "usart.h"
 
@@ -35,6 +36,30 @@ uint8_t calchecksum(uint8_t *bufptr, uint8_t size);
 void MoveData(uint8_t *bufptr, uint8_t BytesToMove);
 void HexDump16(uint8_t *bufptr, uint16_t ByteCount);
 
+//static inline uint16_t small_crc_update(uint16_t crc, uint8_t data)
+//{
+//	uint8_t i;
+//
+//	crc = crc ^ ((uint16_t)data << 8);
+//	for (i = 0; i<8; i++)
+//	{
+//		if (crc & 0x8000)
+//			crc = (crc << 1) ^ 0x1021;
+//		else
+//			crc <<= 1;
+//	}
+//
+//	return crc;
+//}
+
+//static inline uint8_t cksum_update(uint8_t cksum, uint8_t data)
+//{
+//	return cksum + data;
+//}
+
+//clear crc to 0 
+
+//just a buffer to put downloaded content somewhere
 uint8_t file[1024];
 uint16_t fileposition;
 
@@ -224,16 +249,9 @@ uint16_t calcrc(uint8_t *bufptr, uint8_t size)
 	
 	while(size--)
 	{
-		crc = crc ^ (uint16_t) *bufptr++ << 8;
-		for(uint8_t i = 0; i < 8; i++)
-		{
-			if (crc & 0x8000)
-				crc = crc << 1 ^ 0x1021;
-			else
-				crc = crc << 1;
-		}
+		crc = _crc_xmodem_update(crc, *bufptr++);
 	}
-	
+
 	return crc;
 }
 

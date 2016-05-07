@@ -1987,7 +1987,6 @@
 			"push  r16 \n\t"                         /* 2 */
 			"in    r16, __SREG__ \n\t"               /* 1 */
 
-			//"push  r25 \n\t"                         /* 2 */
 			"push  r30 \n\t"                         /* 2 */
 			"push  r31 \n\t"                         /* 2 */
 		
@@ -2037,16 +2036,14 @@
 			"subi  r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
 			"sbci  r31, hi8(-(tx0_buffer)) \n\t"     /* 1 */
 			
-			"push  r25 \n\t"                         /* 2 */
-			"ld    r25, Z \n\t"                      /* 2 */
+			"ld    r30, Z \n\t"                      /* 2 */
 		
 			/* UDR0_REGISTER = tx0_buffer[tmp_tx_first_byte] */
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"out   %M[UDR_reg_IO], r25 \n\t"         /* 1 */
+			"out   %M[UDR_reg_IO], r30 \n\t"         /* 1 */
 		#else
-			"sts   %M[UDR_reg], r25 \n\t"            /* 2 */
+			"sts   %M[UDR_reg], r30 \n\t"            /* 2 */
 		#endif
-			"pop   r25 \n\t"                         /* 2 */
 			
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"                               /* 1 */
@@ -2071,7 +2068,6 @@
 		//#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
-			//"pop   r25 \n\t"                         /* 2 */
 		
 			"out   __SREG__ , r16 \n\t"              /* 1 */
 			"pop   r16 \n\t"                         /* 2 */
@@ -2288,7 +2284,6 @@
 			"push  r16 \n\t"                          /* 2 */
 			"in    r16, __SREG__ \n\t"                /* 1 */
 
-			//"push  r25 \n\t"                         /* 2 */
 			"push  r30 \n\t"                         /* 2 */
 			"push  r31 \n\t"                         /* 2 */
 		
@@ -2332,16 +2327,14 @@
 			"subi  r30, lo8(-(tx1_buffer)) \n\t"     /* 1 */
 			"sbci  r31, hi8(-(tx1_buffer)) \n\t"     /* 1 */
 			
-			"push  r25 \n\t"                         /* 2 */
-			"ld    r25, Z \n\t"                      /* 2 */
+			"ld    r30, Z \n\t"                      /* 2 */
 		
 			/* UDR1_REGISTER = tx1_buffer[tmp_tx_first_byte] */
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"out   %M[UDR_reg_IO], r25 \n\t"         /* 1 */
+			"out   %M[UDR_reg_IO], r30 \n\t"         /* 1 */
 		#else
-			"sts   %M[UDR_reg], r25 \n\t"            /* 2 */
+			"sts   %M[UDR_reg], r30 \n\t"            /* 2 */
 		#endif
-			"pop   r25 \n\t"                         /* 2 */
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"                               /* 1 */
@@ -2360,7 +2353,6 @@
 		//#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
-			//"pop   r25 \n\t"                         /* 2 */
 		
 			"out   __SREG__ , r16 \n\t"               /* 1 */
 			"pop   r16 \n\t"                          /* 2 */
@@ -2559,7 +2551,6 @@
 			"push  r16 \n\t"                          /* 2 */
 			"in    r16, __SREG__ \n\t"                /* 1 */
 	
-			//"push  r25 \n\t"                         /* 2 */
 			"push  r30 \n\t"                         /* 2 */
 			"push  r31 \n\t"                         /* 2 */
 	
@@ -2599,12 +2590,10 @@
 			"subi  r30, lo8(-(tx2_buffer)) \n\t"     /* 1 */
 			"sbci  r31, hi8(-(tx2_buffer)) \n\t"     /* 1 */
 			
-			"push  r25 \n\t"                         /* 2 */
-			"ld    r25, Z \n\t"                      /* 2 */
+			"ld    r30, Z \n\t"                      /* 2 */
 			
 			/* UDR2_REGISTER = tx2_buffer[tmp_tx_first_byte] */
-			"sts   %M[UDR_reg], r25 \n\t"            /* 2 */
-			"pop   r25 \n\t"                         /* 2 */
+			"sts   %M[UDR_reg], r30 \n\t"            /* 2 */
 
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"                               /* 1 */
@@ -2620,7 +2609,6 @@
 		//#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
-			//"pop   r25 \n\t"                         /* 2 */
 			
 			"out   __SREG__ , r16 \n\t"               /* 1 */
 			"pop   r16 \n\t"                          /* 2 */
@@ -2796,7 +2784,6 @@
 			"push  r16 \n\t"                          /* 2 */
 			"in    r16, __SREG__ \n\t"                /* 1 */
 	
-			//"push  r25 \n\t"                         /* 2 */
 			"push  r30 \n\t"                         /* 2 */
 			"push  r31 \n\t"                         /* 2 */
 		
@@ -2837,12 +2824,10 @@
 			"subi  r30, lo8(-(tx3_buffer)) \n\t"     /* 1 */
 			"sbci  r31, hi8(-(tx3_buffer)) \n\t"     /* 1 */
 			
-			"push  r25 \n\t"                         /* 2 */
-			"ld    r25, Z \n\t"                      /* 2 */
+			"ld    r30, Z \n\t"                      /* 2 */
 		
 			/* UDR3_REGISTER = tx3_buffer[tmp_tx_first_byte] */
-			"sts   %M[UDR_reg], r25 \n\t"            /* 2 */
-			"pop   r25 \n\t"                         /* 2 */
+			"sts   %M[UDR_reg], r30 \n\t"            /* 2 */
 			
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"                               /* 1 */
@@ -2858,7 +2843,6 @@
 		//#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
-			//"pop   r25 \n\t"                         /* 2 */
 			
 			"out   __SREG__ , r16 \n\t"               /* 1 */
 			"pop   r16 \n\t"                          /* 2 */
