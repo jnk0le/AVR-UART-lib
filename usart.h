@@ -1388,7 +1388,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	void uart_putuint(uint8_t usartct, uint16_t data);
 	void uart_putuintr(uint8_t usartct, uint16_t data, uint8_t radix);
 	
-	void uart_put_hex(uint8_t usartct, uint16_t data);
+	void uart_puthex(uint8_t usartct, uint8_t data);
 	
 	void uart_putlong(uint8_t usartct, int32_t data);
 	void uart_putlongr(uint8_t usartct, int32_t data, uint8_t radix);
@@ -1426,8 +1426,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	void uart_putuint(uint16_t data);
 	void uart_putuintr(uint16_t data, uint8_t radix);
 	
-	void uart_put_hex(uint16_t data);
-	
+	void uart_puthex(uint8_t data);
+
 	void uart_putlong(int32_t data);
 	void uart_putlongr(int32_t data, uint8_t radix);
 

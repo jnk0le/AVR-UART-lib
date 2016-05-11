@@ -744,12 +744,15 @@
 //          : 2. int16_t data value.
 //Return    :    none
 //******************************************************************
-	void uart_put_hex(uint8_t usartct, uint16_t data)
+	void uart_puthex(uint8_t usartct, uint8_t data)
 	{
-		char buffer[6]; // heading, 4 digit bytes, NULL
-		utoa(data, buffer, 16);
-	
-		uart_putstr(usartct, buffer);
+		uint8_t tmp;
+		
+		tmp = (data >> 4) & 0x0f;
+		uart_putc(usartct, (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+		
+		tmp = data & 0x0f;
+		uart_putc(usartct, (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
 	}
 
 //******************************************************************
@@ -1176,12 +1179,15 @@
 //Arguments : uint16_t data value.
 //Return    : none
 //******************************************************************
-	void uart_put_hex(uint16_t data)
+	void uart_puthex(uint8_t data)
 	{
-		char buffer[6]; // heading, 4 digit bytes, NULL
-		utoa(data, buffer, 16);
+		uint8_t tmp; 
 		
-		uart_putstr(buffer);
+		tmp = (data >> 4) & 0x0f;
+		uart_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+		
+		tmp = data & 0x0f;
+		uart_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
 	}
 
 //******************************************************************

@@ -306,7 +306,7 @@ void HexDump16(uint8_t *bufptr, uint16_t ByteCount)
 			if(i <= 0x000f)
 				uart_putc('0');
 				
-			uart_put_hex(i);
+			uart_puthex(i);
 			uart_putc(' ');
         }
 
@@ -316,7 +316,7 @@ void HexDump16(uint8_t *bufptr, uint16_t ByteCount)
 		if(bufptr[i] <= 0x0f)
 			uart_putc('0'); // add 0 padding
 		
-		uart_put_hex(bufptr[i]);
+		uart_puthex(bufptr[i]);
 
         // And store a printable ASCII character for later.
         if ((bufptr[i] < 0x20) || (bufptr[i] > 0x7e))
