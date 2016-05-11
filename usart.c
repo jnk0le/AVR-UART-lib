@@ -252,17 +252,39 @@
 		if(data == '\n')
 			uart_putc(usartct, '\r');
 	#endif
+		
 		register uint8_t tmp_tx_last_byte;
+	#if defined(USART0_PUTC_FAST_INSERTIONS)||defined(USART1_PUTC_FAST_INSERTIONS)||defined(USART2_PUTC_FAST_INSERTIONS)||defined(USART3_PUTC_FAST_INSERTIONS)
+		register uint8_t tmp_tx_first_byte;
+	#endif
 		
 		switch(usartct)
 		{
 			default: // first found case as default (byte saving)
 		#ifndef NO_TX0_INTERRUPT 
-			 case 0:
-			 {
+			case 0:
+			{
+			#ifdef USART0_PUTC_FAST_INSERTIONS
+				tmp_tx_last_byte = tx0_last_byte;
+				tmp_tx_first_byte = tx0_first_byte;
+			
+				if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+				{
+					UDR0_REGISTER = data;
+					return;
+				}
+			
+				tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+			
+				while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+				{
+					tmp_tx_first_byte = tx0_first_byte; // for faster pass through, results in a little bigger code
+				}
+			#else
 				tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 			
 				while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+			#endif
 						
 				tx0_buffer[tmp_tx_last_byte] = data;
 				tx0_last_byte = tmp_tx_last_byte;
@@ -287,9 +309,27 @@
 		#ifndef NO_TX1_INTERRUPT 
 			case 1:
 			{
+			#ifdef USART1_PUTC_FAST_INSERTIONS
+				tmp_tx_last_byte = tx1_last_byte;
+				tmp_tx_first_byte = tx1_first_byte;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
+				{
+					UDR1_REGISTER = data;
+					return;
+				}
+				
+				tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
+				
+				while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+				{
+					tmp_tx_first_byte = tx1_first_byte; // for faster pass through, results in a little bigger code
+				}
+			#else
 				tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
-			
+				
 				while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+			#endif
 				
 				tx1_buffer[tmp_tx_last_byte] = data;
 				tx1_last_byte = tmp_tx_last_byte;
@@ -314,9 +354,27 @@
 		#ifndef NO_TX2_INTERRUPT 
 			case 2:
 			{
+			#ifdef USART2_PUTC_FAST_INSERTIONS
+				tmp_tx_last_byte = tx2_last_byte;
+				tmp_tx_first_byte = tx2_first_byte;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
+				{
+					UDR2_REGISTER = data;
+					return;
+				}
+				
+				tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
+				
+				while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+				{
+					tmp_tx_first_byte = tx2_first_byte; // for faster pass through, results in a little bigger code
+				}
+			#else
 				tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
-			
+				
 				while(tx2_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+			#endif
 				
 				tx2_buffer[tmp_tx_last_byte] = data;
 				tx2_last_byte = tmp_tx_last_byte;
@@ -341,9 +399,27 @@
 		#ifndef NO_TX3_INTERRUPT 
 			case 3:
 			{
+			#ifdef USART3_PUTC_FAST_INSERTIONS
+				tmp_tx_last_byte = tx3_last_byte;
+				tmp_tx_first_byte = tx3_first_byte;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
+				{
+					UDR3_REGISTER = data;
+					return;
+				}
+				
+				tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
+				
+				while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+				{
+					tmp_tx_first_byte = tx3_first_byte; // for faster pass through, results in a little bigger code
+				}
+			#else
 				tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
-			
+				
 				while(tx3_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+			#endif
 				
 				tx3_buffer[tmp_tx_last_byte] = data;
 				tx3_last_byte = tmp_tx_last_byte;
@@ -379,17 +455,36 @@
 	uint8_t uart_putc_noblock(uint8_t usartct, char data)
 	{
 		register uint8_t tmp_tx_last_byte;
+	#if defined(USART0_PUTC_FAST_INSERTIONS)||defined(USART1_PUTC_FAST_INSERTIONS)||defined(USART2_PUTC_FAST_INSERTIONS)||defined(USART3_PUTC_FAST_INSERTIONS)
+		register uint8_t tmp_tx_first_byte;
+	#endif
 		
 		switch(usartct)
 		{
 			default: // first found case as default (byte saving)
 		#ifndef NO_TX0_INTERRUPT 
-			 case 0:
-			 {
+			case 0:
+			{
+			#ifdef USART0_PUTC_FAST_INSERTIONS
+				tmp_tx_last_byte = tx0_last_byte;
+				tmp_tx_first_byte = tx0_first_byte;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+				{
+					UDR0_REGISTER = data;
+					return COMPLETED;
+				}
+				
+				tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte)
+					return BUFFER_FULL;
+			#else
 				tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
-			
+				
 				if(tx0_first_byte == tmp_tx_last_byte)
 					return BUFFER_FULL;
+			#endif
 						
 				tx0_buffer[tmp_tx_last_byte] = data;
 				tx0_last_byte = tmp_tx_last_byte;
@@ -414,10 +509,26 @@
 		#ifndef NO_TX1_INTERRUPT 
 			case 1:
 			{
+			#ifdef USART1_PUTC_FAST_INSERTIONS
+				tmp_tx_last_byte = tx1_last_byte;
+				tmp_tx_first_byte = tx1_first_byte;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
+				{
+					UDR1_REGISTER = data;
+					return COMPLETED;
+				}
+				
+				tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte)
+					return BUFFER_FULL;
+			#else
 				tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
-			
+				
 				if(tx1_first_byte == tmp_tx_last_byte)
 					return BUFFER_FULL;
+			#endif
 				
 				tx1_buffer[tmp_tx_last_byte] = data;
 				tx1_last_byte = tmp_tx_last_byte;
@@ -442,10 +553,26 @@
 		#ifndef NO_TX2_INTERRUPT 
 			case 2:
 			{
+			#ifdef USART2_PUTC_FAST_INSERTIONS
+				tmp_tx_last_byte = tx2_last_byte;
+				tmp_tx_first_byte = tx2_first_byte;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
+				{
+					UDR2_REGISTER = data;
+					return COMPLETED;
+				}
+				
+				tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte)
+					return BUFFER_FULL;
+			#else
 				tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
-			
+				
 				if(tx2_first_byte == tmp_tx_last_byte)
 					return BUFFER_FULL;
+			#endif
 				
 				tx2_buffer[tmp_tx_last_byte] = data;
 				tx2_last_byte = tmp_tx_last_byte;
@@ -470,10 +597,26 @@
 		#ifndef NO_TX3_INTERRUPT 
 			case 3:
 			{
+			#ifdef USART3_PUTC_FAST_INSERTIONS
+				tmp_tx_last_byte = tx3_last_byte;
+				tmp_tx_first_byte = tx3_first_byte;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
+				{
+					UDR3_REGISTER = data;
+					return COMPLETED;
+				}
+				
+				tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
+				
+				if(tmp_tx_first_byte == tmp_tx_last_byte)
+					return BUFFER_FULL;
+			#else
 				tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
-			
+				
 				if(tx3_first_byte == tmp_tx_last_byte)
 					return BUFFER_FULL;
+			#endif
 				
 				tx3_buffer[tmp_tx_last_byte] = data;
 				tx3_last_byte = tmp_tx_last_byte;
@@ -849,9 +992,28 @@
 		if (data == '\n')
 			uart_putc('\r');
 	#endif
+		
+	#ifdef USART0_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx0_last_byte;
+		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		{
+			UDR0_REGISTER = data;
+			return;
+		}
+		
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+		
+		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		{
+			tmp_tx_first_byte = tx0_first_byte; // for faster pass through, results in a little bigger code
+		}
+	#else
 		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 		
 		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+	#endif
 		
 		tx0_buffer[tmp_tx_last_byte] = data;
 		tx0_last_byte = tmp_tx_last_byte;
@@ -880,11 +1042,27 @@
 //******************************************************************
 	uint8_t uart_putc_noblock(char data)
 	{
+	#ifdef USART0_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx0_last_byte;
+		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		{
+			UDR0_REGISTER = data;
+			return COMPLETED;
+		}
+		
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+		
+		if(tmp_tx_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#else
 		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 		
 		if(tx0_first_byte == tmp_tx_last_byte)
 			return BUFFER_FULL;
-		
+	#endif
+	
 		tx0_buffer[tmp_tx_last_byte] = data;
 		tx0_last_byte = tmp_tx_last_byte;
 		

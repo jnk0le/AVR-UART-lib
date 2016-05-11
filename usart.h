@@ -28,11 +28,12 @@
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
-//#define USART_UNSAFE_TX_INTERRUPT // modify TX interrupt to meet 25 cycle restriction
-//#define USART_UNSAFE_RX_INTERRUPT // modify RX interrupt to meet 25 cycle restriction
+#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // required for 100% bus utilization at 2, 2,5 Mbps // avoid double (~70 cycles) UDRE interrupt right after enabling it
+//#define USART_UNSAFE_TX_INTERRUPT // enable interrupts in TX ISR handler to meet 25 cycle restriction // safe enough to enable - ISR will not interrupt itself, only 3+PC bytes on stack 
+//#define USART_UNSAFE_RX_INTERRUPT // enable interrupts in RX ISR handler to meet 25 cycle restriction // unsafe - ISR can interrupt itself after receiving another byte, only 4+PC bytes on stack 
 //#define USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE // modify TX interrupt to meet 33 cycle restriction // doesn't overwrite or reverse received bytes
 //#define USART_NO_DIRTY_HACKS // if any bootloader uses <=4800 bps speed at 20MHz
-/*****************************multiple USART mcu's***********************************/
+/*****************************config for multiple USART mcu's***********************************/
 
 //#define NO_USART0 // disable usage of uart0
 //#define NO_USART1 // disable usage of uart1
@@ -40,24 +41,29 @@
 //#define NO_USART3 // disable usage of uart3
 
 //#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary 
-//#define NO_RX1_INTERRUPT // disables interrupt handling and frees RX1 gpio port // combining with NO_USART_RX is not necessary
-//#define NO_RX2_INTERRUPT // disables interrupt handling and frees RX2 gpio port // combining with NO_USART_RX is not necessary
-//#define NO_RX3_INTERRUPT // disables interrupt handling and frees RX3 gpio port // combining with NO_USART_RX is not necessary
+//#define NO_RX1_INTERRUPT // disables interrupt handling and frees RX1 gpio port
+//#define NO_RX2_INTERRUPT // disables interrupt handling and frees RX2 gpio port
+//#define NO_RX3_INTERRUPT // disables interrupt handling and frees RX3 gpio port
 
 //#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
-//#define NO_TX1_INTERRUPT // disables interrupt handling and frees TX1 gpio port // combining with NO_USART_TX is not necessary
-//#define NO_TX2_INTERRUPT // disables interrupt handling and frees TX2 gpio port // combining with NO_USART_TX is not necessary
-//#define NO_TX3_INTERRUPT // disables interrupt handling and frees TX3 gpio port // combining with NO_USART_TX is not necessary
+//#define NO_TX1_INTERRUPT // disables interrupt handling and frees TX1 gpio port
+//#define NO_TX2_INTERRUPT // disables interrupt handling and frees TX2 gpio port
+//#define NO_TX3_INTERRUPT // disables interrupt handling and frees TX3 gpio port
 
-//#define USART0_U2X_SPEED // enables double speed for USART0 // combining with USE_DOUBLE_SPEED is not necessary
-//#define USART1_U2X_SPEED // enables double speed for USART1 // combining with USE_DOUBLE_SPEED is not necessary
-//#define USART2_U2X_SPEED // enables double speed for USART2 // combining with USE_DOUBLE_SPEED is not necessary
-//#define USART3_U2X_SPEED // enables double speed for USART3 // combining with USE_DOUBLE_SPEED is not necessary
+//#define USART0_U2X_SPEED // enables double speed for USART0
+//#define USART1_U2X_SPEED // enables double speed for USART1
+//#define USART2_U2X_SPEED // enables double speed for USART2
+//#define USART3_U2X_SPEED // enables double speed for USART3
 
 //#define RX0_GETC_ECHO
 //#define RX1_GETC_ECHO
 //#define RX2_GETC_ECHO
 //#define RX3_GETC_ECHO
+
+//#define USART0_PUTC_FAST_INSERTIONS
+//#define USART1_PUTC_FAST_INSERTIONS
+//#define USART2_PUTC_FAST_INSERTIONS
+//#define USART3_PUTC_FAST_INSERTIONS
 
 //#define USART0_MPCM_MODE
 //#define USART1_MPCM_MODE
@@ -112,6 +118,7 @@
 #endif
 
 #define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating UBBR value
+#define BAUD_CALC_FAST(x) ((F_CPU)/(BAUD*16UL)-1) // for faster real time calculations ?
 #define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBBR value for double speed
 
 #ifndef __OPTIMIZE__
@@ -239,6 +246,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RX3_GETC_ECHO
 #endif
 
+#ifdef USART_PUTC_FAST_INSERTIONS
+	#define USART0_PUTC_FAST_INSERTIONS
+	#define USART1_PUTC_FAST_INSERTIONS
+	#define USART2_PUTC_FAST_INSERTIONS
+	#define USART3_PUTC_FAST_INSERTIONS
+#endif
+
 #ifdef USART_RS485_MODE
 	#define USART0_RS485_MODE
 	#define USART1_RS485_MODE
@@ -345,6 +359,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT   		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -374,6 +389,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
+	#define UDRE0_BIT   		UDRE
 	#define U2X0_BIT    		U2X
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
@@ -404,6 +420,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -428,6 +445,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE1_BIT  		RXCIE1
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
+	#define UDRE1_BIT   		UDRE1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -456,6 +474,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -480,6 +499,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE1_BIT  		RXCIE1
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
+	#define UDRE1_BIT   		UDRE1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -510,6 +530,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT   		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -537,6 +558,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT   		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -561,6 +583,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE1_BIT   		RXCIE1
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
+	#define UDRE1_BIT   		UDRE1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -592,6 +615,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
+	#define UDRE0_BIT   		UDRE
 	#define U2X0_BIT    		U2X
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
@@ -621,6 +645,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
+	#define UDRE0_BIT   		UDRE
 	#define U2X0_BIT    		U2X
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
@@ -651,6 +676,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -675,6 +701,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE1_BIT  		RXCIE1
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
+	#define UDRE1_BIT   		UDRE1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -712,6 +739,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -736,6 +764,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE1_BIT  		RXCIE1
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
+	#define UDRE1_BIT   		UDRE1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -764,6 +793,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE2_BIT  		RXCIE2
 	#define TXEN2_BIT   		TXEN2
 	#define RXEN2_BIT   		RXEN2
+	#define UDRE2_BIT   		UDRE2
 	#define U2X2_BIT    		U2X2
 	#define MPCM2_BIT           MPCM2
 	#define UCSZ22_BIT          UCSZ22
@@ -788,6 +818,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE3_BIT  		RXCIE3
 	#define TXEN3_BIT   		TXEN3
 	#define RXEN3_BIT   		RXEN3
+	#define UDRE3_BIT   		UDRE3
 	#define U2X3_BIT    		U2X3
 	#define MPCM3_BIT           MPCM3
 	#define UCSZ32_BIT          UCSZ32
@@ -817,6 +848,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE1
 	#define TXEN0_BIT   		TXEN1
 	#define RXEN0_BIT   		RXEN1
+	#define UDRE0_BIT   		UDRE1
 	#define U2X0_BIT    		U2X1
 	#define MPCM0_BIT           MPCM1
 	#define UCSZ02_BIT          UCSZ12
@@ -844,6 +876,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
+	#define UDRE0_BIT   		UDRE
 	#define U2X0_BIT    		U2X
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
@@ -877,6 +910,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -908,6 +942,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RXCIE0_BIT  		RXCIE0
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -1074,7 +1109,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 	void uart_reinit(uint8_t usartct, uint16_t ubbr_value); // for runtime reinitialization of uart module 
 
-	inline void uart_init(uint8_t usartct, uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
+	static inline void uart_init(uint8_t usartct, uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
 	{
 		switch(usartct)
 		{
@@ -1203,7 +1238,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 	
 	// UCSRC_reg can be used to set other than 8n1 transmission
-	inline void uart_set_FrameFormat(uint8_t usartct, uint8_t UCSRC_reg)
+	static inline void uart_set_FrameFormat(uint8_t usartct, uint8_t UCSRC_reg)
 	{
 		switch(usartct)
 		{
@@ -1223,7 +1258,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		}
 	}
 	
-	inline void uart_set_U2X(uint8_t usartct) // use instead of USE_U2Xn_SPEED
+	static inline void uart_set_U2X(uint8_t usartct) // use instead of USE_U2Xn_SPEED
 	{
 		switch(usartct)
 		{
@@ -1273,7 +1308,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	
 	void uart_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart module 
 	
-	inline void uart_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
+	static inline void uart_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
 	{
 	#ifdef USART0_RS485_MODE
 		___DDR(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
@@ -1302,12 +1337,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 
 	// UCSRC_reg can be used to set other than 8n1 transmission
-	inline void uart_set_FrameFormat(uint8_t UCSRC_reg) 
+	static inline void uart_set_FrameFormat(uint8_t UCSRC_reg) 
 	{
 		UCSR0C_REGISTER = UCSRC_reg;
 	} 
 	
-	inline void uart_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
+	static inline void uart_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
 	{
 		UCSR0A_REGISTER |= (1<<U2X0_BIT);
 	} 
