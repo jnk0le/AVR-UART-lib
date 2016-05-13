@@ -28,7 +28,7 @@
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
-//#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed
+//#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (first insertions would generate ISR worst case)
 //#define USART_UNSAFE_TX_INTERRUPT // enable interrupts in TX ISR handler to meet 25 cycle restriction // safe enough to enable - ISR will not interrupt itself, only 3+PC bytes on stack 
 //#define USART_UNSAFE_RX_INTERRUPT // enable interrupts in RX ISR handler to meet 25 cycle restriction // unsafe - ISR can interrupt itself after receiving another byte, only 4+PC bytes on stack 
 //#define USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE // modify TX interrupt to meet 33 cycle restriction // doesn't overwrite or reverse received bytes
