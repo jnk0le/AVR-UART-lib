@@ -6,7 +6,7 @@ buffers for receive/transmit. Designed to be easy to use, with absolutely minimu
 - easy to use
 - intuitive frame format settings
 - support for up to 4 USART's
-- extremly light interrupts (39/43 cycles for tx/rx in worst case, +2 on >128k, -1 if uart is placed in IO address space, -1 for 256 byte buffers)
+- extremly light interrupts 
 - RS 485 compatibility
 - MPCM master and slave mode support
 - printf()/scanf() streams compatibility
@@ -38,3 +38,16 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 - 2 - CRLF (default)
 
 In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint() or define USART_NO_DIRTY_HACKS macro.
+
+# ISR timmings
+
+- TX best case - send byte from buffer: 39 cycles (38 if uart is placed in IO address space)
+- TX worst case - send byte from buffer and disable UDRIE interrupt: 47 cycles (41 if uart is placed in IO address space) 
+
+- RX best case - load byte and do nothing: 37 cycles (36 if uart is placed in IO address space)
+- RX worst case - load byte and put it into buffer: 43 cycles (42 if uart is placed in IO address space)
+
+- Any case: +2 on >128k mcu's, -1 for 256 byte buffers
+
+# todo
+- soft rts/cts
