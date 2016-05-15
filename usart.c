@@ -2960,7 +2960,7 @@
 			"andi  r25, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
 			"sts   %M[control_reg], r25 \n\t"         /* 2 */
 		
-		"USART2_TX_CONTINUE: "
+		"USART3_TX_CONTINUE: "
 		#endif
 		
 			"sts   (tx3_first_byte), r30 \n\t"       /* 2 */
@@ -2992,16 +2992,6 @@
 			"pop   r16 \n\t"                          /* 2 */
 
 			"reti \n\t"                              /* 4 ISR return */
-		#ifdef USART_UNSAFE_TX_INTERRUPT
-		"USART3_DISABLE_UDRIE: "
-		
-			"lds   r31, %M[control_reg] \n\t"        /* 2 */
-			"andi  r31, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
-			"sts   %M[control_reg], r31 \n\t"         /* 2 */
-		
-			"rjmp   USART3_TX_CONTINUE \n\t"          /* 2 */
-		#endif
-		
 			: /* output operands */
 		
 			: /* input operands */
