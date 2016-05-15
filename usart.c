@@ -2207,8 +2207,23 @@
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cp    r30, r31 \n\t"                    /* 1 */
-			"breq  USART0_DISABLE_UDRIE \n\t"        /* 1/2 */
+			"cpse  r30, r31 \n\t"                    /* 1 */
+			"rjmp   USART0_TX_CONTINUE \n\t"          /* 2 */
+			
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+					"in   r31, %M[control_reg] \n\t"                  /* 1 */
+					"andi  r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
+					"out   %M[control_reg], r31\n\t"                  /* 1 */
+				#else // cbi
+					"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+				#endif // to cbi or not to cbi
+			#else
+				"lds   r31, %M[control_reg] \n\t"        /* 2 */
+				"andi  r31, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
+				"sts   %M[control_reg], r31 \n\t"         /* 2 */
+			#endif
+			
 		"USART0_TX_CONTINUE: "
 		#endif
 			
@@ -2254,23 +2269,6 @@
 			"pop   r16 \n\t"                         /* 2 */
 
 			"reti \n\t"                              /* 4 ISR return */
-	#ifndef USART_UNSAFE_TX_INTERRUPT
-		"USART0_DISABLE_UDRIE: "
-		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-				"in   r31, %M[control_reg] \n\t"                  /* 1 */
-				"andi  r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
-				"out   %M[control_reg], r31\n\t"                  /* 1 */
-			#else // cbi
-				"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
-			#endif // to cbi or not to cbi
-		#else
-			"lds   r31, %M[control_reg] \n\t"        /* 2 */
-			"andi  r31, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
-			"sts   %M[control_reg], r31 \n\t"         /* 2 */
-		#endif
-			"rjmp   USART0_TX_CONTINUE \n\t"          /* 2 */
-	#endif
 			: /* output operands */
 		
 			: /* input operands */
@@ -2487,10 +2485,20 @@
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cp    r30, r31 \n\t"     
-			"breq  USART0_DISABLE_UDRIE \n\t"        /* 1/2 */
+			"cpse  r30, r31 \n\t"                    /* 1 */
+			"rjmp   USART1_TX_CONTINUE \n\t"          /* 2 */
+			
+			#ifdef USART1_IN_IO_ADDRESS_SPACE
+				"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+			#else
+				"lds   r25, %M[control_reg] \n\t"        /* 2 */
+				"andi  r25, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
+				"sts   %M[control_reg], r25 \n\t"         /* 2 */
+			#endif
+			
 		"USART1_TX_CONTINUE: "
 		#endif
+		
 			"sts   (tx1_first_byte), r30 \n\t"       /* 2 */
 		
 			"ldi   r31, 0x00 \n\t"                   /* 1 */
@@ -2527,19 +2535,6 @@
 			"pop   r16 \n\t"                          /* 2 */
 
 			"reti \n\t"                              /* 4 ISR return */
-		
-	#ifndef USART_UNSAFE_TX_INTERRUPT
-			/* UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT) */
-		"USART1_DISABLE_UDRIE: "
-		#ifdef USART1_IN_IO_ADDRESS_SPACE
-			"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
-		#else
-			"lds   r25, %M[control_reg] \n\t"        /* 2 */
-			"andi  r25, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
-			"sts   %M[control_reg], r25 \n\t"         /* 2 */
-		#endif
-			"rjmp   USART1_TX_CONTINUE \n\t"          /* 2 */
-	#endif
 			: /* output operands */
 		
 			: /* input operands */
@@ -2740,8 +2735,13 @@
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cp    r30, r31 \n\t"                    /* 1 */
-			"breq  USART2_DISABLE_UDRIE \n\t"        /* 1/2 */
+			"cpse  r30, r31 \n\t"                    /* 1 */
+			"rjmp   USART2_TX_CONTINUE \n\t"          /* 2 */
+			
+			"lds   r25, %M[control_reg] \n\t"        /* 2 */
+			"andi  r25, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r25 \n\t"         /* 2 */
+			
 		"USART2_TX_CONTINUE: "
 		#endif
 			
@@ -2774,16 +2774,6 @@
 			"pop   r16 \n\t"                          /* 2 */
 
 			"reti \n\t"                              /* 4 ISR return */
-		
-		#ifndef USART_UNSAFE_TX_INTERRUPT
-		"USART2_DISABLE_UDRIE: "
-			"lds   r31, %M[control_reg] \n\t"        /* 2 */
-			"andi  r31, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
-			"sts   %M[control_reg], r31 \n\t"         /* 2 */
-				
-			"rjmp   USART2_TX_CONTINUE \n\t"          /* 2 */
-		#endif
-		
 			: /* output operands */
 		
 			: /* input operands */
@@ -2963,9 +2953,14 @@
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cp    r30, r31 \n\t"                    /* 1 */
-			"breq  USART3_DISABLE_UDRIE \n\t"        /* 1/2 */
-		"USART3_TX_CONTINUE: "
+			"cpse  r30, r31 \n\t"                    /* 1 */
+			"rjmp   USART2_TX_CONTINUE \n\t"          /* 2 */
+			
+			"lds   r25, %M[control_reg] \n\t"        /* 2 */
+			"andi  r25, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r25 \n\t"         /* 2 */
+		
+		"USART2_TX_CONTINUE: "
 		#endif
 		
 			"sts   (tx3_first_byte), r30 \n\t"       /* 2 */

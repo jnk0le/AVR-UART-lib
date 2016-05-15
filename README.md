@@ -16,12 +16,12 @@ buffers for receive/transmit. Designed to be easy to use, with absolutely minimu
 
 simple "hello world" code on mega328p can give:
 
-	Program Memory Usage 	:	398 bytes   1,2 % Full
+	Program Memory Usage 	:	396 bytes   1,2 % Full
 	Data Memory Usage 		:	82 bytes   4,0 % Full
 
 same code on mega8 gives:
 
-	Program Memory Usage 	:	308 bytes   3,8 % Full
+	Program Memory Usage 	:	306 bytes   3,7 % Full
 	Data Memory Usage 		:	82 bytes   8,0 % Full
 
 Meanwhile Arduino generates 2KB of code.
@@ -41,8 +41,8 @@ In case of reinitializing uart on the fly (especially with non-constant ubbr) tr
 
 # ISR timmings
 
-- TX best case - send byte from buffer: 39 cycles (38 if uart is placed in IO address space)
-- TX worst case - send byte from buffer and disable UDRIE interrupt: 47 cycles (41 if uart is placed in IO address space) 
+- TX best case - send byte from buffer: 40 cycles (39 if uart is placed in IO address space)
+- TX worst case - send byte from buffer and disable UDRIE interrupt: 44 cycles (41 if uart is placed in IO address space) 
 
 - RX best case - load byte and do nothing: 37 cycles (36 if uart is placed in IO address space)
 - RX worst case - load byte and put it into buffer: 43 cycles (42 if uart is placed in IO address space)
