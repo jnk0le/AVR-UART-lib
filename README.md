@@ -26,7 +26,7 @@ same code on mega8 gives:
 
 Meanwhile Arduino generates 2KB of code.
 
-For this result additional flag -mrelax is required in many IDE's (Atmel studio, Arduino etc.)
+For this result additional flag -mrelax is required in many IDE's (Atmel studio etc.)
 
 # Notes
 Lot of terminals sends only CR character as a newline terminator, instead of CRLF or even unix style LF

@@ -2413,8 +2413,8 @@
 			"st    Z, r25 \n\t"                      /* 2 */
 		
 		"USART0_RX_EXIT: "
-		#if defined(USART_UNSAFE_RX_INTERRUPT)||defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
-			"cli \n\t"                               /* 1 */
+		#if defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
+			"sei \n\t"                               /* 1 */
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
@@ -2667,8 +2667,8 @@
 			"st    Z, r25 \n\t"                      /* 2 */
 		
 		"USART1_RX_EXIT: "
-		#if defined(USART_UNSAFE_RX_INTERRUPT)||defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
-			"cli \n\t"                               /* 1 */
+		#if defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
+			"sei \n\t"                               /* 1 */
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
@@ -2887,8 +2887,8 @@
 			"st    Z, r25 \n\t"                      /* 2 */
 		
 		"USART2_RX_EXIT: "
-		#if defined(USART_UNSAFE_RX_INTERRUPT)||defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
-			"cli \n\t"                               /* 1 */
+		#if defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
+			"sei \n\t"                               /* 1 */
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
@@ -3105,8 +3105,8 @@
 			"st    Z, r25 \n\t"                      /* 2 */
 		
 		"USART3_RX_EXIT: "
-		#if defined(USART_UNSAFE_RX_INTERRUPT)||defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
-			"cli \n\t"                               /* 1 */
+		#if defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
+			"sei \n\t"                               /* 1 */
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */

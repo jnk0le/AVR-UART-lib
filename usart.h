@@ -329,6 +329,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#warning "usb may not work with RX ISR's"
 #endif
 
+#if defined(__usbdrv_h_included__)&&defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)&&(F_CPU < 15000000UL)
+	#warning "usb may not work with this clock"
+#endif
+
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_TX_INTERRUPT)
 	#warning "usb may not work with TX ISR's"
 #endif
