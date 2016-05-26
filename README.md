@@ -7,6 +7,7 @@ buffers for receive/transmit. Designed to be easy to use, with absolutely minimu
 - intuitive frame format settings
 - support for up to 4 USART's
 - extremly light interrupts 
+- software flow control (CTS only at the moment)
 - RS 485 compatibility
 - MPCM master and slave mode support
 - printf()/scanf() streams compatibility
@@ -14,19 +15,19 @@ buffers for receive/transmit. Designed to be easy to use, with absolutely minimu
 - optimized as much as possible to reduce code size
 - and much more
 
-simple "hello world" code on mega328p can give:
+simple minimal "hello world" code on mega328p can give:
 
-	Program Memory Usage 	:	396 bytes   1,2 % Full
+	Program Memory Usage 	:	402 bytes   1,2 % Full
 	Data Memory Usage 		:	82 bytes   4,0 % Full
 
 same code on mega8 gives:
 
-	Program Memory Usage 	:	306 bytes   3,7 % Full
+	Program Memory Usage 	:	312 bytes   3,8 % Full 
 	Data Memory Usage 		:	82 bytes   8,0 % Full
 
 Meanwhile Arduino generates 2KB of code.
 
-For this result additional flag -mrelax is required in many IDE's (Atmel studio etc.)
+For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio)
 
 # Notes
 Lot of terminals sends only CR character as a newline terminator, instead of CRLF or even unix style LF
@@ -39,15 +40,25 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 
 In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint() or define USART_NO_DIRTY_HACKS macro.
 
+In half duplex (rs485) transmission modes, the aplication code is responsible of starting transmission only when bus is idle.
+
+In MPCM mode first received byte is address by which device was called (own or general call), application is also responsible of restoring into "idle listening" state withing described bus silence time after receiving entire packet.
+
+For software CTS, all used pins have to be configured as an input, and edge interrupt source (INT/PCINT).
+The application code should call cts_isr_handlers from interrupts corresponding to used pins. (see example(flow control).c)
+If CTS line goes high during transmission, only one additional byte can be transmitted. (due to 2 level transmit register)  
+
+Software RTS is not implemented. Hardware RTS will not work at the moment due to RX ISR.
+
 # ISR timmings
 
 - TX best case - send byte from buffer: 40 cycles (39 if uart is placed in IO address space)
-- TX worst case - send byte from buffer and disable UDRIE interrupt: 44 cycles (41 if uart is placed in IO address space) 
+- TX worst case - send byte from buffer and disable UDRIE interrupt: 44 cycles (40 if uart is placed in IO address space) 
 
-- RX best case - load byte and do nothing: 37 cycles (36 if uart is placed in IO address space)
+- RX best case - load byte and do nothing (buffer full): 37 cycles (36 if uart is placed in IO address space)
 - RX worst case - load byte and put it into buffer: 43 cycles (42 if uart is placed in IO address space)
 
 - Any case: +2 on >128k mcu's, -1 for 256 byte buffers
 
 # todo
-- soft rts/cts
+- soft rts

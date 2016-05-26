@@ -14,9 +14,11 @@
 //#define NO_USART_RX // disable all receiver code and dependencies
 //#define NO_USART_TX // disable all transmitter code and dependencies
 
-//#define USART_RS485_MODE // globally enable rs485 operation mode // RE have to be shorted with DE
+//#define USART_USE_SOFT_CTS // CTS handlers also have to be placed into INT/PCINT interrupt in the application code, see example(flow control).c
+//#define //RTS coming soon
+
+//#define USART_RS485_MODE // globally enable rs485 operation mode // control pin have to be shorted with RE and DE
 //#define USART_MPCM_MODE // globally enable MPCM operation mode // 9 bit data frame only // always set frame format to 8 data bits
-//#define USART_DISABLE_TRANSMITTER_ON_TXC // especially in case of multiple slaves connected directly to each other // requires pullup resistor on master rx line
 
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces 
 
@@ -28,11 +30,12 @@
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
-//#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (first insertions would generate ISR worst case)
+//#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (first insertions would generate ISR worst case), didn do any osciloscope tests but uart_puts() looks to keep up at 100% bus utilization
 //#define USART_UNSAFE_TX_INTERRUPT // enable interrupts in TX ISR handler to meet 25 cycle restriction // safe enough to enable - ISR will not interrupt itself, only 3+PC bytes on stack 
 //#define USART_UNSAFE_RX_INTERRUPT // enable interrupts in RX ISR handler to meet 25 cycle restriction // unsafe - ISR can interrupt itself after receiving another byte, only 4+PC bytes on stack 
-//#define USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE // modify TX interrupt to meet 33 cycle restriction // doesn't overwrite or reverse received bytes
+//#define USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE // modify TX interrupt to meet 33 cycle restriction // don't overwrite or reverse received bytes
 //#define USART_NO_DIRTY_HACKS // if any bootloader uses <=4800 bps speed at 20MHz
+
 /*****************************config for multiple USART mcu's***********************************/
 
 //#define NO_USART0 // disable usage of uart0
@@ -70,28 +73,61 @@
 //#define USART2_MPCM_MODE
 //#define USART3_MPCM_MODE
 
-//#define USART0_DISABLE_TRANSMITTER_ON_TXC
-//#define USART1_DISABLE_TRANSMITTER_ON_TXC
-//#define USART2_DISABLE_TRANSMITTER_ON_TXC
-//#define USART3_DISABLE_TRANSMITTER_ON_TXC
+//#define USART0_USE_SOFT_CTS
+//#define USART1_USE_SOFT_CTS
+//#define USART2_USE_SOFT_CTS
+//#define USART3_USE_SOFT_CTS
 
-//#define USART0_RS485_MODE // set correct DE pin first 
-//#define USART1_RS485_MODE	// set correct DE pin first 
-//#define USART2_RS485_MODE	// set correct DE pin first 
-//#define USART3_RS485_MODE	// set correct DE pin first 
+//#define USART0_USE_SOFT_RTS
+//#define USART1_USE_SOFT_RTS
+//#define USART2_USE_SOFT_RTS
+//#define USART3_USE_SOFT_RTS
+
+//#define USART0_RS485_MODE 
+//#define USART1_RS485_MODE	
+//#define USART2_RS485_MODE	
+//#define USART3_RS485_MODE	
+
+/*****************************soft flow control config***********************************/
+
+//#define CTS0_IOPORTNAME D // A,B,C,D ... port naming
+//#define CTS0_PIN 2 // 1,2,3,4 ... pin naming
+
+//#define CTS1_IOPORTNAME
+//#define CTS1_PIN
+
+//#define CTS2_IOPORTNAME
+//#define CTS2_PIN
+
+//#define CTS3_IOPORTNAME
+//#define CTS3_PIN
+
+//RTS not implemented right now
+
+//#define RTS0_IOPORTNAME D // A,B,C,D ... port naming
+//#define RTS0_PIN 2 // 1,2,3,4 ... pin naming
+
+//#define RTS1_IOPORTNAME
+//#define RTS1_PIN
+
+//#define RTS2_IOPORTNAME
+//#define RTS2_PIN
+
+//#define RTS3_IOPORTNAME
+//#define RTS3_PIN
 
 /*****************************RS 485 config***********************************/
 
-//#define RS485_CONTROL0_PORT D // A,B,C,D ... port naming - define valid port connected to DE + RE 
+//#define RS485_CONTROL0_IOPORTNAME D // A,B,C,D ... port naming - define valid destination of pin connected to DE + RE 
 //#define RS485_CONTROL0_PIN 2 // 1,2,3,4 ... pin naming - define valid pin connected to DE + RE
 
-//#define RS485_CONTROL1_PORT 
+//#define RS485_CONTROL1_IOPORTNAME 
 //#define RS485_CONTROL1_PIN 
 
-//#define RS485_CONTROL2_PORT 
+//#define RS485_CONTROL2_IOPORTNAME
 //#define RS485_CONTROL2_PIN
 
-//#define RS485_CONTROL3_PORT
+//#define RS485_CONTROL3_IOPORTNAME
 //#define RS485_CONTROL3_PIN
 
 /*****************************MPCM config***********************************/
@@ -253,6 +289,20 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define USART3_PUTC_FAST_INSERTIONS
 #endif
 
+#ifdef USART_USE_SOFT_CTS
+	#define USART0_USE_SOFT_CTS
+	#define USART1_USE_SOFT_CTS
+	#define USART2_USE_SOFT_CTS
+	#define USART3_USE_SOFT_CTS
+#endif
+
+#ifdef USART_USE_SOFT_RTS
+	#define USART0_USE_SOFT_RTS
+	#define USART1_USE_SOFT_RTS
+	#define USART2_USE_SOFT_RTS
+	#define USART3_USE_SOFT_RTS
+#endif
+
 #ifdef USART_RS485_MODE
 	#define USART0_RS485_MODE
 	#define USART1_RS485_MODE
@@ -267,37 +317,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define USART3_MPCM_MODE
 #endif
 
-#ifdef USART_DISABLE_TRANSMITTER_ON_TXC
-	#define USART0_DISABLE_TRANSMITTER_ON_TXC
-	#define USART1_DISABLE_TRANSMITTER_ON_TXC
-	#define USART2_DISABLE_TRANSMITTER_ON_TXC
-	#define USART3_DISABLE_TRANSMITTER_ON_TXC
-#endif
-
-#ifdef USART0_RS485_MODE
-	#if !defined(RS485_CONTROL0_PORT)||!defined(RS485_CONTROL0_PIN)
-		#error "define valid DE/RE output for USART0 RS485 operation"
-	#endif
-#endif
-
-#ifdef USART1_RS485_MODE
-	#if !defined(RS485_CONTROL1_PORT)||!defined(RS485_CONTROL1_PIN)
-		#error "define valid DE/RE output for USART1 RS485 operation"
-	#endif
-#endif
-
-#ifdef USART2_RS485_MODE
-	#if !defined(RS485_CONTROL2_PORT)||!defined(RS485_CONTROL2_PIN)
-		#error "define valid DE/RE output for USART2 RS485 operation"
-	#endif
-#endif
-
-#ifdef USART3_RS485_MODE
-	#if !defined(RS485_CONTROL3_PORT)||!defined(RS485_CONTROL3_PIN)
-		#error "define valid DE/RE output for USART3 RS485 operation"
-	#endif
-#endif
-
 #ifndef ___DDR
 	#define ___DDR(x) ___XDDR(x)
 #endif
@@ -310,6 +329,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif
 #ifndef ___XPORT
 	#define ___XPORT(x) (PORT ## x)
+#endif
+
+#ifndef ___PIN
+	#define ___PIN(x) ___XPIN(x)
+#endif
+#ifndef ___XPIN
+	#define ___XPIN(x) (PIN ## x)
 #endif
 
 #ifdef RX_NEWLINE_MODE
@@ -330,7 +356,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif
 
 #if defined(__usbdrv_h_included__)&&defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)&&(F_CPU < 15000000UL)
-	#warning "usb may not work with this clock"
+	#warning "usb may not work with RX ISR's at this clock"
 #endif
 
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_TX_INTERRUPT)
@@ -340,7 +366,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 
 #if (TX0_BUFFER_SIZE > 8)||(RX0_BUFFER_SIZE > 8)
-	#warning "TX or RX buffer may be too large for this device"
+	#warning "TX or RX buffer may be too large for this mcu"
 #endif
 
 #define USART0_IN_IO_ADDRESS_SPACE
@@ -835,6 +861,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #if defined(__AVR_ATmega8U2__) || defined(__AVR_ATmega16U2__) || defined(__AVR_ATmega16U4__)\
 ||defined(__AVR_ATmega32U2__) || defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega32U6__)
 
+#define USART_HARDWARE_FLOW_CONTROL_AVAILABLE
+
 #ifndef NO_USART0 // we will call the only usart, as an usart0
 #define USE_USART0
 
@@ -847,6 +875,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UCSR0A_REGISTER		UCSR1A
 	#define UCSR0B_REGISTER		UCSR1B
 	#define UCSR0C_REGISTER		UCSR1C
+	#define UCSR0D_REGISTER		UCSR1D
 	#define TXCIE0_BIT      	TXCIE1
 	#define UDRIE0_BIT    		UDRIE1
 	#define RXCIE0_BIT  		RXCIE1
@@ -857,6 +886,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define MPCM0_BIT           MPCM1
 	#define UCSZ02_BIT          UCSZ12
 	#define TXB80_BIT           TXB81
+	#define CTSEN0_BIT          CTSEN
+	#define RTSEN0_BIT          RTSEN
 
 #endif // NO_USART0
 #endif
@@ -977,6 +1008,58 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #ifndef USE_USART3
 	#define NO_TX3_INTERRUPT
 	#define NO_RX3_INTERRUPT
+#endif
+
+#if defined(USART0_USE_SOFT_CTS)&&defined(USE_USART0)
+	#if !defined(CTS0_IOPORTNAME)||!defined(CTS0_PIN)
+		#error "define valid CTS input for USART0 operation"
+	#endif
+#endif
+
+#if defined(USART1_USE_SOFT_CTS)&&defined(USE_USART1)
+	#if !defined(CTS1_IOPORTNAME)||!defined(CTS1_PIN)
+		#error "define valid CTS input for USART1 operation"
+	#endif
+#endif
+
+#if defined(USART2_USE_SOFT_CTS)&&defined(USE_USART2)
+	#if !defined(CTS2_IOPORTNAME)||!defined(CTS2_PIN)
+		#error "define valid CTS input for USART2 operation"
+	#endif
+#endif
+
+#if defined(USART3_USE_SOFT_CTS)&&defined(USE_USART3)
+	#if !defined(CTS3_IOPORTNAME)||!defined(CTS3_PIN)
+		#error "define valid CTS input for USART3 operation"
+	#endif
+#endif
+
+#if defined(USART0_USE_SOFT_RTS)||defined(USART1_USE_SOFT_RTS)||defined(USART2_USE_SOFT_RTS)||defined(USART3_USE_SOFT_RTS)
+	#error "soft rts not implemented right now"
+#endif
+
+#if defined(USART0_RS485_MODE)&&defined(USE_USART0)
+	#if !defined(RS485_CONTROL0_IOPORTNAME)||!defined(RS485_CONTROL0_PIN)
+		#error "define valid DE/RE output for USART0 RS485 operation"
+	#endif
+#endif
+
+#if defined(USART1_RS485_MODE)&&defined(USE_USART1)
+	#if !defined(RS485_CONTROL1_IOPORTNAME)||!defined(RS485_CONTROL1_PIN)
+		#error "define valid DE/RE output for USART1 RS485 operation"
+	#endif
+#endif
+
+#if defined(USART2_RS485_MODE)&&defined(USE_USART2)
+	#if !defined(RS485_CONTROL2_IOPORTNAME)||!defined(RS485_CONTROL2_PIN)
+		#error "define valid DE/RE output for USART2 RS485 operation"
+	#endif
+#endif
+
+#if defined(USART3_RS485_MODE)&&defined(USE_USART3)
+	#if !defined(RS485_CONTROL3_IOPORTNAME)||!defined(RS485_CONTROL3_PIN)
+		#error "define valid DE/RE output for USART3 RS485 operation"
+	#endif
 #endif
 
 #ifndef USART0_CONFIG_B // set config bytes for UCSR0B_REGISTER
@@ -1122,7 +1205,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			case 0:
 			{
 			#ifdef USART0_RS485_MODE
-				___DDR(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
+				___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
 			#endif	
 				UBRR0L_REGISTER = (uint8_t) ubbr_value;
 			
@@ -1152,7 +1235,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			case 1:
 			{
 			#ifdef USART1_RS485_MODE
-				___DDR(RS485_CONTROL1_PORT) |= (1<<RS485_CONTROL1_PIN); // default pin state is low
+				___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // default pin state is low
 			#endif
 				UBRR1L_REGISTER = (uint8_t) ubbr_value;
 			
@@ -1182,7 +1265,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			case 2:
 			{
 			#ifdef USART2_RS485_MODE
-				___DDR(RS485_CONTROL2_PORT) |= (1<<RS485_CONTROL2_PIN); // default pin state is low
+				___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // default pin state is low
 			#endif
 				UBRR2L_REGISTER = (uint8_t) ubbr_value;
 			
@@ -1212,7 +1295,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			case 3:
 			{
 			#ifdef USART3_RS485_MODE
-				___DDR(RS485_CONTROL3_PORT) |= (1<<RS485_CONTROL3_PIN); // default pin state is low
+				___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // default pin state is low
 			#endif
 				UBRR3L_REGISTER = (uint8_t) ubbr_value;
 			
@@ -1282,7 +1365,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		}
 	}
 	
-#ifdef USART0_MPCM_MODE
+#if defined(USART0_MPCM_MODE)||defined(USART1_MPCM_MODE)||defined(USART2_MPCM_MODE)||defined(USART3_MPCM_MODE)
 	void uart_mpcm_transmit_addres_Frame(uint8_t usartct, uint8_t dat);
 	void uart_mpcm_slave_return_idle(uint8_t usartct) // return slave to mpcm idle mode (wait for own addres frame)
 	{
@@ -1315,7 +1398,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	static inline void uart_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
 	{
 	#ifdef USART0_RS485_MODE
-		___DDR(RS485_CONTROL0_PORT) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
+		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
 	#endif
 		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
@@ -1356,6 +1439,18 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	void uart_mpcm_slave_return_idle(void) // return slave to mpcm idle mode (wait for own addres frame)
 	{
 		UCSR0A_REGISTER |= (1<<MPCM0_BIT);
+	}
+#endif
+
+#ifdef USART_HARDWARE_FLOW_CONTROL_AVAILABLE
+	void uart_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) // pass true to enable
+	{
+		if(ctsenable && rtsenable) // -Os dependent, do not use in non-inline functions 
+			UCSR0D_REGISTER = (1<<CTSEN0_BIT)|(1<<RTSEN0_BIT);
+		else if(ctsenable)
+			UCSR0D_REGISTER = (1<<CTSEN0_BIT);
+		else
+			UCSR0D_REGISTER = (1<<RTSEN0_BIT);
 	}
 #endif
 
@@ -1501,7 +1596,111 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif // NO_USART_RX
 
 /************************************************************************************
- *                           stdio.h stuff                                          *
+ *                    soft flow control interrupt handlers                          *
+ ************************************************************************************/
+
+#if defined(USART0_USE_SOFT_CTS)&&defined(USE_USART0)
+	extern volatile uint8_t tx0_first_byte, tx0_last_byte;
+
+	static inline void cts0_isr_handler(void)
+	{
+	#if defined(USART0_IN_IO_ADDRESS_SPACE)&&!defined(USART0_NOT_ACCESIBLE_FROM_CBI)
+		if(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN))
+		{
+			UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
+		}
+		else
+		{
+			if (tx0_first_byte != tx0_last_byte)
+			UCSR0B_REGISTER |= (1<<UDRIE0_BIT);
+		}
+	#else
+		uint8_t tmp = UCSR0B_REGISTER;
+		if(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN))
+		{
+			tmp &= ~(1<<UDRIE0_BIT);
+		}
+		else
+		{
+			if (tx0_first_byte != tx0_last_byte)
+			tmp |= (1<<UDRIE0_BIT);
+		}
+		UCSR0B_REGISTER = tmp;
+	#endif
+	}
+#endif
+
+#if defined(USART1_USE_SOFT_CTS)&&defined(USE_USART1)
+	extern volatile uint8_t tx1_first_byte, tx1_last_byte;
+
+	static inline void cts1_isr_handler(void)
+	{
+	#if defined(USART1_IN_IO_ADDRESS_SPACE)
+		if(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN))
+		{
+			UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT);
+		}
+		else
+		{
+			if (tx1_first_byte != tx1_last_byte)
+			UCSR1B_REGISTER |= (1<<UDRIE1_BIT);
+		}
+	#else
+		uint8_t tmp = UCSR1B_REGISTER;
+		if(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN))
+		{
+			tmp &= ~(1<<UDRIE1_BIT);
+		}
+		else
+		{
+			if (tx1_first_byte != tx1_last_byte)
+			tmp |= (1<<UDRIE1_BIT);
+		}
+		UCSR1B_REGISTER = tmp;
+	#endif
+	}
+#endif
+
+#if defined(USART2_USE_SOFT_CTS)&&defined(USE_USART2)
+	extern volatile uint8_t tx2_first_byte, tx2_last_byte;
+
+	static inline void cts2_isr_handler(void)
+	{
+		uint8_t tmp = UCSR2B_REGISTER;
+		if(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN))
+		{
+			tmp &= ~(1<<UDRIE2_BIT);
+		}
+		else
+		{
+			if (tx2_first_byte != tx2_last_byte)
+			tmp |= (1<<UDRIE2_BIT);
+		}
+		UCSR2B_REGISTER = tmp;
+	}
+#endif
+
+#if defined(USART3_USE_SOFT_CTS)&&defined(USE_USART3)
+	extern volatile uint8_t tx3_first_byte, tx3_last_byte;
+
+	static inline void cts3_isr_handler(void)
+	{
+		uint8_t tmp = UCSR3B_REGISTER;
+		if(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN))
+		{
+			tmp &= ~(1<<UDRIE3_BIT);
+		}
+		else
+		{
+			if (tx3_first_byte != tx3_last_byte)
+			tmp |= (1<<UDRIE3_BIT);
+		}
+		UCSR3B_REGISTER = tmp;
+	}
+#endif
+
+/************************************************************************************
+ *                              stdio.h stuff                                       *
  ************************************************************************************/
 #include <stdio.h> // avoid compilation errors
 
