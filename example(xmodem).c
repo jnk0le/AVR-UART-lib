@@ -298,23 +298,15 @@ void HexDump16(uint8_t *bufptr, uint16_t ByteCount)
                 
 			// Output the offset.
             uart_puts("  ");
-				
-			if(i <= 0x0fff)
-				uart_putc('0');
-			if(i <= 0x00ff)	
-				uart_putc('0');
-			if(i <= 0x000f)
-				uart_putc('0');
-				
+			
+			uart_puthex(i>>2);
 			uart_puthex(i);
+
 			uart_putc(' ');
         }
 
         // Now the hex code for the specific character.
         uart_putc(' ');
-		
-		if(bufptr[i] <= 0x0f)
-			uart_putc('0'); // add 0 padding
 		
 		uart_puthex(bufptr[i]);
 
