@@ -31,10 +31,9 @@
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
 //#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (first insertions would generate ISR worst case), didn do any osciloscope tests but uart_puts() looks to keep up at 100% bus utilization
-//#define USART_UNSAFE_TX_INTERRUPT // enable interrupts in TX ISR handler to meet 25 cycle restriction // safe enough to enable - ISR will not interrupt itself, only 3+PC bytes on stack 
-//#define USART_UNSAFE_RX_INTERRUPT // enable interrupts in RX ISR handler to meet 25 cycle restriction // unsafe - ISR can interrupt itself after receiving another byte, only 4+PC bytes on stack 
-//#define USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE // modify TX interrupt to meet 33 cycle restriction // don't overwrite or reverse received bytes
-//#define USART_NO_DIRTY_HACKS // if any bootloader uses <=4800 bps speed at 20MHz
+//#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
+//#define USART_UNSAFE_RX_INTERRUPT // max 21 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
+//#define USART_NO_DIRTY_HACKS // if any bootloader uses <=4800 bps speed at 20MHz, or 
 
 /*****************************config for multiple USART mcu's***********************************/
 
@@ -1564,7 +1563,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	int32_t uart_getlong(uint8_t usartct);
 	float uart_getfloat(uint8_t usartct);
 	
-	uint8_t uart_getData(uint8_t usartct, uint8_t *data); // reads binary data from a buffer and loads it into *data byte 
+	uint16_t uart_getData(uint8_t usartct); // reads single byte from a buffer // returns negative value  if buffer is empty (upper byte is non zero)
+	uint8_t uart_LoadData(uint8_t usartct, uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 	// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 	uint8_t uart_AvailableBytes(uint8_t usartct); // returns number of bytes waiting in the receiver buffer
 	uint8_t uart_peek(uint8_t usartct); // returns next byte from buffer // returned byte is invalid if there is nothing to read
@@ -1586,8 +1586,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	int32_t uart_getlong(void);
 	float uart_getfloat(void);
 	
-	uint8_t uart_getData(uint8_t *data); // reads binary data from a buffer and loads it into *data byte
-	// in case of empty buffers returning flag is set to BUFFER_EMPTY - NULL
+	int16_t uart_getData(void); // reads single byte from a buffer // returns negative value if buffer is empty (upper byte is non zero)
+	uint8_t uart_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
+	// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
 	uint8_t uart_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 

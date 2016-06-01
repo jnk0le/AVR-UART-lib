@@ -1641,13 +1641,112 @@
 
 //******************************************************************
 //Function  : To receive single byte in binary transmission.
+//Arguments : Id of selected USART interface.
+//Return    : Signed 16 bit integer containing data in lower 8 bits 
+//Note      : This function doesn't cut CR, LF, NULL terminators
+//          : If receiver buffer is empty, return value is negative 
+//          : so only sign bit have to be checked (x < 0 // x >= 0)
+//******************************************************************
+	int16_t uart_getData(uint8_t usartct)
+	{
+		register uint8_t tmp_rx_first_byte;
+		
+		switch(usartct)
+		{
+			default: // first found case as default
+			#ifndef NO_RX0_INTERRUPT
+			case 0:
+			{
+				tmp_rx_first_byte = rx0_first_byte;
+				
+				if(tmp_rx_first_byte == rx0_last_byte)
+				{
+				#ifndef USART_NO_DIRTY_HACKS
+					uint16_t tmp;
+					asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
+					return tmp;
+				#else
+					return -1;
+				#endif
+				}
+				
+				rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+				return rx0_buffer[tmp_rx_first_byte];
+			}
+			#endif // NO_RX0_INTERRUPT
+			#ifndef NO_RX1_INTERRUPT
+			case 1:
+			{
+				tmp_rx_first_byte = rx1_first_byte;
+				
+				if(tmp_rx_first_byte == rx1_last_byte)
+				{
+				#ifndef USART_NO_DIRTY_HACKS
+					uint16_t tmp;
+					asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
+					return tmp;
+				#else
+					return -1;
+				#endif
+				}
+				
+				rx1_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
+				return rx1_buffer[tmp_rx_first_byte];
+			}
+			#endif // NO_RX1_INTERRUPT
+			#ifndef NO_RX2_INTERRUPT
+			case 2:
+			{
+				tmp_rx_first_byte = rx2_first_byte;
+				
+				if(tmp_rx_first_byte == rx2_last_byte)
+				{
+				#ifndef USART_NO_DIRTY_HACKS
+					uint16_t tmp;
+					asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
+					return tmp;
+				#else
+					return -1;
+				#endif
+				}
+				
+				rx2_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
+				return rx2_buffer[tmp_rx_first_byte];
+			}
+			#endif // NO_RX2_INTERRUPT
+			#ifndef NO_RX3_INTERRUPT
+			case 3:
+			{
+				tmp_rx_first_byte = rx3_first_byte;
+				
+				if(tmp_rx_first_byte == rx3_last_byte)
+				{
+				#ifndef USART_NO_DIRTY_HACKS
+					uint16_t tmp;
+					asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
+					return tmp;
+				#else
+					return -1;
+				#endif
+				}
+				
+				rx3_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
+				return rx3_buffer[tmp_rx_first_byte];
+			}
+			#endif // NO_RX3_INTERRUPT
+		}
+		
+	}
+
+//******************************************************************
+//Function  : To receive single byte in binary transmission.
 //Arguments : 1. Id of selected USART interface.
 //          : 2. Pointer to byte which have to be filed by incoming data.
 //Return    :    Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
 //Note      : This function doesn't cut CR, LF, NULL terminators
 //          : If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
 //******************************************************************
-	uint8_t uart_getData(uint8_t usartct, uint8_t *data)
+	uint8_t uart_LoadData(uint8_t usartct, uint8_t *data)
 	{
 		register uint8_t tmp_rx_first_byte;
 		
@@ -1963,12 +2062,39 @@
 
 //******************************************************************
 //Function  : To receive single byte in binary transmission.
+//Arguments : none
+//Return    : Signed 16 bit integer containing data in lower 8 bits 
+//Note      : This function doesn't cut CR, LF, NULL terminators
+//          : If receiver buffer is empty, return value is negative 
+//          : so only sign bit have to be checked (x < 0 // x >= 0)
+//******************************************************************
+	int16_t uart_getData(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		
+		if(tmp_rx_first_byte == rx0_last_byte) 
+		{
+		#ifndef USART_NO_DIRTY_HACKS
+			uint16_t tmp;
+			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
+			return tmp;
+		#else
+			return -1;
+		#endif
+		}
+		
+		rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		return rx0_buffer[tmp_rx_first_byte];
+	}
+
+//******************************************************************
+//Function  : To receive single byte in binary transmission.
 //Arguments : Pointer to byte which have to be filed by incoming data.
 //Return    : Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
 //Note      : This function doesn't cut CR, LF, NULL terminators
 //          : If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
 //******************************************************************
-	uint8_t uart_getData(uint8_t *data)
+	uint8_t uart_LoadData(uint8_t *data)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
 		
@@ -2025,20 +2151,19 @@
 		
 		char uart_getchar(FILE *stream)
 		{
-			uint8_t data;
+			int16_t tmp;
 			
-			while( BUFFER_EMPTY == uart_getData((uint16_t) stream -> udata, &data) );
+			while ( (tmp = uart_getData((uint16_t) stream -> udata)) < 0 );
 			
 		#ifdef RX_STDIO_GETCHAR_ECHO
-			uart_putc((uint16_t) stream -> udata, data);
+			uart_putc((uint16_t) stream -> udata, (uint8_t)tmp;
 		#endif
 			
-			return data;
+			return (uint8_t)tmp;
 		}
 		
 	#endif // NO_USART_RX
 
-	
 	#ifdef USE_USART0
 	
 		#if defined(NO_RX0_INTERRUPT)
@@ -2107,15 +2232,15 @@
 		
 		char uart_getchar(FILE *stream)
 		{
-			uint8_t data;
-		
-			while( BUFFER_EMPTY == uart_getData(&data) );
+			int16_t tmp;
+			
+			while ( (tmp = uart_getData()) < 0 );
 		
 		#ifdef RX_STDIO_GETCHAR_ECHO
-			uart_putc(data);
+			uart_putc((uint8_t)tmp);
 		#endif
 		
-			return data;
+			return (uint8_t)tmp;
 		}
 	#endif //NO_RX0_INTERRUPT
 	
@@ -2155,9 +2280,7 @@
 		if(UCSRnA & (1<<MPCMn))
 		{
 			if(tmp == MPCMn_ADDRESS || tmp == MPCMn_GCALL_ADDRESS)
-			{
 				UCSRnA &= ~(1<<MPCMn);
-			}
 			else
 				return;
 		}
@@ -2187,9 +2310,9 @@
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in   r31, %M[control_reg] \n\t"                  /* 1 */
+					"in   r31, %M[control_reg_IO] \n\t"                  /* 1 */
 					"andi  r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
-					"out   %M[control_reg], r31\n\t"                  /* 1 */
+					"out   %M[control_reg_IO], r31\n\t"                  /* 1 */
 				#else // cbi
 					"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
 				#endif // to cbi or not to cbi
@@ -2222,9 +2345,9 @@
 			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in   r31, %M[control_reg] \n\t"                  /* 1 */
+					"in   r31, %M[control_reg_IO] \n\t"                  /* 1 */
 					"andi  r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
-					"out   %M[control_reg], r31\n\t"                  /* 1 */
+					"out   %M[control_reg_IO], r31\n\t"                  /* 1 */
 				#else // cbi
 					"cbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
 				#endif // to cbi or not to cbi
@@ -2255,9 +2378,9 @@
 			"cli \n\t"                               /* 1 */
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in   r31, %M[control_reg] \n\t"                  /* 1 */
+					"in   r31, %M[control_reg_IO] \n\t"                  /* 1 */
 					"ori  r31, (1<<%M[udrie_bit]) \n\t"             /* 1 */
-					"out   %M[control_reg], r25\n\t"                  /* 1 */
+					"out   %M[control_reg_IO], r25\n\t"                  /* 1 */
 				#else // cbi
 					"sbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
 				#endif // to cbi or not to cbi
@@ -2300,6 +2423,7 @@
 	#ifdef USART0_RS485_MODE
 		___PORT(RS485_CONTROL0_PORT) &= ~(1<<RS485_CONTROL0_PIN); // set low after completed transaction
 	#endif
+		reti();
 	}
 	
 #endif
@@ -2319,14 +2443,28 @@
 			"push  r30 \n\t"                         /* 2 */
 			"push  r31 \n\t"                         /* 2 */
 		
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+					"in   r31, %M[control_reg_IO] \n\t"                  /* 1 */
+					"andi  r31, ~(1<<%M[txcie_bit]) \n\t"             /* 1 */
+					"out   %M[control_reg_IO], r31\n\t"                  /* 1 */
+				#else // cbi
+					"cbi   %M[control_reg_IO], %M[txcie_bit] \n\t"    /* 2 */
+				#endif // to cbi or not to cbi
+			#else
+				"lds   r31, %M[control_reg] \n\t"        /* 2 */
+				"andi  r31, ~(1<<%M[txcie_bit]) \n\t"    /* 1 */
+				"sts   %M[control_reg], r31 \n\t"         /* 2 */
+			#endif
+			
+			"sei \n\t"                               /* 1 */
+		#endif
+		
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
 			"in   r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 		#else
 			"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
-		#endif
-	
-		#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
-			"sei \n\t"                               /* 1 */
 		#endif
 	
 		#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
@@ -2369,10 +2507,6 @@
 			"breq  USART0_RX_EXIT \n\t"           /* 1/2 */
 			
 			"sts   (rx0_last_byte), r30 \n\t"        /* 2 */
-			
-		#ifdef USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE
-			"sei \n\t"                               /* 1 */
-		#endif
 		
 			"ldi   r31, 0x00 \n\t"                   /* 1 */
 			"subi  r30, lo8(-(rx0_buffer))\n\t"      /* 1 */
@@ -2380,8 +2514,21 @@
 			"st    Z, r25 \n\t"                      /* 2 */
 		
 		"USART0_RX_EXIT: "
-		#if defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
-			"sei \n\t"                               /* 1 */
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"cli \n\t"                               /* 1 */
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+					"in   r31, %M[control_reg_IO] \n\t"                  /* 1 */
+					"ori  r31, (1<<%M[txcie_bit]) \n\t"             /* 1 */
+					"out   %M[control_reg_IO], r25\n\t"                  /* 1 */
+				#else // cbi
+					"sbi   %M[control_reg_IO], %M[txcie_bit] \n\t"    /* 2 */
+				#endif // to cbi or not to cbi
+			#else
+				"lds   r31, %M[control_reg] \n\t"        /* 2 */
+				"ori  r31, (1<<%M[txcie_bit]) \n\t"    /* 1 */
+				"sts   %M[control_reg], r31 \n\t"         /* 2 */
+			#endif
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
@@ -2404,7 +2551,10 @@
 		#endif
 			[mpcm_bit]      "M"    (MPCM0_BIT),
 			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
-			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0A_REGISTER))
+			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0A_REGISTER)),
+			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
+			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+			[txcie_bit] "M"		(TXCIE0_BIT)
 		
 			/* no clobbers */
 		);
@@ -2524,6 +2674,7 @@
 	#ifdef USART1_RS485_MODE
 		___PORT(RS485_CONTROL1_IOPORTNAME) &= ~(1<<RS485_CONTROL1_PIN); // set low after completed transaction
 	#endif
+		reti();
 	}
 
 #endif // USART1_RS485_MODE
@@ -2549,7 +2700,15 @@
 			"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
 		#endif
 		
-		#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			#ifdef USART1_IN_IO_ADDRESS_SPACE
+				"cbi   %M[control_reg_IO], %M[txcie_bit] \n\t"    /* 2 */
+			#else
+				"lds   r31, %M[control_reg] \n\t"        /* 2 */
+				"andi  r31, ~(1<<%M[txcie_bit]) \n\t"    /* 1 */
+				"sts   %M[control_reg], r31 \n\t"         /* 2 */
+			#endif
+		
 			"sei \n\t"                               /* 1 */
 		#endif
 	
@@ -2593,10 +2752,6 @@
 			"breq  USART1_RX_EXIT \n\t"           /* 1/2 */
 			
 			"sts   (rx1_last_byte), r30 \n\t"        /* 2 */
-			
-		#ifdef USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE
-			"sei \n\t"                               /* 1 */
-		#endif
 		
 			"ldi   r31, 0x00 \n\t"                   /* 1 */
 			"subi  r30, lo8(-(rx1_buffer))\n\t"      /* 1 */
@@ -2604,8 +2759,15 @@
 			"st    Z, r25 \n\t"                      /* 2 */
 		
 		"USART1_RX_EXIT: "
-		#if defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
-			"sei \n\t"                               /* 1 */
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"cli \n\t"                               /* 1 */
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+				"sbi   %M[control_reg_IO], %M[txcie_bit] \n\t"    /* 2 */
+			#else
+				"lds   r31, %M[control_reg] \n\t"        /* 2 */
+				"ori  r31, (1<<%M[txcie_bit]) \n\t"    /* 1 */
+				"sts   %M[control_reg], r31 \n\t"         /* 2 */
+			#endif                          /* 1 */
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
@@ -2628,7 +2790,10 @@
 		#endif
 			[mpcm_bit]      "M"    (MPCM1_BIT),
 			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
-			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1A_REGISTER))
+			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1A_REGISTER)),
+			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
+			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+			[txcie_bit] "M"		(TXCIE1_BIT)
 		
 			/* no clobbers */
 		);
@@ -2731,6 +2896,7 @@
 	#ifdef USART2_RS485_MODE
 		___PORT(RS485_CONTROL2_IOPORTNAME) &= ~(1<<RS485_CONTROL2_PIN); // set low after completed transaction
 	#endif
+		reti();
 	}
 
 #endif // USART2_RS485_MODE
@@ -2752,7 +2918,11 @@
 
 			"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
 		
-		#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"lds   r31, %M[control_reg] \n\t"        /* 2 */
+			"andi  r31, ~(1<<%M[txcie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r31 \n\t"         /* 2 */
+			
 			"sei \n\t"                               /* 1 */
 		#endif
 	
@@ -2788,18 +2958,18 @@
 			
 			"sts   (rx2_last_byte), r30 \n\t"        /* 2 */
 		
-		#ifdef USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE
-			"sei \n\t"                               /* 1 */
-		#endif
-		
 			"ldi   r31, 0x00 \n\t"                   /* 1 */
 			"subi  r30, lo8(-(rx2_buffer))\n\t"      /* 1 */
 			"sbci  r31, hi8(-(rx2_buffer))\n\t"      /* 1 */
 			"st    Z, r25 \n\t"                      /* 2 */
 		
 		"USART2_RX_EXIT: "
-		#if defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
-			"sei \n\t"                               /* 1 */
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"cli \n\t"                               /* 1 */
+			
+			"lds   r31, %M[control_reg] \n\t"        /* 2 */
+			"ori  r31, (1<<%M[txcie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r31 \n\t"         /* 2 */
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
@@ -2820,7 +2990,9 @@
 			[mpcm_gcall_address]      "M"    (MPCM2_GCALL_ADDRESS),
 		#endif
 			[mpcm_bit]      "M"    (MPCM2_BIT),
-			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR2A_REGISTER))
+			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
+			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+			[txcie_bit] "M"		(TXCIE2_BIT)
 		
 			/* no clobbers */
 		);
@@ -2923,6 +3095,7 @@
 	#ifdef USART3_RS485_MODE
 		___PORT(RS485_CONTROL3_IOPORTNAME) &= ~(1<<RS485_CONTROL3_PIN); // set low after completed transaction
 	#endif
+		reti();
 	}
 
 #endif // USART0_RS485_MODE	
@@ -2944,7 +3117,11 @@
 
 			"lds   r25, %M[UDR_reg] \n\t"            /* 2 */
 		
-		#ifdef USART_UNSAFE_RX_INTERRUPT // enable interrupt after satisfying UDR register
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"lds   r31, %M[control_reg] \n\t"        /* 2 */
+			"andi  r31, ~(1<<%M[txcie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r31 \n\t"         /* 2 */
+		
 			"sei \n\t"                               /* 1 */
 		#endif
 	
@@ -2990,8 +3167,12 @@
 			"st    Z, r25 \n\t"                      /* 2 */
 		
 		"USART3_RX_EXIT: "
-		#if defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)
+		#ifdef USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE
 			"sei \n\t"                               /* 1 */
+			
+			"lds   r31, %M[control_reg] \n\t"        /* 2 */
+			"ori  r31, (1<<%M[txcie_bit]) \n\t"    /* 1 */
+			"sts   %M[control_reg], r31 \n\t"         /* 2 */
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
@@ -3012,7 +3193,9 @@
 			[mpcm_gcall_address]      "M"    (MPCM3_GCALL_ADDRESS),
 		#endif
 			[mpcm_bit]      "M"    (MPCM3_BIT),
-			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR3A_REGISTER))
+			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
+			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+			[txcie_bit] "M"		(TXCIE3_BIT)
 		
 			/* no clobbers */
 		);

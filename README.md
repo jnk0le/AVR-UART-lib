@@ -46,9 +46,9 @@ In MPCM mode first received byte is address by which device was called (own or g
 
 For software CTS, all used pins have to be configured as an input, and edge interrupt source (INT/PCINT).
 The application code should call cts_isr_handlers from interrupts corresponding to used pins. (see example(flow control).c)
-If CTS line goes high during transmission, only one additional byte can be transmitted. (due to 2 level transmit register)  
+If CTS line goes high during transmission, only one additional byte can be transmitted. (due to 2 level transmit register)
 
-Software RTS is not implemented. Hardware RTS will not work at the moment due to RX ISR.
+Software RTS is not implemented. Hardware RTS will not work correctly at the moment due to RX ISR (only if isr can't keep up with incoming data).
 
 # ISR timmings
 

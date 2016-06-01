@@ -72,7 +72,6 @@ struct XmodemPacket {
 int main(void)
 {
 	ProgramStatus transmission_status = ready_for_transmission;
-	uint8_t incoming_data;
 	char cmd;
 
 	uart_init(BAUD_CALC(9600));
@@ -143,8 +142,20 @@ int main(void)
 				
 				break;
 			case transmission_in_progres:
-				while (BUFFER_EMPTY != uart_getData(&incoming_data))
-					transmission_status = HandleIncomingData(incoming_data);
+				//looks clean but not most optimal
+				//uint8_t incoming_data;
+				//while (BUFFER_EMPTY != uart_LoadData(&incoming_data))
+				//	transmission_status = HandleIncomingData(incoming_data);
+				
+				while (1)
+				{
+					int16_t tmp = uart_getData();
+
+					if (tmp >= 0)
+						transmission_status = HandleIncomingData((uint8_t)tmp);
+					else // negative value - buffer empty
+						break;
+				}
 
 				break;
 			case transmission_completed:

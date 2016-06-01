@@ -15,7 +15,7 @@ int main(void)
 	PCMSK2 = (1 << PCINT18);
 
 	//if hardware flow control is available (eg. 32u4) it should be used instead of soft implementation
-	//uart_hardware_flow_control_init(1,0); // cts,rts - pass non zero value to enable // rts will not work correctly at the moment due to the rx isr
+	//uart_hardware_flow_control_init(1,1); // cts,rts - pass non zero value to enable // hardware rts will only work if isr cannot keep up with incoming data
 
 	sei();
 
