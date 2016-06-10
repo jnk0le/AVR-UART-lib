@@ -48,7 +48,7 @@ For software CTS, all used pins have to be configured as an input, and edge inte
 The application code should call cts_isr_handlers from interrupts corresponding to used pins. (see example(flow control).c)
 If CTS line goes high during transmission, only one additional byte can be transmitted. (due to 2 level transmit register)
 
-For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be designed.
+For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be defined.
 
 Software RTS is not implemented at the moment.
 
