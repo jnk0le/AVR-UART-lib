@@ -15,12 +15,12 @@
 //#define NO_USART_TX // disable all transmitter code and dependencies
 
 //#define USART_USE_SOFT_CTS // CTS handlers also have to be placed into INT/PCINT interrupt in the application code, see example(flow control).c
-//#define //RTS coming soon
+//#define //soft RTS coming soon
 
 //#define USART_RS485_MODE // globally enable rs485 operation mode // control pin have to be shorted with RE and DE
 //#define USART_MPCM_MODE // globally enable MPCM operation mode // 9 bit data frame only // always set frame format to 8 data bits
 
-//#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces 
+//#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces
 
 #define RX_STDIO_GETCHAR_ECHO // echoes back received characters in getchar() function (for reading in scanf()) 
 #define RX_GETC_ECHO // echoes back received characters in getc() function
@@ -30,10 +30,11 @@
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
-//#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (first insertions would generate ISR worst case), didn do any osciloscope tests but uart_puts() looks to keep up at 100% bus utilization
+//#define USART_EXTEND_RX_BUFFER // extend RX buffer by hardware 2 byte FIFO // required for hardware RTS
+//#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (f_cpu/8)
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
-//#define USART_UNSAFE_RX_INTERRUPT // max 21 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
-//#define USART_NO_DIRTY_HACKS // if any bootloader uses <=4800 bps speed at 20MHz, or 
+//#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
+//#define USART_NO_DIRTY_HACKS // if UBBRH is not zero at startup
 
 /*****************************config for multiple USART mcu's***********************************/
 
@@ -61,6 +62,11 @@
 //#define RX1_GETC_ECHO
 //#define RX2_GETC_ECHO
 //#define RX3_GETC_ECHO
+
+//#define USART0_EXTEND_RX_BUFFER
+//#define USART1_EXTEND_RX_BUFFER
+//#define USART2_EXTEND_RX_BUFFER
+//#define USART3_EXTEND_RX_BUFFER
 
 //#define USART0_PUTC_FAST_INSERTIONS
 //#define USART1_PUTC_FAST_INSERTIONS
@@ -281,6 +287,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RX3_GETC_ECHO
 #endif
 
+#ifdef USART_EXTEND_RX_BUFFER
+	#define USART0_EXTEND_RX_BUFFER
+	#define USART1_EXTEND_RX_BUFFER
+	#define USART2_EXTEND_RX_BUFFER
+	#define USART3_EXTEND_RX_BUFFER
+#endif
+
 #ifdef USART_PUTC_FAST_INSERTIONS
 	#define USART0_PUTC_FAST_INSERTIONS
 	#define USART1_PUTC_FAST_INSERTIONS
@@ -295,12 +308,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define USART3_USE_SOFT_CTS
 #endif
 
-#ifdef USART_USE_SOFT_RTS
-	#define USART0_USE_SOFT_RTS
-	#define USART1_USE_SOFT_RTS
-	#define USART2_USE_SOFT_RTS
-	#define USART3_USE_SOFT_RTS
-#endif
+//#ifdef USART_USE_SOFT_RTS
+//	#define USART0_USE_SOFT_RTS
+//	#define USART1_USE_SOFT_RTS
+//	#define USART2_USE_SOFT_RTS
+//	#define USART3_USE_SOFT_RTS
+//#endif
 
 #ifdef USART_RS485_MODE
 	#define USART0_RS485_MODE
@@ -350,12 +363,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RX_NEWLINE_MODE_RN // 2
 #endif
 
-#if defined(__usbdrv_h_included__)&&(!defined(USART_UNSAFE_RX_INTERRUPT)||!defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE))
+#if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_RX_INTERRUPT)
 	#warning "usb may not work with RX ISR's"
-#endif
-
-#if defined(__usbdrv_h_included__)&&defined(USART_UNSAFE_RX_INTERRUPT_BUFF_AWARE)&&(F_CPU < 15000000UL)
-	#warning "usb may not work with RX ISR's at this clock"
 #endif
 
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_TX_INTERRUPT)

@@ -1,17 +1,17 @@
 # Easy-AVR-USART-C-Library
 An interrupt-driven USART (RS232) library for AVR microcontrollers, with support for multiple UARTs, using ring
-buffers for receive/transmit. Designed to be easy to use, with absolutely minimum "feature-overhead".
+buffers for receive/transmit. Designed to be easy to use, with zero overhead from unused features.
 
 # Features
 - easy to use
 - intuitive frame format settings
 - support for up to 4 USART's
 - extremly light interrupts 
-- software flow control (CTS only at the moment)
+- software and hardware flow control (soft CTS only at the moment)
 - RS 485 compatibility
 - MPCM master and slave mode support
 - printf()/scanf() streams compatibility
-- V-USB compatibility (25 or 33 cycle ISR restriction)
+- V-USB compatibility (25 cycle ISR restriction)
 - optimized as much as possible to reduce code size
 - and much more
 
@@ -48,7 +48,9 @@ For software CTS, all used pins have to be configured as an input, and edge inte
 The application code should call cts_isr_handlers from interrupts corresponding to used pins. (see example(flow control).c)
 If CTS line goes high during transmission, only one additional byte can be transmitted. (due to 2 level transmit register)
 
-Software RTS is not implemented. Hardware RTS will not work correctly at the moment due to RX ISR (only if isr can't keep up with incoming data).
+For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be designed.
+
+Software RTS is not implemented at the moment.
 
 # ISR timmings
 
