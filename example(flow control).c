@@ -3,19 +3,22 @@
 
 int main(void)
 {
-	//set highest posiible speed
+	// set highest posiible speed
 	uart_init(0);
 	uart_set_U2X();
 
-	//PD2 is used as an CTS input for USART0
+	// PD2 is used as an CTS input for USART0
 	
-	//configure any interrupt source capable of triggering at both edges
-	//for single signal INTn isr can be used 
+	// configure any interrupt source capable of triggering at both edges
+	// for single signal INTn isr can be used
 	PCICR = (1 << PCIE2);
 	PCMSK2 = (1 << PCINT18);
 
-	//if hardware flow control is available (eg. 32u4) it should be used instead of soft implementation
-	//uart_hardware_flow_control_init(1,1); // cts,rts - pass non zero value to enable // hardware rts will only work if isr cannot keep up with incoming data
+	//todo: soft rts
+
+	// if hardware flow control is available (eg. 32u4) it should be used instead of soft implementation
+	// hardware rts will work only when USART_EXTEND_RX_BUFFER is defined
+	//uart_hardware_flow_control_init(1,1); // cts,rts - pass non zero value to enable
 
 	sei();
 
@@ -34,5 +37,5 @@ ISR(PCINT2_vect)
 	//cts1_isr_handler();
 	//...
 
-	//add code here if required for other inputs (PCINT only)
+	// add code here if required for other inputs (PCINT only)
 }

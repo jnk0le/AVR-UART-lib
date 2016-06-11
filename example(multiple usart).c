@@ -15,7 +15,7 @@ void main(void)
 	uart_init(1, BAUD_CALC(115200));
 	
 	stdout = &uart0_io; // attach uart stream to stdout & stdin
-	stdin = &uart0_io; // uart0_in if no TX and uart0_out if no RX (depends on compilation macros)
+	stdin = &uart0_io; // uart0_in if no TX and uart0_out if no RX (depends on config macros)
 	
 	sei(); // enable interrupts, library wouldn't work without this
 	
@@ -25,8 +25,8 @@ void main(void)
 	uart_puts_p(1, foo_string); 
 	printf("hello from printf\n");
 	
-	char buffer[13];
-	uart_gets(1, buffer, 13) // read at most 13 bytes from buffer (CR,LF will not be cut)
+	char buffer[25];
+	uart_gets(1, buffer, 25) // read at most 24 bytes from buffer (CR,LF will not be cut)
 	
 	int a;
 	
@@ -41,7 +41,14 @@ void main(void)
 	{
 		uart_puts(0, "bytes waiting in receiver buffer : ");
 		uart_putint(0, uart_AvailableBytes(0)); // ask for bytes waiting in receiver buffer
-		uart_getln(0, buffer, 13); // read 13 bytes or one line from usart buffer
+		uart_getln(0, buffer, 25); // read 24 bytes or one line from usart buffer
+		
+		if (strcmp(buffer, "people who annoy you"))
+		{
+			uart_putc(0, '>');
+			_delay_ms(5000);
+			uart_puts_P(0, " naggers");
+		}
 		uart_puts(0, "\r\n");
 		
 		uart_putfloat(1, 0.1337f);

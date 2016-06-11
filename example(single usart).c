@@ -14,7 +14,7 @@ void main(void)
 	uart_init(BAUD_CALC(115200)); // 8n1 transmission is set as default
 	
 	stdout = &uart0_io; // attach uart stream to stdout & stdin
-	stdin = &uart0_io; // uart0_in if no TX and uart0_out if no RX (depends on compilation macros)
+	stdin = &uart0_io; // uart0_in if no TX and uart0_out if no RX (depends on config macros)
 	
 	sei(); // enable interrupts, library wouldn't work without this
 		
@@ -23,8 +23,8 @@ void main(void)
 	uart_puts_P("hello from flashed, usart\r\n"); // write string to usart buffer from flash memory // string is parsed by PSTR() macro
 	uart_puts_p(foo_string);
 		
-	char buffer[13];
-	uart_gets(buffer, 13) // read at most 13 bytes from buffer (CR,LF will not be cut)
+	char buffer[25];
+	uart_gets(buffer, 25) // read at most 24 bytes from buffer (CR,LF will not be cut)
 	
 	int a;
 	
@@ -39,7 +39,14 @@ void main(void)
 	{
 		uart_puts("bytes waiting in receiver buffer : ");
 		uart_putint(uart_AvailableBytes()); // ask for bytes waiting in receiver buffer
-		uart_getsln(buffer, 13); // read 12 bytes or one line from usart buffer 
+		uart_getsln(buffer, 25); // read 24 bytes or one line from usart buffer 
+		
+		if (strcmp(buffer, "people who annoy you"))
+		{
+			uart_putc('>');
+			_delay_ms(5000);
+			uart_puts_P(" naggers");
+		}
 		uart_puts("\r\n");
 		
 		uart_putfloat(0.1337f);
