@@ -15,9 +15,9 @@
 //#define NO_USART_TX // disable all transmitter code and dependencies
 
 //#define USART_USE_SOFT_CTS // CTS handlers also have to be placed into INT/PCINT interrupt in the application code, see example(flow control).c
-//#define //soft RTS coming soon
+//#define USART_USE_SOFT_RTS
 
-//#define USART_RS485_MODE // globally enable rs485 operation mode // control pin have to be shorted with RE and DE
+//#define USART_RS485_MODE // globally enable half duplex rs485 operation mode
 //#define USART_MPCM_MODE // globally enable MPCM operation mode // 9 bit data frame only // always set frame format to 8 data bits
 
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces
@@ -30,7 +30,7 @@
 // lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
 // (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
 
-//#define USART_EXTEND_RX_BUFFER // extend RX buffer by hardware 2 byte FIFO // required for hardware RTS
+//#define USART_EXTEND_RX_BUFFER // extend RX buffer by hardware 2/3 byte FIFO // required for hardware and software RTS
 //#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (f_cpu/8)
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
@@ -107,10 +107,8 @@
 //#define CTS3_IOPORTNAME
 //#define CTS3_PIN
 
-//RTS not implemented right now
-
 //#define RTS0_IOPORTNAME D // A,B,C,D ... port naming
-//#define RTS0_PIN 2 // 1,2,3,4 ... pin naming
+//#define RTS0_PIN 6 // 1,2,3,4 ... pin naming
 
 //#define RTS1_IOPORTNAME
 //#define RTS1_PIN
@@ -308,12 +306,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define USART3_USE_SOFT_CTS
 #endif
 
-//#ifdef USART_USE_SOFT_RTS
-//	#define USART0_USE_SOFT_RTS
-//	#define USART1_USE_SOFT_RTS
-//	#define USART2_USE_SOFT_RTS
-//	#define USART3_USE_SOFT_RTS
-//#endif
+#ifdef USART_USE_SOFT_RTS
+	#define USART0_USE_SOFT_RTS
+	#define USART1_USE_SOFT_RTS
+	#define USART2_USE_SOFT_RTS
+	#define USART3_USE_SOFT_RTS
+#endif
 
 #ifdef USART_RS485_MODE
 	#define USART0_RS485_MODE
@@ -327,6 +325,30 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define USART1_MPCM_MODE
 	#define USART2_MPCM_MODE
 	#define USART3_MPCM_MODE
+#endif
+
+#ifdef USART0_USE_SOFT_RTS
+	#ifndef USART0_EXTEND_RX_BUFFER
+		#define USART0_EXTEND_RX_BUFFER
+	#endif
+#endif
+
+#ifdef USART1_USE_SOFT_RTS
+	#ifndef USART1_EXTEND_RX_BUFFER
+		#define USART1_EXTEND_RX_BUFFER
+	#endif
+#endif
+
+#ifdef USART2_USE_SOFT_RTS
+	#ifndef USART2_EXTEND_RX_BUFFER
+		#define USART2_EXTEND_RX_BUFFER
+	#endif
+#endif
+
+#ifdef USART3_USE_SOFT_RTS
+	#ifndef USART3_EXTEND_RX_BUFFER
+		#define USART3_EXTEND_RX_BUFFER
+	#endif
 #endif
 
 #ifndef ___DDR
@@ -398,6 +420,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -428,6 +451,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define UDRE0_BIT   		UDRE
+	#define RXC0_BIT    		RXC
 	#define U2X0_BIT    		U2X
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
@@ -459,6 +483,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -484,6 +509,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define UDRE1_BIT   		UDRE1
+	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -513,6 +539,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -538,6 +565,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define UDRE1_BIT   		UDRE1
+	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -569,6 +597,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -597,6 +626,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -622,6 +652,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define UDRE1_BIT   		UDRE1
+	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -654,6 +685,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define UDRE0_BIT   		UDRE
+	#define RXC0_BIT    		RXC
 	#define U2X0_BIT    		U2X
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
@@ -684,6 +716,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define UDRE0_BIT   		UDRE
+	#define RXC0_BIT    		RXC
 	#define U2X0_BIT    		U2X
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
@@ -715,6 +748,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -740,6 +774,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define UDRE1_BIT   		UDRE1
+	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -778,6 +813,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -803,6 +839,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN1_BIT   		TXEN1
 	#define RXEN1_BIT   		RXEN1
 	#define UDRE1_BIT   		UDRE1
+	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
 	#define MPCM1_BIT           MPCM1
 	#define UCSZ12_BIT          UCSZ12
@@ -832,6 +869,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN2_BIT   		TXEN2
 	#define RXEN2_BIT   		RXEN2
 	#define UDRE2_BIT   		UDRE2
+	#define RXC2_BIT    		RXC2
 	#define U2X2_BIT    		U2X2
 	#define MPCM2_BIT           MPCM2
 	#define UCSZ22_BIT          UCSZ22
@@ -857,6 +895,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN3_BIT   		TXEN3
 	#define RXEN3_BIT   		RXEN3
 	#define UDRE3_BIT   		UDRE3
+	#define RXC3_BIT    		RXC3
 	#define U2X3_BIT    		U2X3
 	#define MPCM3_BIT           MPCM3
 	#define UCSZ32_BIT          UCSZ32
@@ -890,6 +929,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN1
 	#define RXEN0_BIT   		RXEN1
 	#define UDRE0_BIT   		UDRE1
+	#define RXC0_BIT    		RXC1
 	#define U2X0_BIT    		U2X1
 	#define MPCM0_BIT           MPCM1
 	#define UCSZ02_BIT          UCSZ12
@@ -920,6 +960,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN
 	#define RXEN0_BIT   		RXEN
 	#define UDRE0_BIT   		UDRE
+	#define RXC0_BIT    		RXC
 	#define U2X0_BIT    		U2X
 	#define MPCM0_BIT           MPCM
 	#define UCSZ02_BIT          UCSZ2
@@ -954,6 +995,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -986,6 +1028,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXEN0_BIT   		TXEN0
 	#define RXEN0_BIT   		RXEN0
 	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
 	#define MPCM0_BIT           MPCM0
 	#define UCSZ02_BIT          UCSZ02
@@ -1020,30 +1063,50 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #if defined(USART0_USE_SOFT_CTS)&&defined(USE_USART0)
 	#if !defined(CTS0_IOPORTNAME)||!defined(CTS0_PIN)
-		#error "define valid CTS input for USART0 operation"
+		#error "define valid CTS input for USART0"
 	#endif
 #endif
 
 #if defined(USART1_USE_SOFT_CTS)&&defined(USE_USART1)
 	#if !defined(CTS1_IOPORTNAME)||!defined(CTS1_PIN)
-		#error "define valid CTS input for USART1 operation"
+		#error "define valid CTS input for USART1"
 	#endif
 #endif
 
 #if defined(USART2_USE_SOFT_CTS)&&defined(USE_USART2)
 	#if !defined(CTS2_IOPORTNAME)||!defined(CTS2_PIN)
-		#error "define valid CTS input for USART2 operation"
+		#error "define valid CTS input for USART2"
 	#endif
 #endif
 
 #if defined(USART3_USE_SOFT_CTS)&&defined(USE_USART3)
 	#if !defined(CTS3_IOPORTNAME)||!defined(CTS3_PIN)
-		#error "define valid CTS input for USART3 operation"
+		#error "define valid CTS input for USART3"
 	#endif
 #endif
 
-#if defined(USART0_USE_SOFT_RTS)||defined(USART1_USE_SOFT_RTS)||defined(USART2_USE_SOFT_RTS)||defined(USART3_USE_SOFT_RTS)
-	#error "soft rts not implemented right now"
+#if defined(USART0_USE_SOFT_RTS)&&defined(USE_USART0)
+	#if !defined(RTS0_IOPORTNAME)||!defined(RTS0_PIN)
+		#error "define valid RTS input for USART0"
+	#endif
+#endif
+
+#if defined(USART1_USE_SOFT_RTS)&&defined(USE_USART1)
+	#if !defined(RTS1_IOPORTNAME)||!defined(RTS1_PIN)
+		#error "define valid RTS input for USART1"
+	#endif
+#endif
+
+#if defined(USART2_USE_SOFT_RTS)&&defined(USE_USART2)
+	#if !defined(RTS2_IOPORTNAME)||!defined(RTS2_PIN)
+		#error "define valid RTS input for USART2"
+	#endif
+#endif
+
+#if defined(USART3_USE_SOFT_RTS)&&defined(USE_USART3)
+	#if !defined(RTS3_IOPORTNAME)||!defined(RTS3_PIN)
+		#error "define valid RTS input for USART3"
+	#endif
 #endif
 
 #if defined(USART0_RS485_MODE)&&defined(USE_USART0)
@@ -1235,6 +1298,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			
 				UCSR0B_REGISTER = USART0_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
+				
+			#ifdef USART0_USE_SOFT_RTS
+				___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+			#endif
 			
 				break;
 			}
@@ -1265,6 +1332,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			
 				UCSR1B_REGISTER = USART1_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
+				
+			#ifdef USART1_USE_SOFT_RTS
+				___DDR(RTS1_IOPORTNAME) |= (1<<RTS1_PIN);
+			#endif
 			
 				break;
 			}
@@ -1295,6 +1366,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			
 				UCSR2B_REGISTER = USART2_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
+				
+			#ifdef USART2_USE_SOFT_RTS
+				___DDR(RTS2_IOPORTNAME) |= (1<<RTS2_PIN);
+			#endif
 			
 				break;
 			}
@@ -1325,6 +1400,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			
 				UCSR3B_REGISTER = USART3_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
+				
+			#ifdef USART3_USE_SOFT_RTS
+				___DDR(RTS3_IOPORTNAME) |= (1<<RTS3_PIN);
+			#endif
 			
 				//break;
 			}
@@ -1429,6 +1508,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		UCSR0B_REGISTER = USART0_CONFIG_B;
 		// 8n1 is set by default, setting UCSRC is not needed
+		
+	#ifdef USART0_USE_SOFT_RTS
+		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+	#endif
 	}
 
 	// UCSRC_reg can be used to set other than 8n1 transmission

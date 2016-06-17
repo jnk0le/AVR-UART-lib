@@ -79,6 +79,9 @@
 			{
 				UCSR0B_REGISTER = 0; // flush all buffers
 				
+				rx0_first_byte = rx0_last_byte;
+				tx0_first_byte = tx0_last_byte;
+				
 			#ifdef USART0_RS485_MODE
 				___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
 				___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); //set low
@@ -100,6 +103,11 @@
 			
 				UCSR0B_REGISTER = USART0_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
+				
+			#ifdef USART0_USE_SOFT_RTS
+				___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+			#endif
 			
 				break;
 			}
@@ -108,6 +116,9 @@
 			case 1:
 			{
 				UCSR1B_REGISTER = 0; // flush all buffers
+				
+				rx1_first_byte = rx1_last_byte;
+				tx1_first_byte = tx1_last_byte;
 				
 			#ifdef USART1_RS485_MODE
 				___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN);
@@ -130,6 +141,11 @@
 				
 				UCSR1B_REGISTER = USART1_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
+				
+			#ifdef USART1_USE_SOFT_RTS
+				___DDR(RTS1_IOPORTNAME) |= (1<<RTS1_PIN);
+				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+			#endif
 			
 				break;
 			}
@@ -138,6 +154,9 @@
 			case 2:
 			{
 				UCSR2B_REGISTER = 0; // flush all buffers
+				
+				rx2_first_byte = rx2_last_byte;
+				tx2_first_byte = tx2_last_byte;
 				
 			#ifdef USART2_RS485_MODE
 				___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN);
@@ -160,6 +179,11 @@
 			
 				UCSR2B_REGISTER = USART2_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
+				
+			#ifdef USART2_USE_SOFT_RTS
+				___DDR(RTS2_IOPORTNAME) |= (1<<RTS2_PIN);
+				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+			#endif
 			
 				break;
 			}
@@ -168,6 +192,9 @@
 			case 3:
 			{
 				UCSR3B_REGISTER = 0; // flush all buffers
+				
+				rx3_first_byte = rx3_last_byte;
+				tx3_first_byte = tx3_last_byte;
 				
 			#ifdef USART3_RS485_MODE
 				___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN);
@@ -190,6 +217,11 @@
 			
 				UCSR3B_REGISTER = USART3_CONFIG_B;
 				// 8n1 is set by default, setting UCSRC is not needed
+				
+			#ifdef USART3_USE_SOFT_RTS
+				___DDR(RTS3_IOPORTNAME) |= (1<<RTS3_PIN);
+				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+			#endif
 			
 				//break;
 			}
@@ -210,6 +242,9 @@
 	void uart_reinit(uint16_t ubbr_value)
 	{
 		UCSR0B_REGISTER = 0; //flush all buffers
+		
+		rx0_first_byte = rx0_last_byte;
+		tx0_first_byte = tx0_last_byte;
 		
 	#ifdef USART0_RS485_MODE
 		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
@@ -232,6 +267,11 @@
 	
 		UCSR0B_REGISTER = USART0_CONFIG_B;
 		// 8n1 is set by default, setting UCSRC is not needed
+		
+	#ifdef USART0_USE_SOFT_RTS
+		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+		___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+	#endif
 	}
 	
 #endif // single/multi USART
@@ -1366,6 +1406,12 @@
 				UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
 			#endif
 			
+			#ifdef USART0_USE_SOFT_RTS
+				if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+					if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
+						___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+			#endif
+			
 			#ifndef RX0_GETC_ECHO
 				return tmp;
 			#else
@@ -1383,9 +1429,15 @@
 				rx1_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
 				tmp = rx1_buffer[tmp_rx_first_byte];
 			
-				#ifdef USART1_EXTEND_RX_BUFFER
-					UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
-				#endif
+			#ifdef USART1_EXTEND_RX_BUFFER
+				UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
+			#endif
+				
+			#ifdef USART1_USE_SOFT_RTS
+				if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+					if (!(UCSR1A_REGISTER & (1<<RXC1_BIT)))
+						___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+			#endif
 			
 			#ifndef RX1_GETC_ECHO
 				return tmp;
@@ -1404,9 +1456,15 @@
 				rx2_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
 				tmp = rx2_buffer[tmp_rx_first_byte];
 			
-				#ifdef USART2_EXTEND_RX_BUFFER
-					UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
-				#endif
+			#ifdef USART2_EXTEND_RX_BUFFER
+				UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
+			#endif
+			
+			#ifdef USART2_USE_SOFT_RTS
+				if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+					if (!(UCSR2A_REGISTER & (1<<RXC2_BIT)))
+						___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+			#endif
 			
 			#ifndef RX2_GETC_ECHO
 				return tmp;
@@ -1427,6 +1485,12 @@
 				
 			#ifdef USART3_EXTEND_RX_BUFFER
 				UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
+			#endif
+			
+			#ifdef USART3_USE_SOFT_RTS
+				if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+					if (!(UCSR3A_REGISTER & (1<<RXC3_BIT)))
+						___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
 			#endif
 				
 			#ifndef RX3_GETC_ECHO
@@ -1656,6 +1720,12 @@
 			#ifdef USART0_EXTEND_RX_BUFFER
 				UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
 			#endif
+			
+			#ifdef USART0_USE_SOFT_RTS
+				if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+					if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
+						___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+			#endif
 				
 				break;
 			}
@@ -1673,6 +1743,12 @@
 				
 			#ifdef USART1_EXTEND_RX_BUFFER
 				UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
+			#endif
+			
+			#ifdef USART1_USE_SOFT_RTS
+				if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+					if (!(UCSR1A_REGISTER & (1<<RXC1_BIT)))
+						___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
 			#endif
 				
 				break;
@@ -1692,6 +1768,12 @@
 			#ifdef USART2_EXTEND_RX_BUFFER
 				UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
 			#endif
+			
+			#ifdef USART2_USE_SOFT_RTS
+				if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+					if (!(UCSR2A_REGISTER & (1<<RXC2_BIT)))
+						___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+			#endif
 				
 				break;
 			}
@@ -1709,6 +1791,12 @@
 				
 			#ifdef USART3_EXTEND_RX_BUFFER
 				UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
+			#endif
+			
+			#ifdef USART3_USE_SOFT_RTS
+				if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+					if (!(UCSR3A_REGISTER & (1<<RXC3_BIT)))
+						___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
 			#endif
 				
 				break;
@@ -1747,6 +1835,12 @@
 			#ifdef USART0_EXTEND_RX_BUFFER
 				UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
 			#endif
+			
+			#ifdef USART0_USE_SOFT_RTS
+				if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+					if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
+						___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+			#endif
 				
 				break;
 			}
@@ -1763,6 +1857,12 @@
 				
 			#ifdef USART1_EXTEND_RX_BUFFER
 				UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
+			#endif
+			
+			#ifdef USART1_USE_SOFT_RTS
+				if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+					if (!(UCSR1A_REGISTER & (1<<RXC1_BIT)))
+						___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
 			#endif
 				
 				break;
@@ -1781,6 +1881,12 @@
 			#ifdef USART2_EXTEND_RX_BUFFER
 				UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
 			#endif
+			
+			#ifdef USART2_USE_SOFT_RTS
+				if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+					if (!(UCSR2A_REGISTER & (1<<RXC2_BIT)))
+						___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+			#endif
 				
 				break;
 			}
@@ -1797,6 +1903,12 @@
 				
 			#ifdef USART3_EXTEND_RX_BUFFER
 				UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
+			#endif
+			
+			#ifdef USART3_USE_SOFT_RTS
+				if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+					if (!(UCSR3A_REGISTER & (1<<RXC3_BIT)))
+						___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
 			#endif
 			
 				//break;
@@ -1877,6 +1989,12 @@
 	
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
+	#endif
+	
+	#ifdef USART0_USE_SOFT_RTS
+		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS signal)		
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
 	#endif
 	
 	#ifdef RX0_GETC_ECHO
@@ -2085,13 +2203,17 @@
 		#endif
 		}
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 		tmpdat = rx0_buffer[tmp_rx_first_byte];
-		
-		rx0_first_byte = tmp_rx_first_byte;
 		
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
+	#endif
+	
+	#ifdef USART0_USE_SOFT_RTS
+		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
 	#endif
 		
 		return tmpdat;
@@ -2110,13 +2232,17 @@
 		
 		if(tmp_rx_first_byte == rx0_last_byte) return BUFFER_EMPTY; // result = 0
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 		*data = rx0_buffer[tmp_rx_first_byte];
-		
-		rx0_first_byte = tmp_rx_first_byte;
 		
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
+	#endif
+	
+	#ifdef USART0_USE_SOFT_RTS
+		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))	
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
 	#endif
 		
 		return COMPLETED; // result = 1
@@ -2496,10 +2622,12 @@
 		#endif
 		
 			"cp    r31, r30 \n\t"                    /* 1 */
-		#ifndef USART0_EXTEND_RX_BUFFER
-			"breq  USART0_RX_EXIT \n\t"           /* 1/2 */
-		#else
+		#if defined(USART0_USE_SOFT_RTS)||(defined(USART0_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
 			"breq  USART0_DISABLE_RXCIE \n\t"           /* 1/2 */
+		#elif defined(USART0_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
+			"breq  USART0_RX_EXIT_SKIP \n\t"           /* 1/2 */
+		#else
+			"breq  USART0_RX_EXIT \n\t"           /* 1/2 */
 		#endif
 		
 		#ifdef USART0_EXTEND_RX_BUFFER
@@ -2562,7 +2690,7 @@
 				"sts   %M[control_reg], r31 \n\t"         /* 2 */
 			#endif
 			
-			"USART0_DISABLE_RXCIE: "
+		"USART0_RX_EXIT_SKIP: "
 		#endif
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
@@ -2573,9 +2701,14 @@
 
 			"reti \n\t"                              /* 4 ISR return */
 		
-		#if defined(USART0_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT)
-		
+		#if defined(USART0_USE_SOFT_RTS)||(defined(USART0_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
 		"USART0_DISABLE_RXCIE: "
+		
+		#ifdef USART0_USE_SOFT_RTS
+			"sbi %M[rts_port], %M[rts_pin] \n\t"  /* 2 */
+		#endif
+		
+		#ifndef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
 					"in   r31, %M[control_reg_IO] \n\t"                  /* 1 */
@@ -2589,25 +2722,35 @@
 				"andi  r31, ~(1<<%M[rxcie_bit]) \n\t"    /* 1 */
 				"sts   %M[control_reg], r31 \n\t"         /* 2 */
 			#endif
+		#endif
 			
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"rjmp   USART0_RX_EXIT_SKIP \n\t"          /* 2 */
+		#else
 			"rjmp   USART0_RX_EXIT \n\t"          /* 2 */
+		#endif
+			
 		#endif
 			: /* output operands */
 		
 			: /* input operands */
-			[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
-			[UDR_reg]	"M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
-			[mask]      "M"    (RX0_BUFFER_MASK),
-			[mpcm_address]      "M"    (MPCM0_ADDRESS),
+			[UDR_reg_IO]     "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[UDR_reg]	     "M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
+			[mask]           "M"    (RX0_BUFFER_MASK),
+			[mpcm_address]   "M"    (MPCM0_ADDRESS),
 		#ifdef MPCM0_GCALL_ADDRESS
-			[mpcm_gcall_address]      "M"    (MPCM0_GCALL_ADDRESS),
+			[mpcm_gcall_address] "M"    (MPCM0_GCALL_ADDRESS),
 		#endif
-			[mpcm_bit]      "M"    (MPCM0_BIT),
-			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
+			[mpcm_bit]       "M"    (MPCM0_BIT),
+		#ifdef USART0_USE_SOFT_RTS
+			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS0_IOPORTNAME))),
+			[rts_pin]        "M"    (RTS0_PIN),
+		#endif
+			[UCSRA_reg]      "M"    (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
 			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0A_REGISTER)),
 			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
-			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
-			[rxcie_bit] "M"		(RXCIE0_BIT)
+			[control_reg]    "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+			[rxcie_bit]      "M"	(RXCIE0_BIT)
 		
 			/* no clobbers */
 		);
@@ -2775,10 +2918,12 @@
 		#endif
 		
 			"cp    r31, r30 \n\t"
-		#ifndef USART1_EXTEND_RX_BUFFER
-			"breq  USART1_RX_EXIT \n\t"
+		#if defined(USART1_USE_SOFT_RTS)||(defined(USART1_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
+			"breq  USART1_DISABLE_RXCIE \n\t"           
+		#elif defined(USART1_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
+			"breq  USART1_RX_EXIT_SKIP \n\t"          
 		#else
-			"breq  USART1_DISABLE_RXCIE \n\t"
+			"breq  USART1_RX_EXIT \n\t"           
 		#endif
 			
 		#ifdef USART1_EXTEND_RX_BUFFER
@@ -2836,7 +2981,7 @@
 				"sts   %M[control_reg], r31 \n\t"
 			#endif
 			
-		"USART1_DISABLE_RXCIE: "
+		"USART1_RX_EXIT_SKIP: "
 		#endif
 			"pop   r31 \n\t"
 			"pop   r30 \n\t"
@@ -2847,9 +2992,14 @@
 
 			"reti \n\t"
 		
-		#if defined(USART1_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT)
-		
+		#if defined(USART1_USE_SOFT_RTS)||(defined(USART1_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
 		"USART1_DISABLE_RXCIE: "
+		
+		#ifdef USART1_USE_SOFT_RTS
+			"sbi %M[rts_port], %M[rts_pin] \n\t"
+		#endif
+		
+		#ifndef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
 				"cbi   %M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#else
@@ -2857,8 +3007,14 @@
 				"andi  r31, ~(1<<%M[rxcie_bit]) \n\t"
 				"sts   %M[control_reg], r31 \n\t"
 			#endif
+		#endif
 			
-			"rjmp   USART1_RX_EXIT \n\t"
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"rjmp   USART1_RX_EXIT_SKIP \n\t"          /* 2 */
+		#else
+			"rjmp   USART1_RX_EXIT \n\t"          /* 2 */
+		#endif
+			
 		#endif
 			: /* output operands */
 		
@@ -2871,6 +3027,10 @@
 			[mpcm_gcall_address]      "M"    (MPCM1_GCALL_ADDRESS),
 		#endif
 			[mpcm_bit]      "M"    (MPCM1_BIT),
+		#ifdef USART1_USE_SOFT_RTS
+			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS1_IOPORTNAME))),
+			[rts_pin]        "M"    (RTS1_PIN),
+		#endif
 			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
 			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1A_REGISTER)),
 			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
@@ -3018,10 +3178,12 @@
 		#endif
 		
 			"cp    r31, r30 \n\t"
-		#ifndef USART2_EXTEND_RX_BUFFER
-			"breq  USART2_RX_EXIT \n\t"
+		#if defined(USART2_USE_SOFT_RTS)||(defined(USART2_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
+			"breq  USART2_DISABLE_RXCIE \n\t"           
+		#elif defined(USART2_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
+			"breq  USART2_RX_EXIT_SKIP \n\t"          
 		#else
-			"breq  USART2_DISABLE_RXCIE \n\t"
+			"breq  USART2_RX_EXIT \n\t"           
 		#endif
 		
 		#ifdef USART2_EXTEND_RX_BUFFER
@@ -3062,7 +3224,7 @@
 			"ori  r31, (1<<%M[rxcie_bit]) \n\t"
 			"sts   %M[control_reg], r31 \n\t"
 		
-		"USART2_DISABLE_RXCIE: "
+		"USART2_RX_EXIT_SKIP: "
 		#endif
 			"pop   r31 \n\t"
 			"pop   r30 \n\t"
@@ -3073,14 +3235,25 @@
 
 			"reti \n\t"
 		
-		#if defined(USART2_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT)
-		
+		#if defined(USART2_USE_SOFT_RTS)||(defined(USART2_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
 		"USART2_DISABLE_RXCIE: "
+		
+		#ifdef USART3_USE_SOFT_RTS
+			"sbi %M[rts_port], %M[rts_pin] \n\t"
+		#endif
+		
+		#ifndef USART_UNSAFE_RX_INTERRUPT
 			"lds   r31, %M[control_reg] \n\t"
 			"andi  r31, ~(1<<%M[rxcie_bit]) \n\t"
 			"sts   %M[control_reg], r31 \n\t"
+		#endif
 			
-			"rjmp   USART2_RX_EXIT \n\t"
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"rjmp   USART2_RX_EXIT_SKIP \n\t"          /* 2 */
+		#else
+			"rjmp   USART2_RX_EXIT \n\t"          /* 2 */
+		#endif
+		
 		#endif
 			: /* output operands */
 		
@@ -3092,6 +3265,10 @@
 			[mpcm_gcall_address]      "M"    (MPCM2_GCALL_ADDRESS),
 		#endif
 			[mpcm_bit]      "M"    (MPCM2_BIT),
+		#ifdef USART2_USE_SOFT_RTS
+			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS2_IOPORTNAME))),
+			[rts_pin]        "M"    (RTS2_PIN),
+		#endif
 			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
 			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[rxcie_bit] "M"		(RXCIE2_BIT)
@@ -3237,10 +3414,12 @@
 		#endif
 		
 			"cp    r31, r30 \n\t"
-		#ifndef USART3_EXTEND_RX_BUFFER
-			"breq  USART3_RX_EXIT \n\t"
-		#else
+		#if defined(USART3_USE_SOFT_RTS)||(defined(USART3_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
 			"breq  USART3_DISABLE_RXCIE \n\t"
+		#elif defined(USART3_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
+			"breq  USART3_RX_EXIT_SKIP \n\t"
+		#else
+			"breq  USART3_RX_EXIT \n\t"
 		#endif
 		
 		#ifdef USART3_EXTEND_RX_BUFFER
@@ -3292,14 +3471,25 @@
 
 			"reti \n\t"
 		
-		#if defined(USART3_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT)
-		
+		#if defined(USART3_USE_SOFT_RTS)||(defined(USART3_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
 		"USART3_DISABLE_RXCIE: "
+		
+		#ifdef USART3_USE_SOFT_RTS
+			"sbi %M[rts_port], %M[rts_pin] \n\t"
+		#endif
+		
+		#ifndef USART_UNSAFE_RX_INTERRUPT
 			"lds   r31, %M[control_reg] \n\t"
 			"andi  r31, ~(1<<%M[rxcie_bit]) \n\t"
 			"sts   %M[control_reg], r31 \n\t"
+		#endif
 			
-			"rjmp   USART3_RX_EXIT \n\t"
+		#ifdef USART_UNSAFE_RX_INTERRUPT
+			"rjmp   USART3_RX_EXIT_SKIP \n\t"          /* 2 */
+		#else
+			"rjmp   USART3_RX_EXIT \n\t"          /* 2 */
+		#endif
+		
 		#endif
 			: /* output operands */
 		
@@ -3311,6 +3501,10 @@
 			[mpcm_gcall_address]      "M"    (MPCM3_GCALL_ADDRESS),
 		#endif
 			[mpcm_bit]      "M"    (MPCM3_BIT),
+		#ifdef USART3_USE_SOFT_RTS
+			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS3_IOPORTNAME))),
+			[rts_pin]        "M"    (RTS3_PIN),
+		#endif
 			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
 			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[rxcie_bit] "M"		(RXCIE3_BIT)
