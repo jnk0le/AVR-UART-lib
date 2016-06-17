@@ -7,14 +7,10 @@ int main(void)
 	uart_init(0);
 	uart_set_U2X();
 
-	// PD2 is used as an CTS input for USART0
-	
 	// configure any interrupt source capable of triggering at both edges
 	// for single signal INTn isr can be used
 	PCICR = (1 << PCIE2);
-	PCMSK2 = (1 << PCINT18);
-
-	//todo: soft rts
+	PCMSK2 = (1 << PCINT18); // PD2 is used as an CTS input for USART0
 
 	// if hardware flow control is available (eg. 32u4) it should be used instead of soft implementation
 	// hardware rts will work only when USART_EXTEND_RX_BUFFER is defined
