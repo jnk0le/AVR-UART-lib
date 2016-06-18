@@ -51,7 +51,7 @@ If CTS line goes high during transmission, only one additional byte can be trans
 
 For software RTS, all used pins have to be configured as input without pullup or output in low state.
 If interrupts are not missed, the receiver can accept up to 2 additional bytes, one from ongoing transmission 
-and another if transmitter misses RTS signal or have soft based CTS (last one is stored in shift register).
+and another if transmitter misses RTS signal (last one is stored in shift register).
 
 For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be defined.
 
