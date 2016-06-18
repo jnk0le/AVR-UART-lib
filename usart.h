@@ -1554,7 +1554,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 	
-	void uart_putc(uint8_t usartct, char data); // put character/data into transmitter ring buffer
+	#ifdef USART_NO_DIRTY_HACKS
+		void uart_putc(uint8_t usartct, char data); // put character/data into transmitter ring buffer
+	#else
+		void uart_putc(uint8_t usartct, char data) __attribute__ ((naked));
+	#endif
+	
 	uint8_t uart_putc_noblock(uint8_t usartct, char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
 	void uart_putstrl(uint8_t usartct, char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
@@ -1593,7 +1598,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #else // single USART mcu
 
-	void uart_putc(char data); // put character/data into transmitter ring buffer
+	#ifdef USART_NO_DIRTY_HACKS
+		void uart_putc(char data); // put character/data into transmitter ring buffer
+	#else
+		void uart_putc(char data) __attribute__ ((naked));
+	#endif
+	
 	uint8_t uart_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
 	void uart_putstrl(char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending

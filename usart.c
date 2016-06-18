@@ -331,7 +331,11 @@
 						
 				tx0_buffer[tmp_tx_last_byte] = data;
 				
+			#ifdef USART_NO_DIRTY_HACKS
 				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+			#else
+				cli();
+			#endif
 				{
 					tx0_last_byte = tmp_tx_last_byte;
 					
@@ -346,8 +350,13 @@
 						UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 					}
 				}
-				break;
-			 }
+					
+			#ifdef USART_NO_DIRTY_HACKS
+				return;
+			#else
+				reti();
+			#endif
+			}
 		#endif // NO_TX0_INTERRUPT
 		#ifndef NO_TX1_INTERRUPT 
 			case 1:
@@ -379,7 +388,11 @@
 				
 				tx1_buffer[tmp_tx_last_byte] = data;
 				
+			#ifdef USART_NO_DIRTY_HACKS
 				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+			#else
+				cli();
+			#endif
 				{
 					tx1_last_byte = tmp_tx_last_byte;
 					
@@ -394,7 +407,12 @@
 						UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
 					}
 				}
-				break;
+				
+			#ifdef USART_NO_DIRTY_HACKS
+				return;
+			#else
+				reti();
+			#endif
 			}
 		#endif // NO_TX1_INTERRUPT
 		#ifndef NO_TX2_INTERRUPT 
@@ -427,7 +445,11 @@
 				
 				tx2_buffer[tmp_tx_last_byte] = data;
 				
+			#ifdef USART_NO_DIRTY_HACKS
 				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+			#else
+				cli();
+			#endif
 				{
 					tx2_last_byte = tmp_tx_last_byte;
 					
@@ -442,7 +464,12 @@
 						UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
 					}
 				}
-				break;
+				
+			#ifdef USART_NO_DIRTY_HACKS
+				return;
+			#else
+				reti();
+			#endif
 			}
 		#endif // NO_TX2_INTERRUPT
 		#ifndef NO_TX3_INTERRUPT 
@@ -475,7 +502,11 @@
 				
 				tx3_buffer[tmp_tx_last_byte] = data;
 				
+			#ifdef USART_NO_DIRTY_HACKS
 				ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+			#else
+				cli();
+			#endif
 				{
 					tx3_last_byte = tmp_tx_last_byte;
 					
@@ -490,7 +521,12 @@
 						UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
 					}
 				}
-				//break;
+				
+			#ifdef USART_NO_DIRTY_HACKS
+				return;
+			#else
+				reti();
+			#endif
 			}
 		#endif // NO_TX3_INTERRUPT
 		}
@@ -1077,8 +1113,12 @@
 	#endif
 		
 		tx0_buffer[tmp_tx_last_byte] = data;
-		
+	
+	#ifdef USART_NO_DIRTY_HACKS
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+	#else
+		cli();
+	#endif
 		{
 			tx0_last_byte = tmp_tx_last_byte;
 		
@@ -1093,6 +1133,11 @@
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 			}
 		}
+	
+	#ifndef USART_NO_DIRTY_HACKS
+		reti();
+	#endif
+		
 	}
 	
 //******************************************************************
