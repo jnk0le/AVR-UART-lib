@@ -15,14 +15,14 @@ buffers for receive/transmit. Designed to be easy to use, with zero overhead fro
 - optimized as much as possible to reduce code size
 - and much more
 
-simple minimal "hello world" code on mega328p can give:
+simple minimal "hello world" (with delay) code on mega328p can give following results:
 
-	Program Memory Usage 	:	398 bytes   1,2 % Full
+	Program Memory Usage 	:	390 bytes   1,2 % Full
 	Data Memory Usage 		:	82 bytes   4,0 % Full
 
 same code on mega8 gives:
 
-	Program Memory Usage 	:	308 bytes   3,8 % Full 
+	Program Memory Usage 	:	300 bytes   3,7 % Full 
 	Data Memory Usage 		:	82 bytes   8,0 % Full
 
 Meanwhile Arduino generates 2KB of code.

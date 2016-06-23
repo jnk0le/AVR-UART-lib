@@ -1112,8 +1112,29 @@
 		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
 	#endif
 		
+	#ifdef USART_NO_DIRTY_HACKS
 		tx0_buffer[tmp_tx_last_byte] = data;
+	#else
 	
+		asm volatile("\n\t"
+		
+			"mov	r26, r25  \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(tx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
+			"st	X, %[dat]    \n\t"
+			
+			: /* no outputs */
+			: /* input operands */
+			[dat] "r" (data),
+			[index] "r" (tmp_tx_last_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	
+	#endif
+		
 	#ifdef USART_NO_DIRTY_HACKS
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 	#else
@@ -1199,8 +1220,26 @@
 //******************************************************************
 	void uart_putstr(char *string)
 	{
+	#ifdef USART_NO_DIRTY_HACKS
 		while(*string)
 			uart_putc(*string++);
+	#else
+		asm volatile("\n\t"
+			"movw	r30, r24 \n\t" // single 16 bit argument is passed via r24,r25
+		"string_load_loop_%=:"
+			"ld 	r24, Z+ \n\t"
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	skip_string_loop_%= \n\t"
+			"call	uart_putc \n\t" // will be optimized out by -mrelax flag
+			"rjmp	string_load_loop_%= \n\t"
+		"skip_string_loop_%=:"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+	
+	#endif
 	}
 
 //******************************************************************
@@ -1211,8 +1250,30 @@
 //******************************************************************
 	void uart_putstrl(char *string, uint8_t BytesToWrite)
 	{
+	#ifdef USART_NO_DIRTY_HACKS
 		while(BytesToWrite--)
 			uart_putc(*string++);
+	#else
+		asm volatile("\n\t"
+			"movw	r30, r24 \n\t" // single 16 bit argument is passed via r24,r25
+			"push	r17 \n\t"
+			"mov	r17, r22 \n\t"
+			"add	r17, r24 \n\t"
+		"string_load_loop_%=:"
+			"cp	r17, r30\n\t"
+			"breq	skip_string_loop_%= \n\t"
+			"ld 	r24, Z+ \n\t"
+			"call	uart_putc \n\t" // will be optimized out by -mrelax flag
+			"rjmp	string_load_loop_%= \n\t"
+		"skip_string_loop_%=:"
+			"pop	r17 \n\t"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+		
+	#endif
 	}
 
 //******************************************************************
@@ -1222,8 +1283,26 @@
 //******************************************************************
 	void uart_puts_p(const char *string)
 	{
+	#ifdef USART_NO_DIRTY_HACKS
 		register char c;
 		while ( (c = pgm_read_byte(string++)) ) uart_putc(c);
+	#else
+		asm volatile("\n\t"
+			"movw	r30, r24 \n\t" // single 16 bit argument is passed via r24,r25
+		"fstring_load_loop_%=:"
+			"lpm 	r24, Z+ \n\t"
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	skip_fstring_loop_%= \n\t"
+			"call	uart_putc \n\t" // will be optimized out by -mrelax flag
+			"rjmp	fstring_load_loop_%= \n\t"
+		"skip_fstring_loop_%=:"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+	
+	#endif
 	}
 
 //******************************************************************
