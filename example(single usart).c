@@ -41,7 +41,7 @@ void main(void)
 		uart_putint(uart_AvailableBytes()); // ask for bytes waiting in receiver buffer
 		uart_getsln(buffer, 25); // read 24 bytes or one line from usart buffer 
 		
-		if (strcmp(buffer, "people who annoy you"))
+		if (!strcmp(buffer, "people who annoy you"))
 		{
 			uart_putc('>');
 			_delay_ms(5000);
