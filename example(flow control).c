@@ -23,6 +23,9 @@ int main(void)
 	while (1)
 	{
 		uart_putc(++a);
+		
+		//uart_putc(uart_getc()); // if getc echo is disabled
+		uart_getc();
 	}
 
 }

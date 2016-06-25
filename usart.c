@@ -1115,9 +1115,7 @@
 	#ifdef USART_NO_DIRTY_HACKS
 		tx0_buffer[tmp_tx_last_byte] = data;
 	#else
-	
 		asm volatile("\n\t"
-		
 			"mov	r26, r25  \n\t"
 			"ldi	r27, 0x00 \n\t"
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
@@ -1223,14 +1221,14 @@
 	#ifdef USART_NO_DIRTY_HACKS
 		while(*string)
 			uart_putc(*string++);
-	#else
+	#else 
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // single 16 bit argument is passed via r24,r25
 		"string_load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	skip_string_loop_%= \n\t"
-			"call	uart_putc \n\t" // will be optimized out by -mrelax flag
+			"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
 			"rjmp	string_load_loop_%= \n\t"
 		"skip_string_loop_%=:"
 		
@@ -1256,21 +1254,20 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // single 16 bit argument is passed via r24,r25
-			"push	r17 \n\t"
-			"mov	r17, r22 \n\t"
-			"add	r17, r24 \n\t"
+			"mov	r0, r22 \n\t" 
+			"add	r0, r24 \n\t"
 		"string_load_loop_%=:"
-			"cp	r17, r30\n\t"
+			"cp	r0, r30\n\t"
 			"breq	skip_string_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"call	uart_putc \n\t" // will be optimized out by -mrelax flag
+			"rcall	uart_putc \n\t" // r0 and Z pointer will not be affected in uart_putc()
 			"rjmp	string_load_loop_%= \n\t"
 		"skip_string_loop_%=:"
-			"pop	r17 \n\t"
 		
 			: /* no outputs */
 			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* no clobbers - this is the whole function */
+			  
 		);
 		
 	#endif
@@ -1293,7 +1290,7 @@
 			"lpm 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	skip_fstring_loop_%= \n\t"
-			"call	uart_putc \n\t" // will be optimized out by -mrelax flag
+			"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
 			"rjmp	fstring_load_loop_%= \n\t"
 		"skip_fstring_loop_%=:"
 		
@@ -2167,7 +2164,7 @@
 		{
 			*buffer = uart_getc();
 			if(*buffer++ == 0)
-			return;
+				return;
 		}
 	*buffer = 0;
 	}
