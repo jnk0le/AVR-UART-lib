@@ -1116,11 +1116,11 @@
 		tx0_buffer[tmp_tx_last_byte] = data;
 	#else
 		asm volatile("\n\t"
-			"mov	r26, r25  \n\t"
+			"mov	r26, %[index]  \n\t"
 			"ldi	r27, 0x00 \n\t"
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
 			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
-			"st	X, %[dat]    \n\t"
+			"st		X, %[dat]    \n\t"
 			
 			: /* no outputs */
 			: /* input operands */
@@ -1223,7 +1223,7 @@
 			uart_putc(*string++);
 	#else 
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // single 16 bit argument is passed via r24,r25
+			"movw	r30, r24 \n\t" // buff pointer
 		"string_load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -1253,7 +1253,7 @@
 			uart_putc(*string++);
 	#else
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // single 16 bit argument is passed via r24,r25
+			"movw	r30, r24 \n\t" // buff pointer
 			"mov	r0, r22 \n\t" 
 			"add	r0, r24 \n\t"
 		"string_load_loop_%=:"
@@ -1285,7 +1285,7 @@
 		while ( (c = pgm_read_byte(string++)) ) uart_putc(c);
 	#else
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // single 16 bit argument is passed via r24,r25
+			"movw	r30, r24 \n\t" // buff pointer
 		"fstring_load_loop_%=:"
 			"lpm 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -2105,8 +2105,29 @@
 		
 		if(tmp_rx_first_byte == rx0_last_byte) return 0;
 		
-		rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK; // isr will load data into empty location so no need for atomicity
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+	
+	#ifdef USART_NO_DIRTY_HACKS
 		tmp = rx0_buffer[tmp_rx_first_byte];
+	#else
+		asm volatile("\n\t"
+			"mov	r26, %[index] \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+			"ld		%[dat], X \n\t"
+			
+			: /* output operands */
+			[dat] "=r" (tmp)
+			: /* input operands */
+			[index] "r" (tmp_rx_first_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	#endif
+	
+		rx0_first_byte = tmp_rx_first_byte;
 	
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
@@ -2160,13 +2181,35 @@
 //******************************************************************
 	void uart_gets(char *buffer, uint8_t bufferlimit)
 	{
+	#ifdef USART_NO_DIRTY_HACKS
 		while(--bufferlimit)
 		{
 			*buffer = uart_getc();
 			if(*buffer++ == 0)
-				return;
+				break;
 		}
-	*buffer = 0;
+		*buffer = 0;
+	#else
+		asm volatile("\n\t"
+			"movw	r30, r24 \n\t" // buff pointer
+			"mov	r0, r22 \n\t" // counter
+		
+		"string_store_loop_%=:"
+			"dec	r0 \n\t"
+			"breq	string_store_NULL_%= \n\t"
+			"rcall	uart_getc \n\t"
+			"st		Z+, r24 \n\t"
+			"cpse	r24, r1 \n\t"
+			"rjmp	string_store_loop_%= \n\t"
+		"string_store_NULL_%=:"
+			"st		Z, r1 \n\t"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+		
+	#endif
 	}
 
 //******************************************************************
@@ -2324,8 +2367,10 @@
 		#endif
 		}
 		
-		rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 		tmpdat = rx0_buffer[tmp_rx_first_byte];
+		
+		rx0_first_byte = tmp_rx_first_byte;
 		
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
@@ -2353,8 +2398,10 @@
 		
 		if(tmp_rx_first_byte == rx0_last_byte) return BUFFER_EMPTY; // result = 0
 		
-		rx0_first_byte = tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 		*data = rx0_buffer[tmp_rx_first_byte];
+		
+		rx0_first_byte = tmp_rx_first_byte;
 		
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
