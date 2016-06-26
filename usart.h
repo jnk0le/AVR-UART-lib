@@ -34,7 +34,7 @@
 //#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (f_cpu/8)
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
-//#define USART_NO_DIRTY_HACKS // if UBBRH is not zero at startup
+//#define USART_NO_DIRTY_HACKS // if UBBRH is not zero at startup, or if the code is not allowed to violate some standards
 
 /*****************************config for multiple USART mcu's***********************************/
 
@@ -1665,7 +1665,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	int32_t uart_getlong(uint8_t usartct);
 	float uart_getfloat(uint8_t usartct);
 	
-	uint16_t uart_getData(uint8_t usartct); // reads single byte from a buffer // returns negative value  if buffer is empty (upper byte is non zero)
+	int16_t uart_getData(uint8_t usartct); // reads single byte from a buffer // returns negative value  if buffer is empty (upper byte is non zero)
 	uint8_t uart_LoadData(uint8_t usartct, uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 	// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 	uint8_t uart_AvailableBytes(uint8_t usartct); // returns number of bytes waiting in the receiver buffer

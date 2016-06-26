@@ -1670,7 +1670,7 @@
 		{
 			*buffer = uart_getc(usartct);
 			if(*buffer++ == 0)
-			return;
+				break;
 		}
 	*buffer = 0;
 	}
@@ -2115,10 +2115,10 @@
 			"ldi	r27, 0x00 \n\t"
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
 			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
-			"ld		%[dat], X \n\t"
+			"ld 	%[temp], X \n\t"
 			
 			: /* output operands */
-			[dat] "=r" (tmp)
+			[temp] "=r" (tmp)
 			: /* input operands */
 			[index] "r" (tmp_rx_first_byte)
 			
@@ -2198,11 +2198,11 @@
 			"dec	r0 \n\t"
 			"breq	string_store_NULL_%= \n\t"
 			"rcall	uart_getc \n\t"
-			"st		Z+, r24 \n\t"
+			"st 	Z+, r24 \n\t"
 			"cpse	r24, r1 \n\t"
 			"rjmp	string_store_loop_%= \n\t"
 		"string_store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st 	Z, r1 \n\t"
 		
 			: /* no outputs */
 			: /* no inputs */
@@ -2224,6 +2224,7 @@
 //******************************************************************
 	void uart_getln(char *buffer, uint8_t bufferlimit)
 	{
+	//#ifdef USART_NO_DIRTY_HACKS
 		while(--bufferlimit)
 		{
 			do{
@@ -2244,6 +2245,9 @@
 			buffer++;
 		}
 		*buffer = 0;
+	//#else
+	
+	//#endif
 	}
 
 //******************************************************************
@@ -2466,7 +2470,7 @@
 			while ( (tmp = uart_getData((uint16_t) stream -> udata)) < 0 );
 			
 		#ifdef RX_STDIO_GETCHAR_ECHO
-			uart_putc((uint16_t) stream -> udata, (uint8_t)tmp;
+			uart_putc((uint16_t) stream -> udata, (uint8_t)tmp);
 		#endif
 			
 			return (uint8_t)tmp;
@@ -3028,7 +3032,7 @@
 		
 	}
 
-#ifdef defined(USART1_RS485_MODE)
+#if defined(USART1_RS485_MODE)
 
 	ISR(TXC1_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
@@ -3296,7 +3300,7 @@
 		
 	}
 
-#if define(USART2_RS485_MODE)
+#if defined(USART2_RS485_MODE)
 
 	ISR(TXC2_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
 	{
@@ -3522,8 +3526,8 @@
 			: /* output operands */
 		
 			: /* input operands */
-			[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
-			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+			[UDR_reg]   "i"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
+			[control_reg] "i"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[udrie_bit] "M"		(UDRIE3_BIT),
 			[mask]        "M"    (TX3_BUFFER_MASK)
 		
@@ -3662,7 +3666,7 @@
 			: /* output operands */
 		
 			: /* input operands */
-			[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
+			[UDR_reg] "i"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
 			[mask]      "M"    (RX3_BUFFER_MASK),
 			[mpcm_address]      "M"    (MPCM3_ADDRESS),
 		#ifdef MPCM3_GCALL_ADDRESS
@@ -3673,8 +3677,8 @@
 			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS3_IOPORTNAME))),
 			[rts_pin]        "M"    (RTS3_PIN),
 		#endif
-			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
-			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+			[UCSRA_reg]   "i"    (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
+			[control_reg] "i"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[rxcie_bit] "M"		(RXCIE3_BIT)
 		
 			/* no clobbers */
