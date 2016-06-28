@@ -79,8 +79,12 @@
 			{
 				UCSR0B_REGISTER = 0; // flush all buffers
 				
+			#ifndef NO_USART_RX
 				rx0_first_byte = rx0_last_byte;
+			#endif
+			#ifndef NO_USART_TX
 				tx0_first_byte = tx0_last_byte;
+			#endif
 				
 			#ifdef USART0_RS485_MODE
 				___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
@@ -117,8 +121,12 @@
 			{
 				UCSR1B_REGISTER = 0; // flush all buffers
 				
+			#ifndef NO_USART_RX
 				rx1_first_byte = rx1_last_byte;
+			#endif
+			#ifndef NO_USART_TX
 				tx1_first_byte = tx1_last_byte;
+			#endif
 				
 			#ifdef USART1_RS485_MODE
 				___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN);
@@ -155,8 +163,12 @@
 			{
 				UCSR2B_REGISTER = 0; // flush all buffers
 				
+			#ifndef NO_USART_RX
 				rx2_first_byte = rx2_last_byte;
+			#endif
+			#ifndef NO_USART_TX
 				tx2_first_byte = tx2_last_byte;
+			#endif
 				
 			#ifdef USART2_RS485_MODE
 				___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN);
@@ -193,8 +205,12 @@
 			{
 				UCSR3B_REGISTER = 0; // flush all buffers
 				
+			#ifndef NO_USART_RX
 				rx3_first_byte = rx3_last_byte;
+			#endif
+			#ifndef NO_USART_TX
 				tx3_first_byte = tx3_last_byte;
+			#endif
 				
 			#ifdef USART3_RS485_MODE
 				___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN);
@@ -242,10 +258,14 @@
 	void uart_reinit(uint16_t ubbr_value)
 	{
 		UCSR0B_REGISTER = 0; //flush all buffers
-		
+	
+	#ifndef NO_USART_RX
 		rx0_first_byte = rx0_last_byte;
+	#endif
+	#ifndef NO_USART_TX
 		tx0_first_byte = tx0_last_byte;
-		
+	#endif
+	
 	#ifdef USART0_RS485_MODE
 		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
 		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); //set low
@@ -2248,7 +2268,7 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"movw	r0, r22 \n\t" // counter
+			"mov	r0, r22 \n\t" // counter
 		"loop_%=:"
 			"dec	r0 \n\t"
 			"breq	load_NULL_%= \n\t"
