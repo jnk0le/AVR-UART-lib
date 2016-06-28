@@ -34,7 +34,7 @@
 //#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (f_cpu/8)
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
-//#define USART_NO_DIRTY_HACKS // if UBBRH is not zero at startup, or if the code is not allowed to violate some standards
+//#define USART_NO_DIRTY_HACKS // if UBBRH is not zero at startup, or if the code is not allowed to violate any conventions
 
 /*****************************config for multiple USART mcu's***********************************/
 

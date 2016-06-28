@@ -2197,7 +2197,7 @@
 		"string_store_loop_%=:"
 			"dec	r0 \n\t"
 			"breq	string_store_NULL_%= \n\t"
-			"rcall	uart_getc \n\t"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
 			"cpse	r24, r1 \n\t"
 			"rjmp	string_store_loop_%= \n\t"
@@ -2224,7 +2224,7 @@
 //******************************************************************
 	void uart_getln(char *buffer, uint8_t bufferlimit)
 	{
-	//#ifdef USART_NO_DIRTY_HACKS
+	#ifdef USART_NO_DIRTY_HACKS
 		while(--bufferlimit)
 		{
 			do{
@@ -2245,9 +2245,41 @@
 			buffer++;
 		}
 		*buffer = 0;
-	//#else
-	
-	//#endif
+	#else
+		asm volatile("\n\t"
+			"movw	r30, r24 \n\t" // buff pointer
+			"movw	r0, r22 \n\t" // counter
+		"loop_%=:"
+			"dec	r0 \n\t"
+			"breq	load_NULL_%= \n\t"
+		"wait_loop_%=:"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	wait_loop_%= \n\t"
+			"st		Z+, r24 \n\t"
+		#ifdef RX_NEWLINE_MODE_N
+			"cpi	r24, '\n' \n\t"
+		#else
+			"cpi	r24, '\r' \n\t"
+		#endif
+			"brne	loop_%= \n\t"
+		
+		#ifdef RX_NEWLINE_MODE_RN
+		"wait_loop2_%=:"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"and	r24, r24 \n\t"
+			"breq	wait_loop2_%= \n\t"
+		#endif
+			"sbiw	r30, 0x01\n\t"
+		"load_NULL_%=:"
+			"st		Z, r1 \n\t"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+		 
+	#endif
 	}
 
 //******************************************************************
@@ -2720,9 +2752,9 @@
 		
 			: /* input operands */
 			[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
-			[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
+			[UDR_reg]   "n"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
 			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
-			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+			[control_reg] "n"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 			[udrie_bit] "M"		(UDRIE0_BIT),
 			[mask]        "M"    (TX0_BUFFER_MASK)
 		
@@ -2907,7 +2939,7 @@
 		
 			: /* input operands */
 			[UDR_reg_IO]     "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
-			[UDR_reg]	     "M"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
+			[UDR_reg]	     "n"    (_SFR_MEM_ADDR(UDR0_REGISTER)),
 			[mask]           "M"    (RX0_BUFFER_MASK),
 			[mpcm_address]   "M"    (MPCM0_ADDRESS),
 		#ifdef MPCM0_GCALL_ADDRESS
@@ -2918,10 +2950,10 @@
 			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS0_IOPORTNAME))),
 			[rts_pin]        "M"    (RTS0_PIN),
 		#endif
-			[UCSRA_reg]      "M"    (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
+			[UCSRA_reg]      "n"    (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
 			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR0A_REGISTER)),
 			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR0B_REGISTER)),
-			[control_reg]    "M"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+			[control_reg]    "n"    (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 			[rxcie_bit]      "M"	(RXCIE0_BIT)
 		
 			/* no clobbers */
@@ -3021,9 +3053,9 @@
 		
 			: /* input operands */
 			[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR1_REGISTER)),
-			[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
+			[UDR_reg]   "n"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
 			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
-			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+			[control_reg] "n"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
 			[udrie_bit] "M"		(UDRIE1_BIT),
 			[mask]        "M"    (TX1_BUFFER_MASK)
 		
@@ -3192,7 +3224,7 @@
 		
 			: /* input operands */
 			[UDR_reg_IO]   "M"    (_SFR_IO_ADDR(UDR0_REGISTER)),
-			[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
+			[UDR_reg] "n"    (_SFR_MEM_ADDR(UDR1_REGISTER)),
 			[mask]      "M"    (RX1_BUFFER_MASK),
 			[mpcm_address]      "M"    (MPCM1_ADDRESS),
 		#ifdef MPCM1_GCALL_ADDRESS
@@ -3203,10 +3235,10 @@
 			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS1_IOPORTNAME))),
 			[rts_pin]        "M"    (RTS1_PIN),
 		#endif
-			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
+			[UCSRA_reg]   "n"    (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
 			[UCSRA_reg_IO]   "M"    (_SFR_IO_ADDR(UCSR1A_REGISTER)),
 			[control_reg_IO] "M"    (_SFR_IO_ADDR(UCSR1B_REGISTER)),
-			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+			[control_reg] "n"    (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
 			[rxcie_bit] "M"		(RXCIE1_BIT)
 		
 			/* no clobbers */
@@ -3290,8 +3322,8 @@
 			: /* output operands */
 		
 			: /* input operands */
-			[UDR_reg]   "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
-			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+			[UDR_reg]   "n"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
+			[control_reg] "n"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[udrie_bit] "M"		(UDRIE2_BIT),
 			[mask]        "M"    (TX2_BUFFER_MASK)
 		
@@ -3430,7 +3462,7 @@
 			: /* output operands */
 		
 			: /* input operands */
-			[UDR_reg] "M"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
+			[UDR_reg] "n"    (_SFR_MEM_ADDR(UDR2_REGISTER)),
 			[mask]      "M"    (RX2_BUFFER_MASK),
 			[mpcm_address]      "M"    (MPCM2_ADDRESS),
 		#ifdef MPCM2_GCALL_ADDRESS
@@ -3441,8 +3473,8 @@
 			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS2_IOPORTNAME))),
 			[rts_pin]        "M"    (RTS2_PIN),
 		#endif
-			[UCSRA_reg]   "M"    (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
-			[control_reg] "M"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+			[UCSRA_reg]   "n"    (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
+			[control_reg] "n"    (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[rxcie_bit] "M"		(RXCIE2_BIT)
 		
 			/* no clobbers */
@@ -3526,8 +3558,8 @@
 			: /* output operands */
 		
 			: /* input operands */
-			[UDR_reg]   "i"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
-			[control_reg] "i"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+			[UDR_reg]   "n"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
+			[control_reg] "n"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[udrie_bit] "M"		(UDRIE3_BIT),
 			[mask]        "M"    (TX3_BUFFER_MASK)
 		
@@ -3666,7 +3698,7 @@
 			: /* output operands */
 		
 			: /* input operands */
-			[UDR_reg] "i"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
+			[UDR_reg] "n"    (_SFR_MEM_ADDR(UDR3_REGISTER)),
 			[mask]      "M"    (RX3_BUFFER_MASK),
 			[mpcm_address]      "M"    (MPCM3_ADDRESS),
 		#ifdef MPCM3_GCALL_ADDRESS
@@ -3677,8 +3709,8 @@
 			[rts_port]       "M"    (_SFR_IO_ADDR(___PORT(RTS3_IOPORTNAME))),
 			[rts_pin]        "M"    (RTS3_PIN),
 		#endif
-			[UCSRA_reg]   "i"    (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
-			[control_reg] "i"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+			[UCSRA_reg]   "n"    (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
+			[control_reg] "n"    (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[rxcie_bit] "M"		(RXCIE3_BIT)
 		
 			/* no clobbers */

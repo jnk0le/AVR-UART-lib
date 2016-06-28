@@ -12,7 +12,7 @@ buffers for receive/transmit. Designed to be easy to use, with zero overhead fro
 - MPCM master and slave mode support
 - printf()/scanf() streams compatibility
 - V-USB compatibility (25 cycle ISR restriction)
-- optimized as much as possible to reduce code size
+- optimized as much as possible to reduce code size and execution times
 - and much more
 
 simple minimal "hello world" (with delay) code on mega328p can give following results:
