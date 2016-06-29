@@ -2214,14 +2214,14 @@
 			"movw	r30, r24 \n\t" // buff pointer
 			"mov	r0, r22 \n\t" // counter
 		
-		"string_store_loop_%=:"
+		"loop_%=:"
 			"dec	r0 \n\t"
-			"breq	string_store_NULL_%= \n\t"
+			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
 			"cpse	r24, r1 \n\t"
-			"rjmp	string_store_loop_%= \n\t"
-		"string_store_NULL_%=:"
+			"rjmp	loop_%= \n\t"
+		"store_NULL_%=:"
 			"st 	Z, r1 \n\t"
 		
 			: /* no outputs */
@@ -2271,7 +2271,7 @@
 			"mov	r0, r22 \n\t" // counter
 		"loop_%=:"
 			"dec	r0 \n\t"
-			"breq	load_NULL_%= \n\t"
+			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
 			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
@@ -2291,7 +2291,7 @@
 			"breq	wait_loop2_%= \n\t"
 		#endif
 			"sbiw	r30, 0x01\n\t"
-		"load_NULL_%=:"
+		"store_NULL_%=:"
 			"st		Z, r1 \n\t"
 		
 			: /* no outputs */
@@ -2315,7 +2315,12 @@
 //******************************************************************
 	void uart_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
-		*buffer++ = uart_skipWhiteSpaces();
+	#ifdef USART_NO_DIRTY_HACKS
+		do{
+			*buffer = uart_getc();
+		}while(*buffer <= 32);
+		
+		buffer++;
 		bufferlimit--;
 		
 		while(--bufferlimit)
@@ -2341,6 +2346,60 @@
 			buffer++;
 		}
 		*buffer = 0;
+	#else
+		asm volatile("\n\t"
+			"movw	r30, r24 \n\t" // buff pointer
+			"mov	r0, r22 \n\t" // counter
+			
+		"skip_whitespaces_loop_%=:"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
+			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
+			"st		Z+, r24 \n\t"
+			"dec	r0 \n\t"
+		
+		"loop_%=:"	
+			"dec	r0 \n\t"
+			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+		"wait_loop_%=:"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	wait_loop_%= \n\t"
+		
+		#ifdef RX_NEWLINE_MODE_N
+			"cpi	r24, '\n' \n\t"
+		#else
+			"cpi	r24, '\r' \n\t"
+		#endif
+		
+		#ifdef RX_NEWLINE_MODE_RN
+			"breq	exit_wait_loop_%= \n\t"
+		#else
+			"breq	load_NULL_%= \n\t"
+		#endif
+			
+			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
+			"brcs	store_NULL_%= \n\t" // whitespace means end of this function, quit loop
+			
+			"st		Z+, r24 \n\t"
+			"rjmp	loop_%=\n\t"
+			
+		#ifdef RX_NEWLINE_MODE_RN
+		"exit_wait_loop_%=:"
+			"rcall uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq exit_wait_loop_%= \n\t"
+		#endif
+		
+		"store_NULL_%=:"
+			"st		Z, r1 \n\t"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+		
+	#endif
 	}
 
 //******************************************************************
