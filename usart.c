@@ -58,6 +58,10 @@
 	char rx3_buffer[RX3_BUFFER_SIZE];
 #endif
 
+#ifdef USART_NO_LOCAL_BUFFERS
+	extern char u_tmp_buff[];
+#endif
+
 #if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
 
 //******************************************************************
@@ -808,10 +812,12 @@
 //******************************************************************
 	void uart_putint(uint8_t usartct, int16_t data)
 	{
-		char buffer[7]; // heading, 5 digit bytes, NULL
-		itoa(data, buffer, 10);
-
-		uart_putstr(usartct, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+		
+		itoa(data, u_tmp_buff, 10);
+		uart_putstr(usartct, u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -823,10 +829,12 @@
 //******************************************************************
 	void uart_putintr(uint8_t usartct, int16_t data, uint8_t radix)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
-		itoa(data, buffer, radix);
-
-		uart_putstr(usartct, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+	
+		itoa(data, u_tmp_buff, radix);
+		uart_putstr(usartct, u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -837,10 +845,12 @@
 //******************************************************************
 	void uart_putuint(uint8_t usartct, uint16_t data)
 	{
-		char buffer[7]; // heading, 5 digit bytes, NULL
-		utoa(data, buffer, 10);
-
-		uart_putstr(usartct, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+	
+		utoa(data, u_tmp_buff, 10);
+		uart_putstr(usartct, u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -852,10 +862,12 @@
 //******************************************************************
 	void uart_putuintr(uint8_t usartct, uint16_t data, uint8_t radix)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
-		utoa(data, buffer, radix);
-
-		uart_putstr(usartct, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+	
+		utoa(data, u_tmp_buff, radix);
+		uart_putstr(usartct, u_tmp_buff);
 	}
 
 //******************************************************************
@@ -883,10 +895,12 @@
 //******************************************************************
 	void uart_putlong(uint8_t usartct, int32_t data)
 	{
-		char buffer[12]; // heading, 10 digit bytes, NULL
-		ltoa(data, buffer, 10);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
 	
-		uart_putstr(usartct, buffer);
+		ltoa(data, u_tmp_buff, 10);
+		uart_putstr(usartct, u_tmp_buff);
 	}
 
 //******************************************************************
@@ -898,10 +912,12 @@
 //******************************************************************
 	void uart_putlongr(uint8_t usartct, int32_t data, uint8_t radix)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
-		ltoa(data, buffer, radix);
-		
-		uart_putstr(usartct, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+	
+		ltoa(data, u_tmp_buff, radix);
+		uart_putstr(usartct, u_tmp_buff);
 	}
 
 //******************************************************************
@@ -912,10 +928,12 @@
 //******************************************************************
 	void uart_putulong(uint8_t usartct, uint32_t data)
 	{
-		char buffer[12]; // heading, 10 digit bytes, NULL
-		ultoa(data, buffer, 10);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
 	
-		uart_putstr(usartct, buffer);
+		ultoa(data, u_tmp_buff, 10);
+		uart_putstr(usartct, u_tmp_buff);
 	}
 
 //******************************************************************
@@ -927,10 +945,12 @@
 //******************************************************************
 	void uart_putulongr(uint8_t usartct, uint32_t data, uint8_t radix)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
-		ltoa(data, buffer, radix);
-		
-		uart_putstr(usartct, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+	
+		ltoa(data, u_tmp_buff, radix);
+		uart_putstr(usartct, u_tmp_buff);
 	}
 
 //******************************************************************
@@ -941,10 +961,13 @@
 //******************************************************************
 	void uart_putfloat(uint8_t usartct, float data)
 	{
-		char buffer[16];
-		dtostrf(data, 15, 6, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[16];
+	#endif
 	
-		char *p = buffer;
+		dtostrf(data, 15, 6, u_tmp_buff);
+	
+		char *p = u_tmp_buff;
 		while(*p == ' ') // remove all unwanted spaces
 			p++;
 	
@@ -960,10 +983,13 @@
 //******************************************************************
 	void uart_fputfloat(uint8_t usartct, float data, uint8_t precision)
 	{
-		char buffer[16];
-		dtostrf(data, 15, precision, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[16];
+	#endif
 	
-		char *p = buffer;
+		dtostrf(data, 15, precision, u_tmp_buff);
+	
+		char *p = u_tmp_buff;
 		while(*p == ' ') // remove all unwanted spaces
 			p++;
 	
@@ -1329,10 +1355,12 @@
 //******************************************************************
 	void uart_putint(int16_t data)
 	{
-		char buffer[7]; // heading, 5 digit bytes, NULL
-		itoa(data, buffer, 10);
-
-		uart_putstr(buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+	
+		itoa(data, u_tmp_buff, 10);
+		uart_putstr(u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -1343,10 +1371,12 @@
 //******************************************************************
 	void uart_putintr(int16_t data, uint8_t radix)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
-		itoa(data, buffer, radix);
-
-		uart_putstr(buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+		
+		itoa(data, u_tmp_buff, radix);
+		uart_putstr(u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -1356,10 +1386,12 @@
 //******************************************************************
 	void uart_putuint(uint16_t data)
 	{
-		char buffer[7]; // heading, 5 digit bytes, NULL
-		utoa(data, buffer, 10);
-
-		uart_putstr(buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+	
+		utoa(data, u_tmp_buff, 10);
+		uart_putstr(u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -1370,10 +1402,11 @@
 //******************************************************************
 	void uart_putuintr(uint16_t data, uint8_t radix)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
-		utoa(data, buffer, radix);
-
-		uart_putstr(buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+		utoa(data, u_tmp_buff, radix);
+		uart_putstr(u_tmp_buff);
 	}
 
 //******************************************************************
@@ -1399,10 +1432,12 @@
 //******************************************************************
 	void uart_putlong(int32_t data)
 	{
-		char buffer[12]; // heading, 10 digit bytes, NULL
-		ltoa(data, buffer, 10);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
 		
-		uart_putstr(buffer);
+		ltoa(data, u_tmp_buff, 10);
+		uart_putstr(u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -1413,10 +1448,12 @@
 //******************************************************************
 	void uart_putlongr(int32_t data, uint8_t radix)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
-		ltoa(data, buffer, radix);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
 		
-		uart_putstr(buffer);
+		ltoa(data, u_tmp_buff, radix);
+		uart_putstr(u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -1426,10 +1463,12 @@
 //******************************************************************
 	void uart_putulong(uint32_t data)
 	{
-		char buffer[12]; // heading, 10 digit bytes, NULL
-		ultoa(data, buffer, 10);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
 		
-		uart_putstr(buffer);
+		ultoa(data, u_tmp_buff, 10);
+		uart_putstr(u_tmp_buff);
 	}
 	
 //******************************************************************
@@ -1440,10 +1479,12 @@
 //******************************************************************
 	void uart_putulongr(uint32_t data, uint8_t radix)
 	{
-		char buffer[17]; // heading, 15 digit bytes, NULL
-		ultoa(data, buffer, radix);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
 		
-		uart_putstr(buffer);
+		ultoa(data, u_tmp_buff, radix);
+		uart_putstr(u_tmp_buff);
 	}
 
 //******************************************************************
@@ -1453,10 +1494,13 @@
 //******************************************************************
 	void uart_putfloat(float data)
 	{
-		char buffer[16];
-		dtostrf(data, 15, 6, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[16];
+	#endif
 		
-		char *p = buffer;
+		dtostrf(data, 15, 6, u_tmp_buff);
+		
+		char *p = u_tmp_buff;
 		while(*p == ' ') // remove all unwanted spaces
 			p++;
 		
@@ -1471,10 +1515,13 @@
 //******************************************************************
 	void uart_fputfloat(float data, uint8_t precision)
 	{
-		char buffer[16];
-		dtostrf(data, 15, precision, buffer);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[16];
+	#endif
 		
-		char *p = buffer;
+		dtostrf(data, 15, precision, u_tmp_buff);
+		
+		char *p = u_tmp_buff;
 		while(*p == ' ') // remove all unwanted spaces
 			p++;
 		
@@ -1725,9 +1772,7 @@
 			#endif
 				break;
 			}
-		
 			buffer++;
-
 		}
 		*buffer = 0;
 	}
@@ -1746,7 +1791,11 @@
 //******************************************************************
 	void uart_getlnToFirstWhiteSpace(uint8_t usartct, char *buffer, uint8_t bufferlimit)
 	{
-		*buffer++ = uart_skipWhiteSpaces(usartct);
+		do{
+			*buffer = uart_getc(usartct);
+		}while(*buffer <= 32);
+		
+		buffer++;
 		bufferlimit--;
 		
 		while(--bufferlimit)
@@ -1799,10 +1848,13 @@
 //******************************************************************
 	int16_t uart_getint(uint8_t usartct)
 	{
-		char buff[32];
-		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(usartct, u_tmp_buff, 32);
 		
-		return atoi(buff);
+		return atoi(u_tmp_buff);
 	}
 
 //******************************************************************
@@ -1812,10 +1864,13 @@
 //******************************************************************
 	int32_t uart_getlong(uint8_t usartct)
 	{
-		char buff[32];
-		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(usartct, u_tmp_buff, 32);
 			
-		return atol(buff);
+		return atol(u_tmp_buff);
 	}
 
 //******************************************************************
@@ -1825,10 +1880,13 @@
 //******************************************************************
 	float uart_getfloat(uint8_t usartct)
 	{
-		char buff[32];
-		uart_getlnToFirstWhiteSpace(usartct, buff, 32);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[32];
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(usartct, u_tmp_buff, 32);
 		
-		return atof(buff);
+		return atof(u_tmp_buff);
 	}
 
 //******************************************************************
@@ -2426,10 +2484,13 @@
 //******************************************************************
 	int16_t uart_getint(void)
 	{
-		char buff[32];
-		uart_getlnToFirstWhiteSpace(buff, 32);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(u_tmp_buff, 7);
 		
-		return atoi(buff);
+		return atoi(u_tmp_buff);
 	}
 
 //******************************************************************
@@ -2439,10 +2500,13 @@
 //******************************************************************
 	int32_t uart_getlong(void)
 	{
-		char buff[32];
-		uart_getlnToFirstWhiteSpace(buff, 32);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(u_tmp_buff, 12);
 		
-		return atol(buff);
+		return atol(u_tmp_buff);
 	}
 
 //******************************************************************
@@ -2452,10 +2516,13 @@
 //******************************************************************
 	float uart_getfloat(void)
 	{
-		char buff[32];
-		uart_getlnToFirstWhiteSpace(buff, 32);
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[32];
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(u_tmp_buff, 32);
 		
-		return atof(buff);
+		return atof(u_tmp_buff);
 	}
 
 //******************************************************************
