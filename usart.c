@@ -1269,7 +1269,13 @@
 			uart_putc(*string++);
 	#else 
 		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
 			"movw	r30, r24 \n\t" // buff pointer
+		#endif
 		"string_load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -1299,16 +1305,22 @@
 			uart_putc(*string++);
 	#else
 		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
 			"movw	r30, r24 \n\t" // buff pointer
+		#endif
 			"mov	r0, r22 \n\t" 
 			"add	r0, r24 \n\t"
-		"string_load_loop_%=:"
+		"load_loop_%=:"
 			"cp	r0, r30\n\t"
-			"breq	skip_string_loop_%= \n\t"
+			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
 			"rcall	uart_putc \n\t" // r0 and Z pointer will not be affected in uart_putc()
-			"rjmp	string_load_loop_%= \n\t"
-		"skip_string_loop_%=:"
+			"rjmp	load_loop_%= \n\t"
+		"skip_loop_%=:"
 		
 			: /* no outputs */
 			: /* no inputs */
@@ -1326,25 +1338,26 @@
 //******************************************************************
 	void uart_puts_p(const char *string)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart_putc(c);
-	#else
-		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
-		"fstring_load_loop_%=:"
-			"lpm 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_fstring_loop_%= \n\t"
-			"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	fstring_load_loop_%= \n\t"
-		"skip_fstring_loop_%=:"
+	#ifndef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+		#ifdef USART_NO_DIRTY_HACKS
+			register char c;
+			while ( (c = pgm_read_byte(string++)) ) uart_putc(c);
+		#else
+			asm volatile("\n\t"
+				"movw	r30, r24 \n\t" // buff pointer
+			"load_loop_%=:"
+				"lpm 	r24, Z+ \n\t"
+				"and	r24, r24 \n\t" // test for NULL
+				"breq	skip_loop_%= \n\t"
+				"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
+				"rjmp	load_loop_%= \n\t"
+			"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
-		);
-	
+				: /* no outputs */
+				: /* no inputs */
+				: /* no clobbers - this is the whole function*/
+			);
+		#endif
 	#endif
 	}
 
@@ -2269,7 +2282,13 @@
 		*buffer = 0;
 	#else
 		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
 			"movw	r30, r24 \n\t" // buff pointer
+		#endif
 			"mov	r0, r22 \n\t" // counter
 		
 		"loop_%=:"
@@ -2325,7 +2344,13 @@
 		*buffer = 0;
 	#else
 		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
 			"movw	r30, r24 \n\t" // buff pointer
+		#endif
 			"mov	r0, r22 \n\t" // counter
 		"loop_%=:"
 			"dec	r0 \n\t"
@@ -2334,13 +2359,20 @@
 			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
-			"st		Z+, r24 \n\t"
 		#ifdef RX_NEWLINE_MODE_N
 			"cpi	r24, '\n' \n\t"
 		#else
 			"cpi	r24, '\r' \n\t"
 		#endif
-			"brne	loop_%= \n\t"
+
+		#ifdef RX_NEWLINE_MODE_RN
+			"breq	wait_loop2_%= \n\t"
+		#else
+			"breq	store_NULL_%= \n\t"
+		#endif
+			
+			"st		Z+, r24 \n\t"
+			"rjmp	loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
@@ -2348,7 +2380,7 @@
 			"and	r24, r24 \n\t"
 			"breq	wait_loop2_%= \n\t"
 		#endif
-			"sbiw	r30, 0x01\n\t"
+		
 		"store_NULL_%=:"
 			"st		Z, r1 \n\t"
 		
@@ -2406,7 +2438,13 @@
 		*buffer = 0;
 	#else
 		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
 			"movw	r30, r24 \n\t" // buff pointer
+		#endif
 			"mov	r0, r22 \n\t" // counter
 			
 		"skip_whitespaces_loop_%=:"
