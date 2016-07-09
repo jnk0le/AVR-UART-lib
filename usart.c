@@ -1166,7 +1166,7 @@
 			"ldi	r27, 0x00 \n\t"
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
 			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
-			"st		X, %[dat]    \n\t"
+			"st		X, %[dat] \n\t"
 			
 			: /* no outputs */
 			: /* input operands */
@@ -1203,7 +1203,10 @@
 		reti();
 	#endif
 		
+		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
 	}
+	
+	char _uart_putc(char data) __attribute__ ((alias ("uart_putc"))); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 	
 //******************************************************************
 //Function  : Send single character/byte.
@@ -1276,13 +1279,13 @@
 		#else
 			"movw	r30, r24 \n\t" // buff pointer
 		#endif
-		"string_load_loop_%=:"
+		"load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	skip_string_loop_%= \n\t"
 			"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
 			"rjmp	string_load_loop_%= \n\t"
-		"skip_string_loop_%=:"
+		"skip_loop_%=:"
 		
 			: /* no outputs */
 			: /* no inputs */
@@ -2233,13 +2236,15 @@
 	#ifdef RX0_GETC_ECHO
 		
 		#ifdef RX_NEWLINE_MODE_N
-			if(tmp == '\n') uart_putc('\r');
+			if(tmp == '\n')
+				tmp = _uart_putc('\r');
 		#endif
 		
-		uart_putc(tmp);
+		tmp = _uart_putc(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
-			if(tmp == '\r') uart_putc('\n');
+			if(tmp == '\r') 
+				tmp = _uart_putc('\n');
 		#endif
 
 	#endif // RX0_GETC_ECHO

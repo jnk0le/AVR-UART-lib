@@ -1604,7 +1604,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#else
 		void uart_putc(char data) __attribute__ ((naked));
 	#endif
-	
+		char _uart_putc(char data); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		
 	uint8_t uart_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
 	void uart_putstrl(char *string, uint8_t BytesToWrite); // in case of bascom users or buffers without NULL byte ending
