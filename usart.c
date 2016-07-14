@@ -2660,26 +2660,7 @@
 		if(tmp_rx_first_byte == rx0_last_byte) return BUFFER_EMPTY; // result = 0
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
-
-	#ifdef USART_NO_DIRTY_HACKS
 		*data = rx0_buffer[tmp_rx_first_byte];
-	#else
-		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx0_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
-			
-			: /* output operands */
-			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
-			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
-		);
-	#endif
 		
 		rx0_first_byte = tmp_rx_first_byte;
 		
