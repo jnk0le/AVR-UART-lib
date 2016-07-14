@@ -35,6 +35,7 @@
 //#define USART_NO_LOCAL_BUFFERS // do not allocate temporary buffers on stack and use globally visible u_tmp_buff[] instead // it have to be created in application part and have to be at least of 6-17 bytes wide (depending on what is being converted)
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
+#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
 //#define USART_NO_DIRTY_HACKS // if UBBRH is not zero at startup, or if the code is not allowed to violate any conventions
 
 /*****************************config for multiple USART mcu's***********************************/
@@ -1038,6 +1039,84 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif //NO_USART0
 #endif
 
+#if defined(USART_REMAP_LAST_INTERFACE)&&!defined(USE_USART0)&&defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3)
+	#undef USE_USART1
+	#define USE_USART0
+	
+	#define RX0_INTERRUPT		RX1_INTERRUPT
+	#define TXC0_INTERRUPT		TXC1_INTERRUPT
+	#define UDRE0_INTERRUPT		UDRE1_INTERRUPT
+	#define UDR0_REGISTER		UDR1_REGISTER
+	#define UBRR0L_REGISTER		UBRR1L_REGISTER
+	#define UBRR0H_REGISTER		UBRR1H_REGISTER
+	#define UCSR0A_REGISTER		UCSR1A_REGISTER
+	#define UCSR0B_REGISTER		UCSR1B_REGISTER
+	#define UCSR0C_REGISTER		UCSR1C_REGISTER
+	#define TXCIE0_BIT      	TXCIE1_BIT
+	#define UDRIE0_BIT    		UDRIE1_BIT
+	#define RXCIE0_BIT  		RXCIE1_BIT
+	#define TXEN0_BIT   		TXEN1_BIT
+	#define RXEN0_BIT   		RXEN1_BIT
+	#define UDRE0_BIT   		UDRE1_BIT
+	#define RXC0_BIT    		RXC1_BIT
+	#define U2X0_BIT    		U2X1_BIT
+	#define MPCM0_BIT           MPCM1_BIT
+	#define UCSZ02_BIT          UCSZ12_BIT
+	#define TXB80_BIT           TXB81_BIT
+#endif
+
+#if defined(USART_REMAP_LAST_INTERFACE)&&!defined(USE_USART0)&&!defined(USE_USART1)&&defined(USE_USART2)&&!defined(USE_USART3)
+	#undef USE_USART2
+	#define USE_USART0
+	
+	#define RX0_INTERRUPT		RX2_INTERRUPT
+	#define TXC0_INTERRUPT		TXC2_INTERRUPT
+	#define UDRE0_INTERRUPT		UDRE2_INTERRUPT
+	#define UDR0_REGISTER		UDR2_REGISTER
+	#define UBRR0L_REGISTER		UBRR2L_REGISTER
+	#define UBRR0H_REGISTER		UBRR2H_REGISTER
+	#define UCSR0A_REGISTER		UCSR2A_REGISTER
+	#define UCSR0B_REGISTER		UCSR2B_REGISTER
+	#define UCSR0C_REGISTER		UCSR2C_REGISTER
+	#define TXCIE0_BIT      	TXCIE2_BIT
+	#define UDRIE0_BIT    		UDRIE2_BIT
+	#define RXCIE0_BIT  		RXCIE2_BIT
+	#define TXEN0_BIT   		TXEN2_BIT
+	#define RXEN0_BIT   		RXEN2_BIT
+	#define UDRE0_BIT   		UDRE2_BIT
+	#define RXC0_BIT    		RXC2_BIT
+	#define U2X0_BIT    		U2X2_BIT
+	#define MPCM0_BIT           MPCM2_BIT
+	#define UCSZ02_BIT          UCSZ22_BIT
+	#define TXB80_BIT           TXB82_BIT
+#endif
+
+#if defined(USART_REMAP_LAST_INTERFACE)&&!defined(USE_USART0)&&!defined(USE_USART1)&&!defined(USE_USART2)&&defined(USE_USART3)
+	#undef USE_USART3
+	#define USE_USART0
+	
+	#define RX0_INTERRUPT		RX3_INTERRUPT
+	#define TXC0_INTERRUPT		TXC3_INTERRUPT
+	#define UDRE0_INTERRUPT		UDRE3_INTERRUPT
+	#define UDR0_REGISTER		UDR3_REGISTER
+	#define UBRR0L_REGISTER		UBRR3L_REGISTER
+	#define UBRR0H_REGISTER		UBRR3H_REGISTER
+	#define UCSR0A_REGISTER		UCSR3A_REGISTER
+	#define UCSR0B_REGISTER		UCSR3B_REGISTER
+	#define UCSR0C_REGISTER		UCSR3C_REGISTER
+	#define TXCIE0_BIT      	TXCIE3_BIT
+	#define UDRIE0_BIT    		UDRIE3_BIT
+	#define RXCIE0_BIT  		RXCIE3_BIT
+	#define TXEN0_BIT   		TXEN3_BIT
+	#define RXEN0_BIT   		RXEN3_BIT
+	#define UDRE0_BIT   		UDRE3_BIT
+	#define RXC0_BIT    		RXC3_BIT
+	#define U2X0_BIT    		U2X3_BIT
+	#define MPCM0_BIT           MPCM3_BIT
+	#define UCSZ02_BIT          UCSZ32_BIT
+	#define TXB80_BIT           TXB83_BIT
+#endif
+
 #if !defined(USE_USART0) && !defined(USE_USART1) && !defined(USE_USART2) && !defined(USE_USART3)
 	#error USART not available or unknown mcu
 #endif
@@ -1060,6 +1139,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #ifndef USE_USART3
 	#define NO_TX3_INTERRUPT
 	#define NO_RX3_INTERRUPT
+#endif
+
+#if (defined(USE_USART0)&&!defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3))
+	#ifdef NO_TX0_INTERRUPT
+		#define NO_USART_TX
+	#endif
+	
+	#ifdef NO_RX0_INTERRUPT
+		#define NO_USART_RX
+	#endif
 #endif
 
 #if defined(USART0_USE_SOFT_CTS)&&defined(USE_USART0)

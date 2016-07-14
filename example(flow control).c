@@ -3,7 +3,7 @@
 
 int main(void)
 {
-	// set highest posiible speed
+	// set highest possible speed
 	uart_init(0);
 	uart_set_U2X();
 

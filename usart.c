@@ -1176,7 +1176,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	
 	#endif
 		
 	#ifdef USART_NO_DIRTY_HACKS
@@ -1240,7 +1239,25 @@
 			return BUFFER_FULL;
 	#endif
 	
+	#ifdef USART_NO_DIRTY_HACKS
 		tx0_buffer[tmp_tx_last_byte] = data;
+	#else
+		asm volatile("\n\t"
+			"mov	r26, %[index]  \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(tx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
+			"st		X, %[dat] \n\t"
+			
+			: /* no outputs */
+			: /* input operands */
+			[dat] "r" (data),
+			[index] "r" (tmp_tx_last_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	#endif
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
@@ -2579,7 +2596,7 @@
 	int16_t uart_getData(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
-		uint8_t tmpdat;
+		uint8_t tmp;
 		
 		if(tmp_rx_first_byte == rx0_last_byte) 
 		{
@@ -2593,7 +2610,26 @@
 		}
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
-		tmpdat = rx0_buffer[tmp_rx_first_byte];
+	
+	#ifdef USART_NO_DIRTY_HACKS
+		tmp = rx0_buffer[tmp_rx_first_byte];
+	#else
+		asm volatile("\n\t"
+			"mov	r26, %[index] \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+			"ld 	%[temp], X \n\t"
+			
+			: /* output operands */
+			[temp] "=r" (tmp)
+			: /* input operands */
+			[index] "r" (tmp_rx_first_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	#endif
 		
 		rx0_first_byte = tmp_rx_first_byte;
 		
@@ -2607,7 +2643,7 @@
 				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
 	#endif
 		
-		return tmpdat;
+		return tmp;
 	}
 
 //******************************************************************
@@ -2624,7 +2660,26 @@
 		if(tmp_rx_first_byte == rx0_last_byte) return BUFFER_EMPTY; // result = 0
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+
+	#ifdef USART_NO_DIRTY_HACKS
 		*data = rx0_buffer[tmp_rx_first_byte];
+	#else
+		asm volatile("\n\t"
+			"mov	r26, %[index] \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+			"ld 	%[temp], X \n\t"
+			
+			: /* output operands */
+			[temp] "=r" (tmp)
+			: /* input operands */
+			[index] "r" (tmp_rx_first_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	#endif
 		
 		rx0_first_byte = tmp_rx_first_byte;
 		
