@@ -1299,9 +1299,9 @@
 		"load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_string_loop_%= \n\t"
+			"breq	skip_loop_%= \n\t"
 			"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	string_load_loop_%= \n\t"
+			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: /* no outputs */
