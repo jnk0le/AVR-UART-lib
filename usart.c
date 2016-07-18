@@ -62,7 +62,56 @@
 	extern char u_tmp_buff[];
 #endif
 
-#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
+#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3) // if only USART0 is available
+
+//******************************************************************
+//Function  : To reinitialize USART interface (runtime speed changing).
+//Arguments : Calculated UBBR value to initialize equal speed.
+//Return    : none
+//Note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
+//          : All data inside UDR shift register will be lost.
+//          : U2X bit is cleared if USARTn_U2X_SPEED is not set.
+//******************************************************************
+	void uart_reinit(uint16_t ubbr_value)
+	{
+		UCSR0B_REGISTER = 0; //flush all buffers
+	
+	#ifndef NO_USART_RX
+		rx0_first_byte = rx0_last_byte;
+	#endif
+	#ifndef NO_USART_TX
+		tx0_first_byte = tx0_last_byte;
+	#endif
+	
+	#ifdef USART0_RS485_MODE
+		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
+		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); //set low
+	#endif
+		
+		UBRR0L_REGISTER = (uint8_t) ubbr_value;
+		UBRR0H_REGISTER = (ubbr_value>>8);
+
+	#ifdef USART0_U2X_SPEED
+		#ifdef USART0_MPCM_MODE
+			UCSR0A_REGISTER = (1<<U2X0_BIT)|(1<<MPCM0_BIT);
+		#else
+			UCSR0A_REGISTER = (1<<U2X0_BIT); // enable double speed
+		#endif
+	#elif defined(USART0_MPCM_MODE)
+		
+		UCSR0A_REGISTER = (1<<MPCM0_BIT);
+	#endif
+	
+		UCSR0B_REGISTER = USART0_CONFIG_B;
+		// 8n1 is set by default, setting UCSRC is not needed
+		
+	#ifdef USART0_USE_SOFT_RTS
+		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+		___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+	#endif
+	}
+	
+#else // multiple USART mcu
 
 //******************************************************************
 //Function  : To reinitialize USART interface (runtime speed changing).
@@ -249,60 +298,483 @@
 		}
 	}
 
-#else // single USART mcu
-
-//******************************************************************
-//Function  : To reinitialize USART interface (runtime speed changing).
-//Arguments : Calculated UBBR value to initialize equal speed.
-//Return    : none
-//Note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
-//          : All data inside UDR shift register will be lost.
-//          : U2X bit is cleared if USARTn_U2X_SPEED is not set.
-//******************************************************************
-	void uart_reinit(uint16_t ubbr_value)
-	{
-		UCSR0B_REGISTER = 0; //flush all buffers
-	
-	#ifndef NO_USART_RX
-		rx0_first_byte = rx0_last_byte;
-	#endif
-	#ifndef NO_USART_TX
-		tx0_first_byte = tx0_last_byte;
-	#endif
-	
-	#ifdef USART0_RS485_MODE
-		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
-		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); //set low
-	#endif
-		
-		UBRR0L_REGISTER = (uint8_t) ubbr_value;
-		UBRR0H_REGISTER = (ubbr_value>>8);
-
-	#ifdef USART0_U2X_SPEED
-		#ifdef USART0_MPCM_MODE
-			UCSR0A_REGISTER = (1<<U2X0_BIT)|(1<<MPCM0_BIT);
-		#else
-			UCSR0A_REGISTER = (1<<U2X0_BIT); // enable double speed
-		#endif
-	#elif defined(USART0_MPCM_MODE)
-		
-		UCSR0A_REGISTER = (1<<MPCM0_BIT);
-	#endif
-	
-		UCSR0B_REGISTER = USART0_CONFIG_B;
-		// 8n1 is set by default, setting UCSRC is not needed
-		
-	#ifdef USART0_USE_SOFT_RTS
-		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
-		___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
-	#endif
-	}
-	
 #endif // single/multi USART
 
 #ifndef NO_USART_TX
 	
-#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
+#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3) // if only USART0 is available
+
+//******************************************************************
+//Function  : Send single character/byte.
+//Arguments : Character/byte to send.
+//Return    : none
+//******************************************************************
+	void uart_putc(char data)
+	{
+	#ifdef PUTC_CONVERT_LF_TO_CRLF
+		if (data == '\n')
+			uart_putc('\r');
+	#endif
+		
+	#ifdef USART0_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx0_last_byte;
+		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		
+	#ifdef USART0_USE_SOFT_CTS
+		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		{
+			UDR0_REGISTER = data;
+			return;
+		}
+		
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+		
+		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		{
+			tmp_tx_first_byte = tx0_first_byte; // for faster pass through, results in a little bigger code
+		}
+	#else
+		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		
+		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+	#endif
+		
+	#ifdef USART_NO_DIRTY_HACKS
+		tx0_buffer[tmp_tx_last_byte] = data;
+	#else
+		asm volatile("\n\t"
+			"mov	r26, %[index]  \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(tx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
+			"st		X, %[dat] \n\t"
+			
+			: /* no outputs */
+			: /* input operands */
+			[dat] "r" (data),
+			[index] "r" (tmp_tx_last_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	#endif
+		
+	#ifdef USART_NO_DIRTY_HACKS
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+	#else
+		cli();
+	#endif
+		{
+			tx0_last_byte = tmp_tx_last_byte;
+		
+		#ifdef USART0_RS485_MODE
+			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
+		#endif
+		
+		#ifdef USART0_USE_SOFT_CTS
+			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+		#endif
+			{
+				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+			}
+		}
+	
+	#ifndef USART_NO_DIRTY_HACKS
+		reti();
+	#endif
+		
+		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
+	}
+	
+	char _uart_putc(char data) __attribute__ ((alias ("uart_putc"))); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+	
+//******************************************************************
+//Function  : Send single character/byte.
+//Arguments : Character/byte to send.
+//Return    : Status value: 0 = BUFFER_FULL, 1 = COMPLETED.
+//Note      : If character cannot be sent due to full transmit buffer, function will abort transmitting character
+//******************************************************************
+	uint8_t uart_putc_noblock(char data)
+	{
+	#ifdef USART0_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx0_last_byte;
+		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		
+	#ifdef USART0_USE_SOFT_CTS
+		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		{
+			UDR0_REGISTER = data;
+			return COMPLETED;
+		}
+		
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+		
+		if(tmp_tx_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#else
+		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		
+		if(tx0_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#endif
+	
+	#ifdef USART_NO_DIRTY_HACKS
+		tx0_buffer[tmp_tx_last_byte] = data;
+	#else
+		asm volatile("\n\t"
+			"mov	r26, %[index]  \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(tx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
+			"st		X, %[dat] \n\t"
+			
+			: /* no outputs */
+			: /* input operands */
+			[dat] "r" (data),
+			[index] "r" (tmp_tx_last_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	#endif
+		
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		{
+			tx0_last_byte = tmp_tx_last_byte;
+			
+		#ifdef USART0_RS485_MODE
+			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
+		#endif
+			
+		#ifdef USART0_USE_SOFT_CTS
+			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+		#endif
+			{
+				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+			}
+		}
+		return COMPLETED;
+	}
+
+//******************************************************************
+//Function  : Send string array.
+//Arguments : Pointer to string array terminated by NULL.
+//Return    : none
+//******************************************************************
+	void uart_putstr(char *string)
+	{
+	#ifdef USART_NO_DIRTY_HACKS
+		while(*string)
+			uart_putc(*string++);
+	#else 
+		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
+			"movw	r30, r24 \n\t" // buff pointer
+		#endif
+		"load_loop_%=:"
+			"ld 	r24, Z+ \n\t"
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	skip_loop_%= \n\t"
+			"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp	load_loop_%= \n\t"
+		"skip_loop_%=:"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+	
+	#endif
+	}
+
+//******************************************************************
+//Function  : Send string not terminated by NULL or part of the string array.
+//Arguments : 1. Pointer to string array.
+//          : 2. Number of characters/bytes to send.
+//Return    :    none
+//******************************************************************
+	void uart_putstrl(char *string, uint8_t BytesToWrite)
+	{
+	#ifdef USART_NO_DIRTY_HACKS
+		while(BytesToWrite--)
+			uart_putc(*string++);
+	#else
+		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
+			"movw	r30, r24 \n\t" // buff pointer
+		#endif
+			"mov	r0, r22 \n\t" 
+			"add	r0, r24 \n\t"
+		"load_loop_%=:"
+			"cp	r0, r30\n\t"
+			"breq	skip_loop_%= \n\t"
+			"ld 	r24, Z+ \n\t"
+			"rcall	uart_putc \n\t" // r0 and Z pointer will not be affected in uart_putc()
+			"rjmp	load_loop_%= \n\t"
+		"skip_loop_%=:"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function */
+			  
+		);
+		
+	#endif
+	}
+
+//******************************************************************
+//Function  : Send string from flash memory.
+//Arguments : Pointer to string placed in flash memory.
+//Return    : none
+//******************************************************************
+	void uart_puts_p(const char *string)
+	{
+	#ifndef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+		#ifdef USART_NO_DIRTY_HACKS
+			register char c;
+			while ( (c = pgm_read_byte(string++)) ) uart_putc(c);
+		#else
+			asm volatile("\n\t"
+				"movw	r30, r24 \n\t" // buff pointer
+			"load_loop_%=:"
+				"lpm 	r24, Z+ \n\t"
+				"and	r24, r24 \n\t" // test for NULL
+				"breq	skip_loop_%= \n\t"
+				"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
+				"rjmp	load_loop_%= \n\t"
+			"skip_loop_%=:"
+		
+				: /* no outputs */
+				: /* no inputs */
+				: /* no clobbers - this is the whole function*/
+			);
+		#endif
+	#endif
+	}
+
+//******************************************************************
+//Function  : Send integer formated into ASCI string (base 10).
+//Arguments : int16_t data value.
+//Return    : none
+//******************************************************************
+	void uart_putint(int16_t data)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+	
+		itoa(data, u_tmp_buff, 10);
+		uart_putstr(u_tmp_buff);
+	}
+	
+//******************************************************************
+//Function  : Send integer formated into ASCI string.
+//Arguments : 1. uint16_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
+//Return    :    none
+//******************************************************************
+	void uart_putintr(int16_t data, uint8_t radix)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+		
+		itoa(data, u_tmp_buff, radix);
+		uart_putstr(u_tmp_buff);
+	}
+	
+//******************************************************************
+//Function  : Send unsigned integer formated into ASCI string (base 10).
+//Arguments : uint16_t data value.
+//Return    : none
+//******************************************************************
+	void uart_putuint(uint16_t data)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+	
+		utoa(data, u_tmp_buff, 10);
+		uart_putstr(u_tmp_buff);
+	}
+	
+//******************************************************************
+//Function  : Send unsigned integer formated into ASCI string.
+//Arguments : 1. uint16_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
+//Return    :    none
+//******************************************************************
+	void uart_putuintr(uint16_t data, uint8_t radix)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+		utoa(data, u_tmp_buff, radix);
+		uart_putstr(u_tmp_buff);
+	}
+
+//******************************************************************
+//Function  : Send unsigned integer formated into ASCI string (base 16)
+//Arguments : uint16_t data value.
+//Return    : none
+//******************************************************************
+	void uart_puthex(uint8_t data)
+	{
+		uint8_t tmp; 
+		
+		tmp = (data >> 4) & 0x0f;
+		uart_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+		
+		tmp = data & 0x0f;
+		uart_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	}
+
+//******************************************************************
+//Function  : Send long integer formated into ASCI string (base 10).
+//Arguments : int32_t data value.
+//Return    : none
+//******************************************************************
+	void uart_putlong(int32_t data)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
+		
+		ltoa(data, u_tmp_buff, 10);
+		uart_putstr(u_tmp_buff);
+	}
+	
+//******************************************************************
+//Function  : Send long integer formated into ASCI string.
+//Arguments : 1. int32_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
+//Return    :    none
+//******************************************************************
+	void uart_putlongr(int32_t data, uint8_t radix)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+		
+		ltoa(data, u_tmp_buff, radix);
+		uart_putstr(u_tmp_buff);
+	}
+	
+//******************************************************************
+//Function  : Send unsigned long integer formated into ASCI string (base 10).
+//Arguments : uint32_t data value.
+//Return    : none
+//******************************************************************
+	void uart_putulong(uint32_t data)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
+		
+		ultoa(data, u_tmp_buff, 10);
+		uart_putstr(u_tmp_buff);
+	}
+	
+//******************************************************************
+//Function  : Send unsigned long integer formated into ASCI string.
+//Arguments : 1. uint32_t data value.
+//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
+//Return    :    none
+//******************************************************************
+	void uart_putulongr(uint32_t data, uint8_t radix)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
+	#endif
+		
+		ultoa(data, u_tmp_buff, radix);
+		uart_putstr(u_tmp_buff);
+	}
+
+//******************************************************************
+//Function  : Send floating point value formated into ASCI string.
+//Arguments : float data value.
+//Return    : none
+//******************************************************************
+	void uart_putfloat(float data)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[16];
+	#endif
+		
+		dtostrf(data, 15, 6, u_tmp_buff);
+		
+		char *p = u_tmp_buff;
+		while(*p == ' ') // remove all unwanted spaces
+			p++;
+		
+		uart_putstr(p);
+	}
+
+//******************************************************************
+//Function  : Send floating point integer formated into ASCI string.
+//Arguments : 1. Float data value.
+//          : 2. Number of displayed digits after the dot.
+//Return    :    none
+//******************************************************************
+	void uart_fputfloat(float data, uint8_t precision)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[16];
+	#endif
+		
+		dtostrf(data, 15, precision, u_tmp_buff);
+		
+		char *p = u_tmp_buff;
+		while(*p == ' ') // remove all unwanted spaces
+			p++;
+		
+		uart_putstr(p);
+	}
+	
+//******************************************************************
+//Function  : Wait until all data in TX buffer are flushed.
+//Arguments : none
+//Return    : none
+//******************************************************************	
+	void uart_flush(void)
+	{
+	#ifdef USART0_RS485_MODE // flush UDR buffer
+		while (___PORT(RS485_CONTROL0_IOPORTNAME) & (1<<RS485_CONTROL0_PIN));
+	#else	
+		while(tx0_first_byte != tx0_last_byte); // just flush the buffer 
+	#endif
+	}
+
+//******************************************************************
+//Function  : Transmit address of selected slave in MPCM mode.
+//Arguments : Address of selected slave.
+//Return    : none
+//******************************************************************
+#ifdef USART0_MPCM_MODE
+	void uart_mpcm_transmit_addres_Frame(uint8_t dat)
+	{
+		while(tx0_first_byte != tx0_last_byte);
+		UCSR0B_REGISTER |= (1<<TXB80_BIT);
+		uart_putc(dat);
+		while(tx0_first_byte != tx0_last_byte);
+		UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
+	}
+#endif // mpcm
+
+#else // multiple USART mcu
 
 //******************************************************************
 //Function  : Send single character/byte.
@@ -1053,14 +1525,14 @@
 		}
 	}
 	
-#if defined(USART0_MPCM_MODE)||defined(USART1_MPCM_MODE)||defined(USART2_MPCM_MODE)||defined(USART3_MPCM_MODE)
-
 //******************************************************************
 //Function  : Transmit address of selected slave in MPCM mode.
 //Arguments : 1. Id of selected USART interface.
 //          : 2. Address of selected slave.
 //Return    : none
 //******************************************************************
+#if defined(USART0_MPCM_MODE)||defined(USART1_MPCM_MODE)||defined(USART2_MPCM_MODE)||defined(USART3_MPCM_MODE)
+	
 	void uart_mpcm_transmit_addres_Frame(uint8_t usartct, uint8_t dat)
 	{
 		switch(usartct)
@@ -1116,490 +1588,510 @@
 		#endif // mpcm3
 		}
 	}
-
 #endif // mpcm
 	
-#else // single USART mcu
-
-//******************************************************************
-//Function  : Send single character/byte.
-//Arguments : Character/byte to send.
-//Return    : none
-//******************************************************************
-	void uart_putc(char data)
-	{
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
-		if (data == '\n')
-			uart_putc('\r');
-	#endif
-		
-	#ifdef USART0_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx0_last_byte;
-		register uint8_t tmp_tx_first_byte = tx0_first_byte;
-		
-	#ifdef USART0_USE_SOFT_CTS
-		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
-	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
-		{
-			UDR0_REGISTER = data;
-			return;
-		}
-		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
-		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
-		{
-			tmp_tx_first_byte = tx0_first_byte; // for faster pass through, results in a little bigger code
-		}
-	#else
-		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
-		
-		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-	#endif
-		
-	#ifdef USART_NO_DIRTY_HACKS
-		tx0_buffer[tmp_tx_last_byte] = data;
-	#else
-		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(tx0_buffer)) \n\t"
-			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
-			"st		X, %[dat] \n\t"
-			
-			: /* no outputs */
-			: /* input operands */
-			[dat] "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-			
-			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
-		);
-	#endif
-		
-	#ifdef USART_NO_DIRTY_HACKS
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-	#else
-		cli();
-	#endif
-		{
-			tx0_last_byte = tmp_tx_last_byte;
-		
-		#ifdef USART0_RS485_MODE
-			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
-		#endif
-		
-		#ifdef USART0_USE_SOFT_CTS
-			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
-		#endif
-			{
-				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
-			}
-		}
-	
-	#ifndef USART_NO_DIRTY_HACKS
-		reti();
-	#endif
-		
-		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
-	}
-	
-	char _uart_putc(char data) __attribute__ ((alias ("uart_putc"))); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
-	
-//******************************************************************
-//Function  : Send single character/byte.
-//Arguments : Character/byte to send.
-//Return    : Status value: 0 = BUFFER_FULL, 1 = COMPLETED.
-//Note      : If character cannot be sent due to full transmit buffer, function will abort transmitting character
-//******************************************************************
-	uint8_t uart_putc_noblock(char data)
-	{
-	#ifdef USART0_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx0_last_byte;
-		register uint8_t tmp_tx_first_byte = tx0_first_byte;
-		
-	#ifdef USART0_USE_SOFT_CTS
-		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
-	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
-		{
-			UDR0_REGISTER = data;
-			return COMPLETED;
-		}
-		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
-		
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
-			return BUFFER_FULL;
-	#else
-		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
-		
-		if(tx0_first_byte == tmp_tx_last_byte)
-			return BUFFER_FULL;
-	#endif
-	
-	#ifdef USART_NO_DIRTY_HACKS
-		tx0_buffer[tmp_tx_last_byte] = data;
-	#else
-		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(tx0_buffer)) \n\t"
-			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
-			"st		X, %[dat] \n\t"
-			
-			: /* no outputs */
-			: /* input operands */
-			[dat] "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-			
-			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
-		);
-	#endif
-		
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-		{
-			tx0_last_byte = tmp_tx_last_byte;
-			
-		#ifdef USART0_RS485_MODE
-			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
-		#endif
-			
-		#ifdef USART0_USE_SOFT_CTS
-			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
-		#endif
-			{
-				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
-			}
-		}
-		return COMPLETED;
-	}
-
-//******************************************************************
-//Function  : Send string array.
-//Arguments : Pointer to string array terminated by NULL.
-//Return    : none
-//******************************************************************
-	void uart_putstr(char *string)
-	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(*string)
-			uart_putc(*string++);
-	#else 
-		asm volatile("\n\t"
-		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
-		"load_loop_%=:"
-			"ld 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
-		"skip_loop_%=:"
-		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
-		);
-	
-	#endif
-	}
-
-//******************************************************************
-//Function  : Send string not terminated by NULL or part of the string array.
-//Arguments : 1. Pointer to string array.
-//          : 2. Number of characters/bytes to send.
-//Return    :    none
-//******************************************************************
-	void uart_putstrl(char *string, uint8_t BytesToWrite)
-	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(BytesToWrite--)
-			uart_putc(*string++);
-	#else
-		asm volatile("\n\t"
-		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
-			"mov	r0, r22 \n\t" 
-			"add	r0, r24 \n\t"
-		"load_loop_%=:"
-			"cp	r0, r30\n\t"
-			"breq	skip_loop_%= \n\t"
-			"ld 	r24, Z+ \n\t"
-			"rcall	uart_putc \n\t" // r0 and Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
-		"skip_loop_%=:"
-		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function */
-			  
-		);
-		
-	#endif
-	}
-
-//******************************************************************
-//Function  : Send string from flash memory.
-//Arguments : Pointer to string placed in flash memory.
-//Return    : none
-//******************************************************************
-	void uart_puts_p(const char *string)
-	{
-	#ifndef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
-		#ifdef USART_NO_DIRTY_HACKS
-			register char c;
-			while ( (c = pgm_read_byte(string++)) ) uart_putc(c);
-		#else
-			asm volatile("\n\t"
-				"movw	r30, r24 \n\t" // buff pointer
-			"load_loop_%=:"
-				"lpm 	r24, Z+ \n\t"
-				"and	r24, r24 \n\t" // test for NULL
-				"breq	skip_loop_%= \n\t"
-				"rcall	uart_putc \n\t" // Z pointer will not be affected in uart_putc()
-				"rjmp	load_loop_%= \n\t"
-			"skip_loop_%=:"
-		
-				: /* no outputs */
-				: /* no inputs */
-				: /* no clobbers - this is the whole function*/
-			);
-		#endif
-	#endif
-	}
-
-//******************************************************************
-//Function  : Send integer formated into ASCI string (base 10).
-//Arguments : int16_t data value.
-//Return    : none
-//******************************************************************
-	void uart_putint(int16_t data)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
-	#endif
-	
-		itoa(data, u_tmp_buff, 10);
-		uart_putstr(u_tmp_buff);
-	}
-	
-//******************************************************************
-//Function  : Send integer formated into ASCI string.
-//Arguments : 1. uint16_t data value.
-//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
-//Return    :    none
-//******************************************************************
-	void uart_putintr(int16_t data, uint8_t radix)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
-	#endif
-		
-		itoa(data, u_tmp_buff, radix);
-		uart_putstr(u_tmp_buff);
-	}
-	
-//******************************************************************
-//Function  : Send unsigned integer formated into ASCI string (base 10).
-//Arguments : uint16_t data value.
-//Return    : none
-//******************************************************************
-	void uart_putuint(uint16_t data)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
-	#endif
-	
-		utoa(data, u_tmp_buff, 10);
-		uart_putstr(u_tmp_buff);
-	}
-	
-//******************************************************************
-//Function  : Send unsigned integer formated into ASCI string.
-//Arguments : 1. uint16_t data value.
-//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
-//Return    :    none
-//******************************************************************
-	void uart_putuintr(uint16_t data, uint8_t radix)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
-	#endif
-		utoa(data, u_tmp_buff, radix);
-		uart_putstr(u_tmp_buff);
-	}
-
-//******************************************************************
-//Function  : Send unsigned integer formated into ASCI string (base 16)
-//Arguments : uint16_t data value.
-//Return    : none
-//******************************************************************
-	void uart_puthex(uint8_t data)
-	{
-		uint8_t tmp; 
-		
-		tmp = (data >> 4) & 0x0f;
-		uart_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
-		
-		tmp = data & 0x0f;
-		uart_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
-	}
-
-//******************************************************************
-//Function  : Send long integer formated into ASCI string (base 10).
-//Arguments : int32_t data value.
-//Return    : none
-//******************************************************************
-	void uart_putlong(int32_t data)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
-	#endif
-		
-		ltoa(data, u_tmp_buff, 10);
-		uart_putstr(u_tmp_buff);
-	}
-	
-//******************************************************************
-//Function  : Send long integer formated into ASCI string.
-//Arguments : 1. int32_t data value.
-//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
-//Return    :    none
-//******************************************************************
-	void uart_putlongr(int32_t data, uint8_t radix)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
-	#endif
-		
-		ltoa(data, u_tmp_buff, radix);
-		uart_putstr(u_tmp_buff);
-	}
-	
-//******************************************************************
-//Function  : Send unsigned long integer formated into ASCI string (base 10).
-//Arguments : uint32_t data value.
-//Return    : none
-//******************************************************************
-	void uart_putulong(uint32_t data)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
-	#endif
-		
-		ultoa(data, u_tmp_buff, 10);
-		uart_putstr(u_tmp_buff);
-	}
-	
-//******************************************************************
-//Function  : Send unsigned long integer formated into ASCI string.
-//Arguments : 1. uint32_t data value.
-//          : 2. Base value (DEC, HEX, OCT, BIN, etc.).
-//Return    :    none
-//******************************************************************
-	void uart_putulongr(uint32_t data, uint8_t radix)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[17]; // heading, 15 digit bytes, NULL
-	#endif
-		
-		ultoa(data, u_tmp_buff, radix);
-		uart_putstr(u_tmp_buff);
-	}
-
-//******************************************************************
-//Function  : Send floating point value formated into ASCI string.
-//Arguments : float data value.
-//Return    : none
-//******************************************************************
-	void uart_putfloat(float data)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[16];
-	#endif
-		
-		dtostrf(data, 15, 6, u_tmp_buff);
-		
-		char *p = u_tmp_buff;
-		while(*p == ' ') // remove all unwanted spaces
-			p++;
-		
-		uart_putstr(p);
-	}
-
-//******************************************************************
-//Function  : Send floating point integer formated into ASCI string.
-//Arguments : 1. Float data value.
-//          : 2. Number of displayed digits after the dot.
-//Return    :    none
-//******************************************************************
-	void uart_fputfloat(float data, uint8_t precision)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[16];
-	#endif
-		
-		dtostrf(data, 15, precision, u_tmp_buff);
-		
-		char *p = u_tmp_buff;
-		while(*p == ' ') // remove all unwanted spaces
-			p++;
-		
-		uart_putstr(p);
-	}
-	
-//******************************************************************
-//Function  : Wait until all data in TX buffer are flushed.
-//Arguments : none
-//Return    : none
-//******************************************************************	
-	void uart_flush(void)
-	{
-	#ifdef USART0_RS485_MODE // flush UDR buffer
-		while (___PORT(RS485_CONTROL0_IOPORTNAME) & (1<<RS485_CONTROL0_PIN));
-	#else	
-		while(tx0_first_byte != tx0_last_byte); // just flush the buffer 
-	#endif
-	}
-
-#ifdef USART0_MPCM_MODE
-
-//******************************************************************
-//Function  : Transmit address of selected slave in MPCM mode.
-//Arguments : Address of selected slave.
-//Return    : none
-//******************************************************************
-	void uart_mpcm_transmit_addres_Frame(uint8_t dat)
-	{
-		while(tx0_first_byte != tx0_last_byte);
-		UCSR0B_REGISTER |= (1<<TXB80_BIT);
-		uart_putc(dat);
-		while(tx0_first_byte != tx0_last_byte);
-		UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
-	}
-
-#endif // mpcm
-
 #endif // single/multi USART
 
 #endif // NO_USART_TX
 
 #ifndef NO_USART_RX
 
-#if defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3)
+#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3) // if only USART0 is available
+
+//******************************************************************
+//Function  : To receive single character/byte.
+//Arguments : none
+//Return    : Received character or NULL if buffer is empty.
+//******************************************************************
+	char uart_getc(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		char tmp;
+		
+		if(tmp_rx_first_byte == rx0_last_byte) return 0;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+	
+	#ifdef USART_NO_DIRTY_HACKS
+		tmp = rx0_buffer[tmp_rx_first_byte];
+	#else
+		asm volatile("\n\t"
+			"mov	r26, %[index] \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+			"ld 	%[temp], X \n\t"
+			
+			: /* output operands */
+			[temp] "=r" (tmp)
+			: /* input operands */
+			[index] "r" (tmp_rx_first_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	#endif
+	
+		rx0_first_byte = tmp_rx_first_byte;
+	
+	#ifdef USART0_EXTEND_RX_BUFFER
+		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
+	#endif
+	
+	#ifdef USART0_USE_SOFT_RTS
+		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS signal)		
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+	#endif
+	
+	#ifdef RX0_GETC_ECHO
+		
+		#ifdef RX_NEWLINE_MODE_N
+			if(tmp == '\n')
+				tmp = _uart_putc('\r');
+		#endif
+		
+		tmp = _uart_putc(tmp);
+		
+		#ifdef RX_NEWLINE_MODE_R
+			if(tmp == '\r') 
+				tmp = _uart_putc('\n');
+		#endif
+
+	#endif // RX0_GETC_ECHO
+		
+		return tmp;
+	}
+
+
+//******************************************************************
+//Function  : Reads string from receiver buffer.
+//Arguments : Pointer to array to fill with received string.
+//Return    : none
+//Note      : Received string will be terminated by NULL.
+//          : OBSOLETE - possibility of buffer overflows
+//******************************************************************
+//	void uart_getBuffer(char *buffer)
+//	{
+//		do *buffer = uart_getc();
+//		while(*buffer++);
+//	}
+	
+//******************************************************************
+//Function  : Reads string from receiver buffer
+//Arguments : 1. Pointer to array to fill with received string.
+//          : 2. Limit for receiving string size (array size)
+//Return    :    none
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//          : or at the end of the string if it's shorter than bufferlimit-1
+//			: terminators CR LF will not be cut
+//******************************************************************
+	void uart_gets(char *buffer, uint8_t bufferlimit)
+	{
+	#ifdef USART_NO_DIRTY_HACKS
+		while(--bufferlimit)
+		{
+			*buffer = uart_getc();
+			if(*buffer++ == 0)
+				break;
+		}
+		*buffer = 0;
+	#else
+		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
+			"movw	r30, r24 \n\t" // buff pointer
+		#endif
+			"mov	r0, r22 \n\t" // counter
+		
+		"loop_%=:"
+			"dec	r0 \n\t"
+			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"st 	Z+, r24 \n\t"
+			"cpse	r24, r1 \n\t"
+			"rjmp	loop_%= \n\t"
+		"store_NULL_%=:"
+			"st 	Z, r1 \n\t"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+		
+	#endif
+	}
+
+//******************************************************************
+//Function  : Reads one line from the receiver buffer. (waits for EOL terminator)
+//Arguments : 1. Pointer to array to fill with received string.
+//          : 2. Limit for receiving string size (array size)
+//Return    :    none
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//          : or at the end of the string if it's shorter than bufferlimit-1
+//          : CR and LF terminators will be cut. 
+//          : Function will return if bufferlimit is reached without waiting for newline terminator
+//******************************************************************
+	void uart_getln(char *buffer, uint8_t bufferlimit)
+	{
+	#ifdef USART_NO_DIRTY_HACKS
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart_getc()) );
+			#endif
+				break;
+			}
+			buffer++;
+		}
+		*buffer = 0;
+	#else
+		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
+			"movw	r30, r24 \n\t" // buff pointer
+		#endif
+			"mov	r0, r22 \n\t" // counter
+		"loop_%=:"
+			"dec	r0 \n\t"
+			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+		"wait_loop_%=:"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	wait_loop_%= \n\t"
+		#ifdef RX_NEWLINE_MODE_N
+			"cpi	r24, '\n' \n\t"
+		#else
+			"cpi	r24, '\r' \n\t"
+		#endif
+
+		#ifdef RX_NEWLINE_MODE_RN
+			"breq	wait_loop2_%= \n\t"
+		#else
+			"breq	store_NULL_%= \n\t"
+		#endif
+			
+			"st		Z+, r24 \n\t"
+			"rjmp	loop_%= \n\t"
+		
+		#ifdef RX_NEWLINE_MODE_RN
+		"wait_loop2_%=:"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"and	r24, r24 \n\t"
+			"breq	wait_loop2_%= \n\t"
+		#endif
+		
+		"store_NULL_%=:"
+			"st		Z, r1 \n\t"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+		 
+	#endif
+	}
+
+//******************************************************************
+//Function  : Reads burst of characters until first whitespace (waits for EOL terminator or first whitespace)
+//Arguments : 1. Pointer to array to fill with received string.
+//          : 2. Limit for receiving string size (array size)
+//Return    :    none
+//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
+//          : or at the end of the string if it's shorter than bufferlimit-1
+//          : CR and LF terminators will be cut.
+//          : Function will return if bufferlimit is reached without waiting for newline terminator
+//          : Function will cut all whitespaces before first nonspace character
+//******************************************************************
+	void uart_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
+	{
+	#ifdef USART_NO_DIRTY_HACKS
+		do{
+			*buffer = uart_getc();
+		}while(*buffer <= 32);
+		
+		buffer++;
+		bufferlimit--;
+		
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else //RX_NEWLINE_MODE_R
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart_getc()) );
+			#endif
+				break;
+			}
+			else if(*buffer <= 32)
+				break; // string reading is done, we will exit
+
+			buffer++;
+		}
+		*buffer = 0;
+	#else
+		asm volatile("\n\t"
+		
+		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+			"mov	r30, r24 \n\t"
+			"mov	r31, r25 \n\t"
+		#else
+			"movw	r30, r24 \n\t" // buff pointer
+		#endif
+			"mov	r0, r22 \n\t" // counter
+			
+		"skip_whitespaces_loop_%=:"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
+			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
+			"st		Z+, r24 \n\t"
+			"dec	r0 \n\t"
+		
+		"loop_%=:"	
+			"dec	r0 \n\t"
+			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+		"wait_loop_%=:"
+			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	wait_loop_%= \n\t"
+		
+		#ifdef RX_NEWLINE_MODE_N
+			"cpi	r24, '\n' \n\t"
+		#else
+			"cpi	r24, '\r' \n\t"
+		#endif
+		
+		#ifdef RX_NEWLINE_MODE_RN
+			"breq	exit_wait_loop_%= \n\t"
+		#else
+			"breq	load_NULL_%= \n\t"
+		#endif
+			
+			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
+			"brcs	store_NULL_%= \n\t" // whitespace means end of this function, quit loop
+			
+			"st		Z+, r24 \n\t"
+			"rjmp	loop_%=\n\t"
+			
+		#ifdef RX_NEWLINE_MODE_RN
+		"exit_wait_loop_%=:"
+			"rcall uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq exit_wait_loop_%= \n\t"
+		#endif
+		
+		"store_NULL_%=:"
+			"st		Z, r1 \n\t"
+		
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
+		
+	#endif
+	}
+
+//******************************************************************
+//Function  : To skip all incoming whitespace characters until first nonspace character.
+//Arguments : none
+//Return    : First received nonspace character.
+//Note      : First nonspace character is cut from receiver buffer.
+//******************************************************************
+	char uart_skipWhiteSpaces(void)
+	{
+		register char c;
+		
+		do{
+			c = uart_getc();
+		}while(c <= 32);
+		
+		return c;
+	}
+
+//******************************************************************
+//Function  : Read 16bit integer value from the input stream.
+//Arguments : none
+//Return    : Received 16bit integer value.
+//******************************************************************
+	int16_t uart_getint(void)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(u_tmp_buff, 7);
+		
+		return atoi(u_tmp_buff);
+	}
+
+//******************************************************************
+//Function  : Read 32bit integer value from the input stream.
+//Arguments : none
+//Return    : Received 32bit integer value
+//******************************************************************
+	int32_t uart_getlong(void)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(u_tmp_buff, 12);
+		
+		return atol(u_tmp_buff);
+	}
+
+//******************************************************************
+//Function  : Read floating point value from the input stream.
+//Arguments : none
+//Return    : Received float value.
+//******************************************************************
+	float uart_getfloat(void)
+	{
+	#ifndef USART_NO_LOCAL_BUFFERS
+		char u_tmp_buff[32];
+	#endif
+	
+		uart_getlnToFirstWhiteSpace(u_tmp_buff, 32);
+		
+		return atof(u_tmp_buff);
+	}
+
+//******************************************************************
+//Function  : To receive single byte in binary transmission.
+//Arguments : none
+//Return    : Signed 16 bit integer containing data in lower 8 bits 
+//Note      : This function doesn't cut CR, LF, NULL terminators
+//          : If receiver buffer is empty, return value is negative 
+//          : so only sign bit have to be checked (x < 0 // x >= 0)
+//******************************************************************
+	int16_t uart_getData(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		uint8_t tmp;
+		
+		if(tmp_rx_first_byte == rx0_last_byte) 
+		{
+		#ifndef USART_NO_DIRTY_HACKS
+			uint16_t tmp;
+			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
+			return tmp;
+		#else
+			return -1;
+		#endif
+		}
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+	
+	#ifdef USART_NO_DIRTY_HACKS
+		tmp = rx0_buffer[tmp_rx_first_byte];
+	#else
+		asm volatile("\n\t"
+			"mov	r26, %[index] \n\t"
+			"ldi	r27, 0x00 \n\t"
+			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+			"ld 	%[temp], X \n\t"
+			
+			: /* output operands */
+			[temp] "=r" (tmp)
+			: /* input operands */
+			[index] "r" (tmp_rx_first_byte)
+			
+			: /* clobbers */
+			"r26","r27"          //lock X pointer from the scope
+		);
+	#endif
+		
+		rx0_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART0_EXTEND_RX_BUFFER
+		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
+	#endif
+	
+	#ifdef USART0_USE_SOFT_RTS
+		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+	#endif
+		
+		return tmp;
+	}
+
+//******************************************************************
+//Function  : To receive single byte in binary transmission.
+//Arguments : Pointer to byte which have to be filed by incoming data.
+//Return    : Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
+//Note      : This function doesn't cut CR, LF, NULL terminators
+//          : If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
+//******************************************************************
+	uint8_t uart_LoadData(uint8_t *data)
+	{
+		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		
+		if(tmp_rx_first_byte == rx0_last_byte) return BUFFER_EMPTY; // result = 0
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		*data = rx0_buffer[tmp_rx_first_byte];
+		
+		rx0_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART0_EXTEND_RX_BUFFER
+		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
+	#endif
+	
+	#ifdef USART0_USE_SOFT_RTS
+		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))	
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+	#endif
+		
+		return COMPLETED; // result = 1
+	}
+
+//******************************************************************
+//Function  : To check how many bytes are waiting in the receiver buffer.
+//Arguments : none
+//Return    : Number of bytes waiting in receiver buffer.
+//******************************************************************
+	uint8_t uart_AvailableBytes(void)
+	{
+		return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
+	}
+	
+//******************************************************************
+//Function  : Peek at the next byte in buffer.
+//Arguments : none
+//Return    : Next byte in buffer.
+//******************************************************************
+	uint8_t uart_peek(void)
+	{
+		return rx0_buffer[(rx0_first_byte+1) & RX0_BUFFER_MASK];
+	}
+
+#else // multiple USART mcu
 
 //******************************************************************
 //Function  : To receive single character/byte.
@@ -2202,501 +2694,6 @@
 		}
 	}
 
-#else // single USART mcu
-
-//******************************************************************
-//Function  : To receive single character/byte.
-//Arguments : none
-//Return    : Received character or NULL if buffer is empty.
-//******************************************************************
-	char uart_getc(void)
-	{
-		register uint8_t tmp_rx_first_byte = rx0_first_byte;
-		char tmp;
-		
-		if(tmp_rx_first_byte == rx0_last_byte) return 0;
-		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
-	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx0_buffer[tmp_rx_first_byte];
-	#else
-		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx0_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
-			
-			: /* output operands */
-			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
-			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
-		);
-	#endif
-	
-		rx0_first_byte = tmp_rx_first_byte;
-	
-	#ifdef USART0_EXTEND_RX_BUFFER
-		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
-	#endif
-	
-	#ifdef USART0_USE_SOFT_RTS
-		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
-			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS signal)		
-				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
-	#endif
-	
-	#ifdef RX0_GETC_ECHO
-		
-		#ifdef RX_NEWLINE_MODE_N
-			if(tmp == '\n')
-				tmp = _uart_putc('\r');
-		#endif
-		
-		tmp = _uart_putc(tmp);
-		
-		#ifdef RX_NEWLINE_MODE_R
-			if(tmp == '\r') 
-				tmp = _uart_putc('\n');
-		#endif
-
-	#endif // RX0_GETC_ECHO
-		
-		return tmp;
-	}
-
-
-//******************************************************************
-//Function  : Reads string from receiver buffer.
-//Arguments : Pointer to array to fill with received string.
-//Return    : none
-//Note      : Received string will be terminated by NULL.
-//          : OBSOLETE - possibility of buffer overflows
-//******************************************************************
-//	void uart_getBuffer(char *buffer)
-//	{
-//		do *buffer = uart_getc();
-//		while(*buffer++);
-//	}
-	
-//******************************************************************
-//Function  : Reads string from receiver buffer
-//Arguments : 1. Pointer to array to fill with received string.
-//          : 2. Limit for receiving string size (array size)
-//Return    :    none
-//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
-//          : or at the end of the string if it's shorter than bufferlimit-1
-//			: terminators CR LF will not be cut
-//******************************************************************
-	void uart_gets(char *buffer, uint8_t bufferlimit)
-	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			*buffer = uart_getc();
-			if(*buffer++ == 0)
-				break;
-		}
-		*buffer = 0;
-	#else
-		asm volatile("\n\t"
-		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
-			"mov	r0, r22 \n\t" // counter
-		
-		"loop_%=:"
-			"dec	r0 \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"st 	Z+, r24 \n\t"
-			"cpse	r24, r1 \n\t"
-			"rjmp	loop_%= \n\t"
-		"store_NULL_%=:"
-			"st 	Z, r1 \n\t"
-		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
-		);
-		
-	#endif
-	}
-
-//******************************************************************
-//Function  : Reads one line from the receiver buffer. (waits for EOL terminator)
-//Arguments : 1. Pointer to array to fill with received string.
-//          : 2. Limit for receiving string size (array size)
-//Return    :    none
-//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
-//          : or at the end of the string if it's shorter than bufferlimit-1
-//          : CR and LF terminators will be cut. 
-//          : Function will return if bufferlimit is reached without waiting for newline terminator
-//******************************************************************
-	void uart_getln(char *buffer, uint8_t bufferlimit)
-	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart_getc()) );
-			#endif
-				break;
-			}
-			buffer++;
-		}
-		*buffer = 0;
-	#else
-		asm volatile("\n\t"
-		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
-			"mov	r0, r22 \n\t" // counter
-		"loop_%=:"
-			"dec	r0 \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-		"wait_loop_%=:"
-			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
-		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
-		#else
-			"cpi	r24, '\r' \n\t"
-		#endif
-
-		#ifdef RX_NEWLINE_MODE_RN
-			"breq	wait_loop2_%= \n\t"
-		#else
-			"breq	store_NULL_%= \n\t"
-		#endif
-			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%= \n\t"
-		
-		#ifdef RX_NEWLINE_MODE_RN
-		"wait_loop2_%=:"
-			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t"
-			"breq	wait_loop2_%= \n\t"
-		#endif
-		
-		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
-		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
-		);
-		 
-	#endif
-	}
-
-//******************************************************************
-//Function  : Reads burst of characters until first whitespace (waits for EOL terminator or first whitespace)
-//Arguments : 1. Pointer to array to fill with received string.
-//          : 2. Limit for receiving string size (array size)
-//Return    :    none
-//Note      : Received string will be terminated by NULL positioned at bufferlimit-1
-//          : or at the end of the string if it's shorter than bufferlimit-1
-//          : CR and LF terminators will be cut.
-//          : Function will return if bufferlimit is reached without waiting for newline terminator
-//          : Function will cut all whitespaces before first nonspace character
-//******************************************************************
-	void uart_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
-	{
-	#ifdef USART_NO_DIRTY_HACKS
-		do{
-			*buffer = uart_getc();
-		}while(*buffer <= 32);
-		
-		buffer++;
-		bufferlimit--;
-		
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else //RX_NEWLINE_MODE_R
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart_getc()) );
-			#endif
-				break;
-			}
-			else if(*buffer <= 32)
-				break; // string reading is done, we will exit
-
-			buffer++;
-		}
-		*buffer = 0;
-	#else
-		asm volatile("\n\t"
-		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
-			"mov	r0, r22 \n\t" // counter
-			
-		"skip_whitespaces_loop_%=:"
-			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
-			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
-			"st		Z+, r24 \n\t"
-			"dec	r0 \n\t"
-		
-		"loop_%=:"	
-			"dec	r0 \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-		"wait_loop_%=:"
-			"rcall	uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
-		
-		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
-		#else
-			"cpi	r24, '\r' \n\t"
-		#endif
-		
-		#ifdef RX_NEWLINE_MODE_RN
-			"breq	exit_wait_loop_%= \n\t"
-		#else
-			"breq	load_NULL_%= \n\t"
-		#endif
-			
-			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
-			"brcs	store_NULL_%= \n\t" // whitespace means end of this function, quit loop
-			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%=\n\t"
-			
-		#ifdef RX_NEWLINE_MODE_RN
-		"exit_wait_loop_%=:"
-			"rcall uart_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"and r24, r24 \n\t" // test for NULL
-			"breq exit_wait_loop_%= \n\t"
-		#endif
-		
-		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
-		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
-		);
-		
-	#endif
-	}
-
-//******************************************************************
-//Function  : To skip all incoming whitespace characters until first nonspace character.
-//Arguments : none
-//Return    : First received nonspace character.
-//Note      : First nonspace character is cut from receiver buffer.
-//******************************************************************
-	char uart_skipWhiteSpaces(void)
-	{
-		register char c;
-		
-		do{
-			c = uart_getc();
-		}while(c <= 32);
-		
-		return c;
-	}
-
-//******************************************************************
-//Function  : Read 16bit integer value from the input stream.
-//Arguments : none
-//Return    : Received 16bit integer value.
-//******************************************************************
-	int16_t uart_getint(void)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[7]; // heading, 5 digit bytes, NULL
-	#endif
-	
-		uart_getlnToFirstWhiteSpace(u_tmp_buff, 7);
-		
-		return atoi(u_tmp_buff);
-	}
-
-//******************************************************************
-//Function  : Read 32bit integer value from the input stream.
-//Arguments : none
-//Return    : Received 32bit integer value
-//******************************************************************
-	int32_t uart_getlong(void)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[12]; // heading, 10 digit bytes, NULL
-	#endif
-	
-		uart_getlnToFirstWhiteSpace(u_tmp_buff, 12);
-		
-		return atol(u_tmp_buff);
-	}
-
-//******************************************************************
-//Function  : Read floating point value from the input stream.
-//Arguments : none
-//Return    : Received float value.
-//******************************************************************
-	float uart_getfloat(void)
-	{
-	#ifndef USART_NO_LOCAL_BUFFERS
-		char u_tmp_buff[32];
-	#endif
-	
-		uart_getlnToFirstWhiteSpace(u_tmp_buff, 32);
-		
-		return atof(u_tmp_buff);
-	}
-
-//******************************************************************
-//Function  : To receive single byte in binary transmission.
-//Arguments : none
-//Return    : Signed 16 bit integer containing data in lower 8 bits 
-//Note      : This function doesn't cut CR, LF, NULL terminators
-//          : If receiver buffer is empty, return value is negative 
-//          : so only sign bit have to be checked (x < 0 // x >= 0)
-//******************************************************************
-	int16_t uart_getData(void)
-	{
-		register uint8_t tmp_rx_first_byte = rx0_first_byte;
-		uint8_t tmp;
-		
-		if(tmp_rx_first_byte == rx0_last_byte) 
-		{
-		#ifndef USART_NO_DIRTY_HACKS
-			uint16_t tmp;
-			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
-			return tmp;
-		#else
-			return -1;
-		#endif
-		}
-		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
-	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx0_buffer[tmp_rx_first_byte];
-	#else
-		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx0_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
-			
-			: /* output operands */
-			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
-			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
-		);
-	#endif
-		
-		rx0_first_byte = tmp_rx_first_byte;
-		
-	#ifdef USART0_EXTEND_RX_BUFFER
-		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
-	#endif
-	
-	#ifdef USART0_USE_SOFT_RTS
-		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
-			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
-				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
-	#endif
-		
-		return tmp;
-	}
-
-//******************************************************************
-//Function  : To receive single byte in binary transmission.
-//Arguments : Pointer to byte which have to be filed by incoming data.
-//Return    : Status value: 0 = BUFFER_EMPTY, 1 = COMPLETED.
-//Note      : This function doesn't cut CR, LF, NULL terminators
-//          : If receiver buffer is empty return status = BUFFER_EMPTY instead of returning NULL (as in getc).
-//******************************************************************
-	uint8_t uart_LoadData(uint8_t *data)
-	{
-		register uint8_t tmp_rx_first_byte = rx0_first_byte;
-		
-		if(tmp_rx_first_byte == rx0_last_byte) return BUFFER_EMPTY; // result = 0
-		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
-		*data = rx0_buffer[tmp_rx_first_byte];
-		
-		rx0_first_byte = tmp_rx_first_byte;
-		
-	#ifdef USART0_EXTEND_RX_BUFFER
-		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
-	#endif
-	
-	#ifdef USART0_USE_SOFT_RTS
-		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
-			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))	
-				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
-	#endif
-		
-		return COMPLETED; // result = 1
-	}
-
-//******************************************************************
-//Function  : To check how many bytes are waiting in the receiver buffer.
-//Arguments : none
-//Return    : Number of bytes waiting in receiver buffer.
-//******************************************************************
-	uint8_t uart_AvailableBytes(void)
-	{
-		return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
-	}
-	
-//******************************************************************
-//Function  : Peek at the next byte in buffer.
-//Arguments : none
-//Return    : Next byte in buffer.
-//******************************************************************
-	uint8_t uart_peek(void)
-	{
-		return rx0_buffer[(rx0_first_byte+1) & RX0_BUFFER_MASK];
-	}
-
 #endif // single/multi USART
 
 #endif // NO_USART_RX
@@ -2945,6 +2942,8 @@
 			"sts   %M[UDR_reg], r30 \n\t"            /* 2 */
 		#endif
 			
+			//" \n\t" // inline asm code executed on every byte transmission, can be palced here // r30 and r31 are free to use // r30 contains currently transmitted data byte
+			
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"                               /* 1 */
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
@@ -2963,9 +2962,7 @@
 		#endif
 			
 		"USART0_TX_EXIT: "
-		//#ifdef USART_UNSAFE_TX_INTERRUPT
-		//	"cli \n\t"                               /* 1 */
-		//#endif
+			//" \n\t" // inline asm code executed on every ISR call, can be palced here // r30 and r31 are free to use // r30 contains currently transmitted data byte (might not in unsafe mode)
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
 		
@@ -3102,6 +3099,8 @@
 			"sbci  r31, hi8(-(rx0_buffer))\n\t"      /* 1 */
 			"st    Z, r25 \n\t"                      /* 2 */
 		
+			//" \n\t" // inline asm code executed only when databyte was received, can be palced here // r25,r30,r31 are free to use // r25 contains received data byte 
+			
 		"USART0_RX_EXIT: "
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			"cli \n\t"                               /* 1 */
@@ -3121,6 +3120,7 @@
 			
 		"USART0_RX_EXIT_SKIP: "
 		#endif
+			//" \n\t" // inline asm code executed on every ISR call, can be palced here // r25,r30,r31 are free to use // r25 contains received data byte (might not in 'extended buffer' mode)
 			"pop   r31 \n\t"                         /* 2 */
 			"pop   r30 \n\t"                         /* 2 */
 			"pop   r25 \n\t"                         /* 2 */
