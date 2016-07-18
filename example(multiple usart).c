@@ -27,7 +27,7 @@ void main(void)
 	printf("hello from printf\n");
 	
 	char buffer[25];
-	uart_gets(1, buffer, 25) // read at most 24 bytes from buffer (CR,LF will not be cut)
+	uart_gets(1, buffer, 25); // read at most 24 bytes from buffer (CR,LF will not be cut)
 	
 	int a;
 	
