@@ -7,7 +7,7 @@ buffers for receive/transmit. Designed to be easy to use, with zero overhead fro
 - intuitive frame format settings
 - support for up to 4 USART's
 - extremly light interrupts 
-- software and hardware flow control
+- software and hardware flow control (DCE naming)
 - RS 485 compatibility
 - MPCM master and slave mode support
 - printf()/scanf() streams compatibility

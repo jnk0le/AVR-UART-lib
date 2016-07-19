@@ -302,7 +302,7 @@
 
 #ifndef NO_USART_TX
 	
-#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3) // if only USART0 is available
+#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3)&&!defined(NO_TX0_INTERRUPT) // if only USART0 is available
 
 //******************************************************************
 //Function  : Send single character/byte.
@@ -763,18 +763,18 @@
 //Arguments : Address of selected slave.
 //Return    : none
 //******************************************************************
-#ifdef USART0_MPCM_MODE
-	void uart_mpcm_transmit_addres_Frame(uint8_t dat)
-	{
-		while(tx0_first_byte != tx0_last_byte);
-		UCSR0B_REGISTER |= (1<<TXB80_BIT);
-		uart_putc(dat);
-		while(tx0_first_byte != tx0_last_byte);
-		UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
-	}
-#endif // mpcm
+	#ifdef USART0_MPCM_MODE
+		void uart_mpcm_transmit_addres_Frame(uint8_t dat)
+		{
+			while(tx0_first_byte != tx0_last_byte);
+			UCSR0B_REGISTER |= (1<<TXB80_BIT);
+			uart_putc(dat);
+			while(tx0_first_byte != tx0_last_byte);
+			UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
+		}
+	#endif
 
-#else // multiple USART mcu
+#elif defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3) // multiple USART mcu
 
 //******************************************************************
 //Function  : Send single character/byte.
@@ -1531,64 +1531,64 @@
 //          : 2. Address of selected slave.
 //Return    : none
 //******************************************************************
-#if defined(USART0_MPCM_MODE)||defined(USART1_MPCM_MODE)||defined(USART2_MPCM_MODE)||defined(USART3_MPCM_MODE)
-	
-	void uart_mpcm_transmit_addres_Frame(uint8_t usartct, uint8_t dat)
-	{
-		switch(usartct)
+	#if defined(USART0_MPCM_MODE)||defined(USART1_MPCM_MODE)||defined(USART2_MPCM_MODE)||defined(USART3_MPCM_MODE)
+		
+		void uart_mpcm_transmit_addres_Frame(uint8_t usartct, uint8_t dat)
 		{
-			default:
-		#if defined(USE_USART0)&&defined(USART0_MPCM_MODE)
-			case 0:
+			switch(usartct)
 			{
-				while(tx0_first_byte != tx0_last_byte);
-				UCSR0B_REGISTER |= (1<<TXB80_BIT);
-				uart_putc(dat);
-				while(tx0_first_byte != tx0_last_byte);
-				UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
+				default:
+			#if defined(USE_USART0)&&defined(USART0_MPCM_MODE)
+				case 0:
+				{
+					while(tx0_first_byte != tx0_last_byte);
+					UCSR0B_REGISTER |= (1<<TXB80_BIT);
+					uart_putc(dat);
+					while(tx0_first_byte != tx0_last_byte);
+					UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
 				
-				break;
-			} 
-		#endif // mpcm0
-		#if defined(USE_USART1)&&defined(USART1_MPCM_MODE)
-			case 1:
-			{
-				while(tx1_first_byte != tx1_last_byte);
-				UCSR1B_REGISTER |= (1<<TXB81_BIT);
-				uart_putc(dat);
-				while(tx1_first_byte != tx1_last_byte);
-				UCSR1B_REGISTER &= ~(1<<TXB81_BIT); // not sure if necessary
+					break;
+				} 
+			#endif // mpcm0
+			#if defined(USE_USART1)&&defined(USART1_MPCM_MODE)
+				case 1:
+				{
+					while(tx1_first_byte != tx1_last_byte);
+					UCSR1B_REGISTER |= (1<<TXB81_BIT);
+					uart_putc(dat);
+					while(tx1_first_byte != tx1_last_byte);
+					UCSR1B_REGISTER &= ~(1<<TXB81_BIT); // not sure if necessary
 				
-				break;
+					break;
+				}
+			#endif // mpcm1
+			#if defined(USE_USART2)&&defined(USART2_MPCM_MODE)
+				case 2: 
+				{
+					while(tx2_first_byte != tx2_last_byte);
+					UCSR2B_REGISTER |= (1<<TXB82_BIT);
+					uart_putc(dat);
+					while(tx2_first_byte != tx2_last_byte);
+					UCSR2B_REGISTER &= ~(1<<TXB82_BIT); // not sure if necessary
+				
+					break;
+				}
+			#endif // mpcm2
+			#if defined(USE_USART3)&&defined(USART3_MPCM_MODE)
+				case 3:
+				{
+					while(tx3_first_byte != tx3_last_byte);
+					UCSR3B_REGISTER |= (1<<TXB83_BIT);
+					uart_putc(dat);
+					while(tx3_first_byte != tx3_last_byte);
+					UCSR3B_REGISTER &= ~(1<<TXB83_BIT); // not sure if necessary
+				
+					//break;
+				}
+			#endif // mpcm3
 			}
-		#endif // mpcm1
-		#if defined(USE_USART2)&&defined(USART2_MPCM_MODE)
-			case 2: 
-			{
-				while(tx2_first_byte != tx2_last_byte);
-				UCSR2B_REGISTER |= (1<<TXB82_BIT);
-				uart_putc(dat);
-				while(tx2_first_byte != tx2_last_byte);
-				UCSR2B_REGISTER &= ~(1<<TXB82_BIT); // not sure if necessary
-				
-				break;
-			}
-		#endif // mpcm2
-		#if defined(USE_USART3)&&defined(USART3_MPCM_MODE)
-			case 3:
-			{
-				while(tx3_first_byte != tx3_last_byte);
-				UCSR3B_REGISTER |= (1<<TXB83_BIT);
-				uart_putc(dat);
-				while(tx3_first_byte != tx3_last_byte);
-				UCSR3B_REGISTER &= ~(1<<TXB83_BIT); // not sure if necessary
-				
-				//break;
-			}
-		#endif // mpcm3
 		}
-	}
-#endif // mpcm
+	#endif // mpcm
 	
 #endif // single/multi USART
 
@@ -1596,7 +1596,7 @@
 
 #ifndef NO_USART_RX
 
-#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3) // if only USART0 is available
+#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3)&&!defined(NO_RX0_INTERRUPT) // if only USART0 is available
 
 //******************************************************************
 //Function  : To receive single character/byte.
@@ -2091,7 +2091,7 @@
 		return rx0_buffer[(rx0_first_byte+1) & RX0_BUFFER_MASK];
 	}
 
-#else // multiple USART mcu
+#elif defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3) // multiple USART mcu
 
 //******************************************************************
 //Function  : To receive single character/byte.
@@ -2805,13 +2805,12 @@
 			while ( (tmp = uart_getData()) < 0 );
 		
 		#ifdef RX_STDIO_GETCHAR_ECHO
-			uart_putc((uint8_t)tmp);
+			tmp = _uart_putc((uint8_t)tmp);
 		#endif
 		
 			return (uint8_t)tmp;
 		}
 	#endif //NO_RX0_INTERRUPT
-	
 	
 	#if defined(NO_RX0_INTERRUPT)
 		FILE uart0_out = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
@@ -2868,7 +2867,7 @@
 	ISR(UDRE0_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
-	
+		
 			"push  r16 \n\t"                         /* 2 */
 			"in    r16, __SREG__ \n\t"               /* 1 */
 

@@ -1400,24 +1400,24 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		UCSR0A_REGISTER |= (1<<U2X0_BIT);
 	} 
 
-#ifdef USART0_MPCM_MODE
-	void uart_mpcm_slave_return_idle(void) // return slave to mpcm idle mode (wait for own addres frame)
-	{
-		UCSR0A_REGISTER |= (1<<MPCM0_BIT);
-	}
-#endif
+	#ifdef USART0_MPCM_MODE
+		void uart_mpcm_slave_return_idle(void) // return slave to mpcm idle mode (wait for own addres frame)
+		{
+			UCSR0A_REGISTER |= (1<<MPCM0_BIT);
+		}
+	#endif
 
-#ifdef USART_HARDWARE_FLOW_CONTROL_AVAILABLE
-	void uart_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) // pass true to enable
-	{
-		if(ctsenable && rtsenable) // -Os dependent, do not use in non-inline functions 
-			UCSR0D_REGISTER = (1<<CTSEN0_BIT)|(1<<RTSEN0_BIT);
-		else if(ctsenable)
-			UCSR0D_REGISTER = (1<<CTSEN0_BIT);
-		else
-			UCSR0D_REGISTER = (1<<RTSEN0_BIT);
-	}
-#endif
+	#ifdef USART_HARDWARE_FLOW_CONTROL_AVAILABLE
+		void uart_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) // pass true to enable
+		{
+			if(ctsenable && rtsenable) // -Os dependent, do not use in non-inline functions 
+				UCSR0D_REGISTER = (1<<CTSEN0_BIT)|(1<<RTSEN0_BIT);
+			else if(ctsenable)
+				UCSR0D_REGISTER = (1<<CTSEN0_BIT);
+			else
+				UCSR0D_REGISTER = (1<<RTSEN0_BIT);
+		}
+	#endif
 	
 #else // multiple USART mcu
 	
@@ -1638,7 +1638,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
  ************************************************************************************/
 #ifndef NO_USART_TX
 
-#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3) // if only USART0 is available
+#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3)&&!defined(NO_TX0_INTERRUPT) // if only USART0 is available
 	
 	#ifdef USART_NO_DIRTY_HACKS
 		void uart_putc(char data); // put character/data into transmitter ring buffer
@@ -1686,7 +1686,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart_mpcm_transmit_addres_Frame(uint8_t dat);
 	#endif
 
-#else // multiple USART mcu
+#elif defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3) // multiple USART mcu
 	
 	#ifdef USART_NO_DIRTY_HACKS
 		void uart_putc(uint8_t usartct, char data); // put character/data into transmitter ring buffer
@@ -1743,7 +1743,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
  ************************************************************************************/
 #ifndef NO_USART_RX
 
-#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3) // if only USART0 is available
+#if !defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3)&&!defined(NO_RX0_INTERRUPT) // if only USART0 is available
 	
 	char uart_getc(void); // get character from receiver ring buffer
 	
@@ -1766,7 +1766,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	uint8_t uart_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
 	uint8_t uart_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 
-#else // multiple USART mcu
+#elif defined(USE_USART1)||defined(USE_USART2)||defined(USE_USART3) // multiple USART mcu
 
 	char uart_getc(uint8_t usartct); // get character from receiver ring buffer
 	
@@ -1797,7 +1797,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
  *                    soft flow control interrupt handlers                          *
  ************************************************************************************/
 
-#if defined(USART0_USE_SOFT_CTS)&&defined(USE_USART0)
+#if defined(USART0_USE_SOFT_CTS)&&!defined(NO_TX0_INTERRUPT) //&&defined(USE_USART0)
 	extern volatile uint8_t tx0_first_byte, tx0_last_byte;
 
 	static inline void cts0_isr_handler(void)
@@ -1805,7 +1805,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#if defined(USART0_IN_IO_ADDRESS_SPACE)&&!defined(USART0_NOT_ACCESIBLE_FROM_CBI)
 		if(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN))
 		{
-			UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
+			//UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
 		}
 		else if (tx0_first_byte != tx0_last_byte)
 		{
@@ -1826,7 +1826,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 #endif
 
-#if defined(USART1_USE_SOFT_CTS)&&defined(USE_USART1)
+#if defined(USART1_USE_SOFT_CTS)&&!defined(NO_TX1_INTERRUPT)
 	extern volatile uint8_t tx1_first_byte, tx1_last_byte;
 
 	static inline void cts1_isr_handler(void)
@@ -1857,7 +1857,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 #endif
 
-#if defined(USART2_USE_SOFT_CTS)&&defined(USE_USART2)
+#if defined(USART2_USE_SOFT_CTS)&&!defined(NO_TX2_INTERRUPT)
 	extern volatile uint8_t tx2_first_byte, tx2_last_byte;
 
 	static inline void cts2_isr_handler(void)
@@ -1876,7 +1876,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 #endif
 
-#if defined(USART3_USE_SOFT_CTS)&&defined(USE_USART3)
+#if defined(USART3_USE_SOFT_CTS)&&!defined(NO_TX3_INTERRUPT)
 	extern volatile uint8_t tx3_first_byte, tx3_last_byte;
 
 	static inline void cts3_isr_handler(void)
@@ -1993,5 +1993,3 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif // single/multi USART
 
 #endif // _USART_H_
-
-// if any other uart library produces better code than this, you can contact me to fix this issue
