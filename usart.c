@@ -2230,10 +2230,10 @@
 //Arguments : none
 //Return    : Number of bytes waiting in receiver buffer.
 //******************************************************************
-	uint8_t uart0_AvailableBytes(void)
-	{
-		return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
-	}
+	//uint8_t auart0_AvailableBytes(void)
+	//{
+	//	return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
+	//}
 	
 //******************************************************************
 //Function  : Peek at the next byte in buffer.
@@ -2613,10 +2613,10 @@
 		return COMPLETED; // result = 1
 	}
 
-	uint8_t uart1_AvailableBytes(void)
-	{
-		return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK;
-	}
+	//uint8_t uart1_AvailableBytes(void)
+	//{
+	//	return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK;
+	//}
 	
 	uint8_t uart1_peek(void)
 	{
@@ -2991,10 +2991,10 @@
 		return COMPLETED; // result = 1
 	}
 
-	uint8_t uart2_AvailableBytes(void)
-	{
-		return (rx2_last_byte - rx2_first_byte) & RX2_BUFFER_MASK;
-	}
+	//uint8_t uart2_AvailableBytes(void)
+	//{
+	//	return (rx2_last_byte - rx2_first_byte) & RX2_BUFFER_MASK;
+	//}
 	
 	uint8_t uart2_peek(void)
 	{
@@ -3369,10 +3369,10 @@
 		return COMPLETED; // result = 1
 	}
 
-	uint8_t uart3_AvailableBytes(void)
-	{
-		return (rx3_last_byte - rx3_first_byte) & RX3_BUFFER_MASK;
-	}
+	//uint8_t uart3_AvailableBytes(void)
+	//{
+	//	return (rx3_last_byte - rx3_first_byte) & RX3_BUFFER_MASK;
+	//}
 	
 	uint8_t uart3_peek(void)
 	{

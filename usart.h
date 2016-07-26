@@ -1357,6 +1357,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #ifdef USE_USART0
 	void uart0_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
 	
+	static inline void uart0_init(uint16_t ubbr_value) __attribute__((always_inline));
 	static inline void uart0_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
 	{
 	#ifdef USART0_RS485_MODE
@@ -1387,18 +1388,21 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
 	#endif
 	}
-
+	
+	static inline void uart0_set_FrameFormat(uint8_t UCSRC_reg) __attribute__((always_inline));
 	static inline void uart0_set_FrameFormat(uint8_t UCSRC_reg) // UCSRC_reg can be used to set other than 8n1 transmission
 	{
 		UCSR0C_REGISTER = UCSRC_reg;
 	} 
 	
+	static inline void uart0_set_U2X(void) __attribute__((always_inline));
 	static inline void uart0_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
 	{
 		UCSR0A_REGISTER |= (1<<U2X0_BIT);
 	} 
 
 #ifdef USART0_MPCM_MODE
+	static inline void uart0_mpcm_slave_return_idle(void) __attribute__((always_inline));
 	static inline void uart0_mpcm_slave_return_idle(void) // return slave to mpcm idle mode (wait for own addres frame)
 	{
 		UCSR0A_REGISTER |= (1<<MPCM0_BIT);
@@ -1406,6 +1410,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif
 
 #ifdef USART0_HARDWARE_FLOW_CONTROL_AVAILABLE
+	void uart0_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) __attribute__((always_inline));
 	void uart0_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) // pass true to enable
 	{
 		if(ctsenable && rtsenable) // -Os dependent, do not use in non-inline functions 
@@ -1428,6 +1433,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #ifdef USE_USART1
 	void uart1_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
 	
+	static inline void uart1_init(uint16_t ubbr_value) __attribute__((always_inline));
 	static inline void uart1_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
 	{
 	#ifdef USART1_RS485_MODE
@@ -1459,17 +1465,20 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif
 	}
 
+	static inline void uart1_set_FrameFormat(uint8_t UCSRC_reg) __attribute__((always_inline));
 	static inline void uart1_set_FrameFormat(uint8_t UCSRC_reg) // UCSRC_reg can be used to set other than 8n1 transmission
 	{
 		UCSR1C_REGISTER = UCSRC_reg;
 	} 
 	
+	static inline void uart1_set_U2X(void) __attribute__((always_inline));
 	static inline void uart1_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
 	{
 		UCSR1A_REGISTER |= (1<<U2X1_BIT);
 	} 
 
 #ifdef USART1_MPCM_MODE
+	static inline void uart1_mpcm_slave_return_idle(void) __attribute__((always_inline));
 	static inline void uart1_mpcm_slave_return_idle(void) // return slave to mpcm idle mode (wait for own addres frame)
 	{
 		UCSR1A_REGISTER |= (1<<MPCM1_BIT);
@@ -1480,6 +1489,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #ifdef USE_USART2
 	void uart2_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
 	
+	static inline void uart2_init(uint16_t ubbr_value) __attribute__((always_inline));
 	static inline void uart2_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
 	{
 	#ifdef USART2_RS485_MODE
@@ -1511,17 +1521,20 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif
 	}
 
+	static inline void uart2_set_FrameFormat(uint8_t UCSRC_reg) __attribute__((always_inline));
 	static inline void uart2_set_FrameFormat(uint8_t UCSRC_reg) // UCSRC_reg can be used to set other than 8n1 transmission
 	{
 		UCSR2C_REGISTER = UCSRC_reg;
 	} 
 	
+	static inline void uart2_set_U2X(void) __attribute__((always_inline));
 	static inline void uart2_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
 	{
 		UCSR2A_REGISTER |= (1<<U2X2_BIT);
 	} 
 
 #ifdef USART2_MPCM_MODE
+	static inline void uart2_mpcm_slave_return_idle(void) __attribute__((always_inline));
 	static inline void uart2_mpcm_slave_return_idle(void) // return slave to mpcm idle mode (wait for own addres frame)
 	{
 		UCSR2A_REGISTER |= (1<<MPCM2_BIT);
@@ -1532,6 +1545,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #ifdef USE_USART3
 	void uart3_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
 	
+	static inline void uart3_init(uint16_t ubbr_value) __attribute__((always_inline));
 	static inline void uart3_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
 	{
 	#ifdef USART3_RS485_MODE
@@ -1563,17 +1577,20 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif
 	}
 
+	static inline void uart3_set_FrameFormat(uint8_t UCSRC_reg) __attribute__((always_inline));
 	static inline void uart3_set_FrameFormat(uint8_t UCSRC_reg) // UCSRC_reg can be used to set other than 8n1 transmission
 	{
 		UCSR3C_REGISTER = UCSRC_reg;
 	} 
 	
+	static inline void uart3_set_U2X(void) __attribute__((always_inline));
 	static inline void uart3_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
 	{
 		UCSR3A_REGISTER |= (1<<U2X0_BIT);
 	} 
 
 #ifdef USART3_MPCM_MODE
+	static inline void uart3_mpcm_slave_return_idle(void) __attribute__((always_inline));
 	static inline void uart3_mpcm_slave_return_idle(void) // return slave to mpcm idle mode (wait for own addres frame)
 	{
 		UCSR3A_REGISTER |= (1<<MPCM3_BIT);
@@ -1829,7 +1846,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		int16_t uart0_getData(void); // reads single byte from a buffer // returns negative value if buffer is empty (upper byte is non zero)
 		uint8_t uart0_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
-		uint8_t uart0_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
+		
+		extern volatile uint8_t rx0_last_byte, rx0_first_byte;
+		//static inline uint8_t uart0_AvailableBytes(void) __attribute__((always_inline)); // just let the compiler
+		static inline uint8_t uart0_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
+		{
+			return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
+		}
 		uint8_t uart0_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 		
 		#define uart_getc() uart0_getc()
@@ -1865,7 +1888,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		int16_t uart1_getData(void); // reads single byte from a buffer // returns negative value if buffer is empty (upper byte is non zero)
 		uint8_t uart1_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
-		uint8_t uart1_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
+		
+		extern volatile uint8_t rx1_last_byte, rx1_first_byte;
+		//static inline uint8_t uart1_AvailableBytes(void) __attribute__((always_inline)); // just let the compiler
+		static inline uint8_t uart1_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
+		{
+			return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK;
+		}
 		uint8_t uart1_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 	#endif // NO_RX0_INTERRUPT
 	
@@ -1888,7 +1917,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		int16_t uart2_getData(void); // reads single byte from a buffer // returns negative value if buffer is empty (upper byte is non zero)
 		uint8_t uart2_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
-		uint8_t uart2_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
+		
+		extern volatile uint8_t rx2_last_byte, rx2_first_byte;
+		//static inline uint8_t uart2_AvailableBytes(void) __attribute__((always_inline)); // just let the compiler
+		static inline uint8_t uart2_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
+		{
+			return (rx2_last_byte - rx2_first_byte) & RX2_BUFFER_MASK;
+		}
 		uint8_t uart2_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 	#endif // NO_RX0_INTERRUPT
 	
@@ -1911,7 +1946,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		int16_t uart3_getData(void); // reads single byte from a buffer // returns negative value if buffer is empty (upper byte is non zero)
 		uint8_t uart3_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
-		uint8_t uart3_AvailableBytes(void); // returns number of bytes waiting in the receiver buffer
+		
+		extern volatile uint8_t rx3_last_byte, rx3_first_byte;
+		//static inline uint8_t uart3_AvailableBytes(void) __attribute__((always_inline)); // just let the compiler
+		static inline uint8_t uart3_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
+		{
+			return (rx3_last_byte - rx3_first_byte) & RX3_BUFFER_MASK;
+		}
 		uint8_t uart3_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 	#endif // NO_RX0_INTERRUPT
 
