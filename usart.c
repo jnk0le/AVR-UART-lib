@@ -1848,7 +1848,7 @@
 	#ifdef USART_NO_DIRTY_HACKS
 		while(--bufferlimit)
 		{
-			*buffer = uart1_getc();
+			*buffer = uart0_getc();
 			if(*buffer++ == 0)
 				break;
 		}
@@ -1897,7 +1897,7 @@
 		while(--bufferlimit)
 		{
 			do{
-				*buffer = uart_getc();
+				*buffer = uart0_getc();
 			}while(*buffer == 0);
 			
 		#ifdef RX_NEWLINE_MODE_N
@@ -1907,7 +1907,7 @@
 		#endif
 			{
 			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart_getc()) );
+				while( !(uart0_getc()) );
 			#endif
 				break;
 			}
