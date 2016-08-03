@@ -218,28 +218,114 @@
 	#endif
 		
 	#ifdef USART0_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx0_last_byte;
-		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		#ifdef USART_NO_DIRTY_HACKS
+			register uint8_t tmp_tx_last_byte = tx0_last_byte;
 		
-	#ifdef USART0_USE_SOFT_CTS
-		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
-	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
-		{
-			UDR0_REGISTER = data;
-			return;
-		}
+		#ifdef USART0_USE_SOFT_CTS
+			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+		#endif
+			if(tx0_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & (1<<UDRE0_BIT)))
+			{
+				UDR0_REGISTER = data;
+				asm volatile("ret"); // return instead of jumping to the next function
+			}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+			tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
 		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
-		{
-			tmp_tx_first_byte = tx0_first_byte; // for faster pass through, results in a little bigger code
-		}
+			while(tx0_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		#else
+			register uint8_t tmp_tx_last_byte asm("r25");
+		
+			asm volatile("\n\t"
+				"lds	%[head], (tx0_last_byte) \n\t"
+			
+			#ifdef USART0_USE_SOFT_CTS
+				"sbic	%M[cts_port], %M[cts_pin] \n\t"
+				"rjmp	normal_insert_%= \n\t"  
+			#endif
+				
+				"lds	r27, (tx0_first_byte) \n\t"
+				"cpse	r27, %[head] \n\t"
+				"rjmp	normal_insert_%= \n\t"
+				
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+					"in 	r26, %M[UCSRA_reg_IO] \n\t"
+					"sbrs	r26, %M[udre_bit] \n\t"
+				#else
+					"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
+				#endif
+			#else
+				"lds	r26, %M[UCSRA_reg] \n\t"
+				"sbrs	r26, %M[udre_bit] \n\t"
+			#endif
+				"rjmp	normal_insert_%= \n\t"
+				
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
+				"out	%M[UDR_reg], r24 \n\t"
+			#else
+				"sts	%M[UDR_reg], r24 \n\t"
+			#endif
+				"ret	\n\t"
+				
+			"normal_insert_%=:"
+				"subi	%[head], 0xff \n\t"
+			
+			#if (TX0_BUFFER_MASK != 0xff)
+				"andi	%[head], %M[mask] \n\t"
+			#endif
+				
+			"waitforspace_%=:"
+				"lds	r27, (tx0_first_byte) \n\t"
+				"cp		r27, %[head] \n\t"
+				"breq	waitforspace_%= \n\t"
+				
+				: /* outputs */
+				[head] "=r" (tmp_tx_last_byte)
+				: /* input operands */
+			#ifdef USART0_USE_SOFT_CTS
+				[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS0_IOPORTNAME))),
+				[cts_pin]       "M"    (CTS0_PIN),
+			#endif
+				[mask]          "M" (TX0_BUFFER_MASK),
+				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
+				[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR0A_REGISTER)),
+				[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
+				[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
+				[udre_bit]      "M"	(UDRE0_BIT)
+				: /* clobbers */
+				"r26","r27"
+			);
+		#endif
 	#else
-		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		#ifdef USART_NO_DIRTY_HACKS
+			register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+			
+			while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+		#else
+			register uint8_t tmp_tx_last_byte asm("r25");
 		
-		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+			asm volatile("\n\t"
+				"lds	%[head], (tx0_last_byte) \n\t"
+				"subi	%[head], 0xff \n\t"
+			
+			#if (TX0_BUFFER_MASK != 0xff)
+				"andi	%[head], %M[mask] \n\t"
+			#endif
+				
+			"waitforspace_%=:"
+				"lds	r27, (tx0_first_byte) \n\t"
+				"cp		r27, %[head] \n\t"
+				"breq	waitforspace_%= \n\t"
+				
+				: /* outputs */
+				[head] "=r" (tmp_tx_last_byte)
+				: /* input operands */
+				[mask] "M" (TX0_BUFFER_MASK)
+				: /* clobbers */
+				"r27"
+			);
+		#endif
 	#endif
 		
 	#ifdef USART_NO_DIRTY_HACKS
@@ -278,7 +364,27 @@
 			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
 		#endif
 			{
+			#if (defined(USART0_IN_IO_ADDRESS_SPACE)&&!defined(USART0_NOT_ACCESIBLE_FROM_CBI))||defined(USART_NO_DIRTY_HACKS)
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+			#else
+				asm volatile("\n\t"
+				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+					"in   r25, %M[control_reg_IO] \n\t"
+					"ori  r25, (1<<%M[udrie_bit]) \n\t"
+					"out   %M[control_reg_IO], r31\n\t"
+				#else 
+					"lds   r25, %M[control_reg] \n\t"
+					"ori  r25, (1<<%M[udrie_bit]) \n\t"
+					"sts   %M[control_reg], r25 \n\t"
+				#endif
+					: /* no outputs */
+					: /* input operands */
+					[control_reg] "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+					[udrie_bit] "M" (UDRIE0_BIT)
+					: /* clobbers */
+					"r25"
+				);
+			#endif
 			}
 		}
 	
@@ -415,13 +521,12 @@
 		#else
 			"movw	r30, r24 \n\t" // buff pointer
 		#endif
-			"mov	r0, r22 \n\t" 
-			"add	r0, r24 \n\t"
+			"add	r22, r24 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp	r0, r30\n\t"
+			"cp 	r22, r30\n\t"
 			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"rcall	uart0_putc \n\t" // r0 and Z pointer will not be affected in uart_putc()
+			"rcall	uart0_putc \n\t" // r22 and Z pointer will not be affected in uart_putc()
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
@@ -682,28 +787,109 @@
 	#endif
 		
 	#ifdef USART1_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx1_last_byte;
-		register uint8_t tmp_tx_first_byte = tx1_first_byte;
+		#ifdef USART_NO_DIRTY_HACKS
+			register uint8_t tmp_tx_last_byte = tx1_last_byte;
 		
-	#ifdef USART1_USE_SOFT_CTS
-		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
-	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
-		{
-			UDR1_REGISTER = data;
-			return;
-		}
+		#ifdef USART1_USE_SOFT_CTS
+			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+		#endif
+			if(tx1_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
+			{
+				UDR1_REGISTER = data;
+				asm volatile("ret"); // return instead of jumping to the next function
+			}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
+			tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
 		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
-		{
-			tmp_tx_first_byte = tx1_first_byte; // for faster pass through, results in a little bigger code
-		}
+			while(tx1_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		#else
+			register uint8_t tmp_tx_last_byte asm("r25");
+		
+			asm volatile("\n\t"
+				"lds	%[head], (tx1_last_byte) \n\t"
+			
+			#ifdef USART1_USE_SOFT_CTS
+				"sbic	%M[cts_port], %M[cts_pin] \n\t"
+				"rjmp	normal_insert_%= \n\t"  
+			#endif
+				
+				"lds	r27, (tx1_first_byte) \n\t"
+				"cpse	r27, %[head] \n\t"
+				"rjmp	normal_insert_%= \n\t"
+				
+			#ifdef USART1_IN_IO_ADDRESS_SPACE
+				"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
+			#else
+				"lds	r26, %M[UCSRA_reg] \n\t"
+				"sbrs	r26, %M[udre_bit] \n\t"
+			#endif
+				"rjmp	normal_insert_%= \n\t"
+				
+			#ifdef USART1_IN_IO_ADDRESS_SPACE
+				"out	%M[UDR_reg], r24 \n\t"
+			#else
+				"sts	%M[UDR_reg], r24 \n\t"
+			#endif
+				"ret	\n\t"
+				
+			"normal_insert_%=:"
+				"subi	%[head], 0xff \n\t"
+			
+			#if (TX1_BUFFER_MASK != 0xff)
+				"andi	%[head], %M[mask] \n\t"
+			#endif
+				
+			"waitforspace_%=:"
+				"lds	r27, (tx1_first_byte) \n\t"
+				"cp		r27, %[head] \n\t"
+				"breq	waitforspace_%= \n\t"
+				
+				: /* outputs */
+				[head] "=r" (tmp_tx_last_byte)
+				: /* input operands */
+			#ifdef USART1_USE_SOFT_CTS
+				[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS1_IOPORTNAME))),
+				[cts_pin]       "M"    (CTS1_PIN),
+			#endif
+				[mask]          "M" (TX1_BUFFER_MASK),
+				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
+				[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR1A_REGISTER)),
+				[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
+				[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
+				[udre_bit]      "M"	(UDRE1_BIT)
+				: /* clobbers */
+				"r26","r27"
+			);
+		#endif
 	#else
-		register uint8_t tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+		#ifdef USART_NO_DIRTY_HACKS
+			register uint8_t tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+			while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+		#else
+			register uint8_t tmp_tx_last_byte asm("r25");
+		
+			asm volatile("\n\t"
+				"lds	%[head], (tx1_last_byte) \n\t"
+				"subi	%[head], 0xff \n\t"
+			
+			#if (TX1_BUFFER_MASK != 0xff)
+				"andi	%[head], %M[mask] \n\t"
+			#endif
+				
+			"waitforspace_%=:"
+				"lds	r27, (tx1_first_byte) \n\t"
+				"cp		r27, %[head] \n\t"
+				"breq	waitforspace_%= \n\t"
+				
+				: /* outputs */
+				[head] "=r" (tmp_tx_last_byte)
+				: /* input operands */
+				[mask] "M" (TX1_BUFFER_MASK)
+				: /* clobbers */
+				"r27"
+			);
+		#endif
 	#endif
 		
 	#ifdef USART_NO_DIRTY_HACKS
@@ -742,7 +928,21 @@
 			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
 		#endif
 			{
+			#if defined(USART1_IN_IO_ADDRESS_SPACE)||defined(USART_NO_DIRTY_HACKS)
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
+			#else
+				asm volatile("\n\t"
+					"lds   r25, %M[control_reg] \n\t"
+					"ori  r25, (1<<%M[udrie_bit]) \n\t"
+					"sts   %M[control_reg], r25 \n\t"
+					: /* no outputs */
+					: /* input operands */
+					[control_reg] "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+					[udrie_bit] "M" (UDRIE1_BIT)
+					: /* clobbers */
+					"r25"
+				);
+			#endif
 			}
 		}
 	
@@ -852,13 +1052,12 @@
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 
-			"mov	r0, r22 \n\t" 
-			"add	r0, r24 \n\t"
+			"add	r22, r24 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp	r0, r30\n\t"
+			"cp 	r22, r30\n\t"
 			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"rcall	uart1_putc \n\t" // r0 and Z pointer will not be affected in uart_putc()
+			"rcall	uart1_putc \n\t" // r22 and Z pointer will not be affected in uart_putc()
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
@@ -1042,28 +1241,101 @@
 	#endif
 		
 	#ifdef USART2_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx2_last_byte;
-		register uint8_t tmp_tx_first_byte = tx2_first_byte;
+		#ifdef USART_NO_DIRTY_HACKS
+			register uint8_t tmp_tx_last_byte = tx2_last_byte;
 		
-	#ifdef USART2_USE_SOFT_CTS
-		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
-	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
-		{
-			UDR2_REGISTER = data;
-			return;
-		}
+		#ifdef USART2_USE_SOFT_CTS
+			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+		#endif
+			if(tx2_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
+			{
+				UDR2_REGISTER = data;
+				asm volatile("ret"); // return instead of jumping to the next function
+			}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
+			tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
 		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
-		{
-			tmp_tx_first_byte = tx2_first_byte; // for faster pass through, results in a little bigger code
-		}
+			while(tx2_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		#else
+			register uint8_t tmp_tx_last_byte asm("r25");
+		
+			asm volatile("\n\t"
+				"lds	%[head], (tx2_last_byte) \n\t"
+			
+			#ifdef USART2_USE_SOFT_CTS
+				"sbic	%M[cts_port], %M[cts_pin] \n\t"
+				"rjmp	normal_insert_%= \n\t"  
+			#endif
+				
+				"lds	r27, (tx2_first_byte) \n\t"
+				"cpse	r27, %[head] \n\t"
+				"rjmp	normal_insert_%= \n\t"
+			
+				"lds	r26, %M[UCSRA_reg] \n\t"
+				"sbrs	r26, %M[udre_bit] \n\t"
+				"rjmp	normal_insert_%= \n\t"
+				
+				"sts	%M[UDR_reg], r24 \n\t"
+				"ret	\n\t"
+				
+			"normal_insert_%=:"
+				"subi	%[head], 0xff \n\t"
+			
+			#if (TX2_BUFFER_MASK != 0xff)
+				"andi	%[head], %M[mask] \n\t"
+			#endif
+				
+			"waitforspace_%=:"
+				"lds	r27, (tx2_first_byte) \n\t"
+				"cp		r27, %[head] \n\t"
+				"breq	waitforspace_%= \n\t"
+				
+				: /* outputs */
+				[head] "=r" (tmp_tx_last_byte)
+				: /* input operands */
+			#ifdef USART2_USE_SOFT_CTS
+				[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS2_IOPORTNAME))),
+				[cts_pin]       "M"    (CTS2_PIN),
+			#endif
+				[mask]          "M" (TX2_BUFFER_MASK),
+				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
+				[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR2A_REGISTER)),
+				[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
+				[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR2_REGISTER)),
+				[udre_bit]      "M"	(UDRE2_BIT)
+				: /* clobbers */
+				"r26","r27"
+			);
+		#endif
 	#else
-		register uint8_t tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
+		#ifdef USART_NO_DIRTY_HACKS
+			register uint8_t tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		while(tx2_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+			while(tx2_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+		#else
+			register uint8_t tmp_tx_last_byte asm("r25");
+		
+			asm volatile("\n\t"
+				"lds	%[head], (tx2_last_byte) \n\t"
+				"subi	%[head], 0xff \n\t"
+			
+			#if (TX2_BUFFER_MASK != 0xff)
+				"andi	%[head], %M[mask] \n\t"
+			#endif
+				
+			"waitforspace_%=:"
+				"lds	r27, (tx2_first_byte) \n\t"
+				"cp		r27, %[head] \n\t"
+				"breq	waitforspace_%= \n\t"
+				
+				: /* outputs */
+				[head] "=r" (tmp_tx_last_byte)
+				: /* input operands */
+				[mask] "M" (TX2_BUFFER_MASK)
+				: /* clobbers */
+				"r27"
+			);
+		#endif
 	#endif
 		
 	#ifdef USART_NO_DIRTY_HACKS
@@ -1102,7 +1374,21 @@
 			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
 		#endif
 			{
+			#ifdef USART_NO_DIRTY_HACKS
 				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
+			#else
+				asm volatile("\n\t"
+					"lds   r25, %M[control_reg] \n\t"
+					"ori  r25, (1<<%M[udrie_bit]) \n\t"
+					"sts   %M[control_reg], r25 \n\t"
+					: /* no outputs */
+					: /* input operands */
+					[control_reg] "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+					[udrie_bit] "M" (UDRIE2_BIT)
+					: /* clobbers */
+					"r25"
+				);
+			#endif
 			}
 		}
 	
@@ -1212,13 +1498,12 @@
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 
-			"mov	r0, r22 \n\t" 
-			"add	r0, r24 \n\t"
+			"add	r22, r24 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp	r0, r30\n\t"
+			"cp 	r22, r30\n\t"
 			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"rcall	uart2_putc \n\t" // r0 and Z pointer will not be affected in uart_putc()
+			"rcall	uart2_putc \n\t" // r22 and Z pointer will not be affected in uart_putc()
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
@@ -1402,28 +1687,101 @@
 	#endif
 		
 	#ifdef USART3_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx3_last_byte;
-		register uint8_t tmp_tx_first_byte = tx3_first_byte;
+		#ifdef USART_NO_DIRTY_HACKS
+			register uint8_t tmp_tx_last_byte = tx3_last_byte;
 		
-	#ifdef USART3_USE_SOFT_CTS
-		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
-	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
-		{
-			UDR3_REGISTER = data;
-			return;
-		}
+		#ifdef USART3_USE_SOFT_CTS
+			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+		#endif
+			if(tx3_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
+			{
+				UDR3_REGISTER = data;
+				asm volatile("ret"); // return instead of jumping to the next function
+			}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
+			tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
 		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
-		{
-			tmp_tx_first_byte = tx3_first_byte; // for faster pass through, results in a little bigger code
-		}
+			while(tx3_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		#else
+			register uint8_t tmp_tx_last_byte asm("r25");
+		
+			asm volatile("\n\t"
+				"lds	%[head], (tx3_last_byte) \n\t"
+			
+			#ifdef USART3_USE_SOFT_CTS
+				"sbic	%M[cts_port], %M[cts_pin] \n\t"
+				"rjmp	normal_insert_%= \n\t"  
+			#endif
+				
+				"lds	r27, (tx3_first_byte) \n\t"
+				"cpse	r27, %[head] \n\t"
+				"rjmp	normal_insert_%= \n\t"
+			
+				"lds	r26, %M[UCSRA_reg] \n\t"
+				"sbrs	r26, %M[udre_bit] \n\t"
+				"rjmp	normal_insert_%= \n\t"
+				
+				"sts	%M[UDR_reg], r24 \n\t"
+				"ret	\n\t"
+				
+			"normal_insert_%=:"
+				"subi	%[head], 0xff \n\t"
+			
+			#if (TX3_BUFFER_MASK != 0xff)
+				"andi	%[head], %M[mask] \n\t"
+			#endif
+				
+			"waitforspace_%=:"
+				"lds	r27, (tx3_first_byte) \n\t"
+				"cp		r27, %[head] \n\t"
+				"breq	waitforspace_%= \n\t"
+				
+				: /* outputs */
+				[head] "=r" (tmp_tx_last_byte)
+				: /* input operands */
+			#ifdef USART3_USE_SOFT_CTS
+				[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS3_IOPORTNAME))),
+				[cts_pin]       "M"    (CTS3_PIN),
+			#endif
+				[mask]          "M" (TX2_BUFFER_MASK),
+				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
+				[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR3A_REGISTER)),
+				[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
+				[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR3_REGISTER)),
+				[udre_bit]      "M"	(UDRE3_BIT)
+				: /* clobbers */
+				"r26","r27"
+			);
+		#endif
 	#else
-		register uint8_t tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
+		#ifdef USART_NO_DIRTY_HACKS
+			register uint8_t tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		while(tx3_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+			while(tx3_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+		#else
+			register uint8_t tmp_tx_last_byte asm("r25");
+		
+			asm volatile("\n\t"
+				"lds	%[head], (tx3_last_byte) \n\t"
+				"subi	%[head], 0xff \n\t"
+			
+			#if (TX3_BUFFER_MASK != 0xff)
+				"andi	%[head], %M[mask] \n\t"
+			#endif
+				
+			"waitforspace_%=:"
+				"lds	r27, (tx3_first_byte) \n\t"
+				"cp		r27, %[head] \n\t"
+				"breq	waitforspace_%= \n\t"
+				
+				: /* outputs */
+				[head] "=r" (tmp_tx_last_byte)
+				: /* input operands */
+				[mask] "M" (TX3_BUFFER_MASK)
+				: /* clobbers */
+				"r27"
+			);
+		#endif
 	#endif
 		
 	#ifdef USART_NO_DIRTY_HACKS
@@ -1462,7 +1820,21 @@
 			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
 		#endif
 			{
+			#ifdef USART_NO_DIRTY_HACKS
 				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
+			#else
+				asm volatile("\n\t"
+					"lds   r25, %M[control_reg] \n\t"
+					"ori  r25, (1<<%M[udrie_bit]) \n\t"
+					"sts   %M[control_reg], r25 \n\t"
+					: /* no outputs */
+					: /* input operands */
+					[control_reg] "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+					[udrie_bit] "M" (UDRIE3_BIT)
+					: /* clobbers */
+					"r25"
+				);
+			#endif
 			}
 		}
 	
@@ -1572,13 +1944,12 @@
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 
-			"mov	r0, r22 \n\t" 
-			"add	r0, r24 \n\t"
+			"add	r22, r24 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp	r0, r30\n\t"
+			"cp 	r22, r30\n\t"
 			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"rcall	uart3_putc \n\t" // r0 and Z pointer will not be affected in uart_putc()
+			"rcall	uart3_putc \n\t" // r22 and Z pointer will not be affected in uart_putc()
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
@@ -1862,12 +2233,11 @@
 		#else
 			"movw	r30, r24 \n\t" // buff pointer
 		#endif
-			"mov	r0, r22 \n\t" // counter
 		
 		"loop_%=:"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart0_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart0_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
 			"cpse	r24, r1 \n\t"
 			"rjmp	loop_%= \n\t"
@@ -1923,12 +2293,11 @@
 		#else
 			"movw	r30, r24 \n\t" // buff pointer
 		#endif
-			"mov	r0, r22 \n\t" // counter
 		"loop_%=:"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart0_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart0_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
@@ -1948,7 +2317,7 @@
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
-			"rcall	uart0_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart0_getc \n\t"
 			"and	r24, r24 \n\t"
 			"breq	wait_loop2_%= \n\t"
 		#endif
@@ -2016,20 +2385,19 @@
 		#else
 			"movw	r30, r24 \n\t" // buff pointer
 		#endif
-			"mov	r0, r22 \n\t" // counter
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart0_getc \n\t" // r0 and Z pointer will not be affected in uart0_getc()
+			"rcall	uart0_getc \n\t" // r22 and Z pointer will not be affected in uart0_getc()
 			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
 			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
 			"st		Z+, r24 \n\t"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 		
 		"loop_%=:"	
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart0_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart0_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		
@@ -2053,9 +2421,9 @@
 			
 		#ifdef RX_NEWLINE_MODE_RN
 		"exit_wait_loop_%=:"
-			"rcall uart0_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"and r24, r24 \n\t" // test for NULL
-			"breq exit_wait_loop_%= \n\t"
+			"rcall	uart0_getc \n\t"
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	exit_wait_loop_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
@@ -2318,12 +2686,11 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 		
 		"loop_%=:"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart1_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
 			"cpse	r24, r1 \n\t"
 			"rjmp	loop_%= \n\t"
@@ -2363,13 +2730,12 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 			
 		"loop_%=:"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart1_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
@@ -2389,7 +2755,7 @@
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
-			"rcall	uart1_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t"
 			"and	r24, r24 \n\t"
 			"breq	wait_loop2_%= \n\t"
 		#endif
@@ -2440,20 +2806,19 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart1_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
 			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
 			"st		Z+, r24 \n\t"
 			"dec	r0 \n\t"
 		
 		"loop_%=:"	
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart1_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		
@@ -2477,9 +2842,9 @@
 			
 		#ifdef RX_NEWLINE_MODE_RN
 		"exit_wait_loop_%=:"
-			"rcall uart1_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"and r24, r24 \n\t" // test for NULL
-			"breq exit_wait_loop_%= \n\t"
+			"rcall	uart1_getc \n\t"
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	exit_wait_loop_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
@@ -2696,12 +3061,11 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 		
 		"loop_%=:"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart2_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
 			"cpse	r24, r1 \n\t"
 			"rjmp	loop_%= \n\t"
@@ -2741,13 +3105,12 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 			
 		"loop_%=:"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart2_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
@@ -2767,7 +3130,7 @@
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
-			"rcall	uart2_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t"
 			"and	r24, r24 \n\t"
 			"breq	wait_loop2_%= \n\t"
 		#endif
@@ -2818,20 +3181,19 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart2_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
 			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
 			"st		Z+, r24 \n\t"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 		
 		"loop_%=:"	
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart2_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		
@@ -2855,9 +3217,9 @@
 			
 		#ifdef RX_NEWLINE_MODE_RN
 		"exit_wait_loop_%=:"
-			"rcall uart2_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"and r24, r24 \n\t" // test for NULL
-			"breq exit_wait_loop_%= \n\t"
+			"rcall	uart2_getc \n\t"
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	exit_wait_loop_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
@@ -3074,12 +3436,11 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 		
 		"loop_%=:"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart3_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
 			"cpse	r24, r1 \n\t"
 			"rjmp	loop_%= \n\t"
@@ -3119,13 +3480,12 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 			
 		"loop_%=:"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart3_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
@@ -3145,7 +3505,7 @@
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
-			"rcall	uart3_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t"
 			"and	r24, r24 \n\t"
 			"breq	wait_loop2_%= \n\t"
 		#endif
@@ -3196,20 +3556,19 @@
 	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
-			"mov	r0, r22 \n\t" // counter
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart3_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
 			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
 			"st		Z+, r24 \n\t"
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 		
 		"loop_%=:"	
-			"dec	r0 \n\t"
+			"dec	r22 \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart3_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		
@@ -3233,9 +3592,9 @@
 			
 		#ifdef RX_NEWLINE_MODE_RN
 		"exit_wait_loop_%=:"
-			"rcall uart3_getc \n\t" // r0 and Z pointer will not be affected in uart_getc()
-			"and r24, r24 \n\t" // test for NULL
-			"breq exit_wait_loop_%= \n\t"
+			"rcall	uart3_getc \n\t"
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	exit_wait_loop_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
@@ -3693,7 +4052,7 @@
 				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
 					"in   r31, %M[control_reg_IO] \n\t"                  /* 1 */
 					"ori  r31, (1<<%M[udrie_bit]) \n\t"             /* 1 */
-					"out   %M[control_reg_IO], r25\n\t"                  /* 1 */
+					"out   %M[control_reg_IO], r31\n\t"                  /* 1 */
 				#else // cbi
 					"sbi   %M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
 				#endif // to cbi or not to cbi
@@ -3851,7 +4210,7 @@
 				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
 					"in   r31, %M[control_reg_IO] \n\t"                  /* 1 */
 					"ori  r31, (1<<%M[rxcie_bit]) \n\t"             /* 1 */
-					"out   %M[control_reg_IO], r25\n\t"                  /* 1 */
+					"out   %M[control_reg_IO], r31\n\t"                  /* 1 */
 				#else // cbi
 					"sbi   %M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
 				#endif // to cbi or not to cbi

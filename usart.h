@@ -1607,9 +1607,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#ifdef USART_NO_DIRTY_HACKS
 			void uart0_putc(char data); // put character/data into transmitter ring buffer
 		#else
-			void uart0_putc(char data) __attribute__ ((naked));
+			void uart0_putc(char data) __attribute__ ((naked, noinline));
 		#endif
-			char uart0_putc_(char data); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+			char uart0_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 		
 		uint8_t uart0_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1680,9 +1680,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#ifdef USART_NO_DIRTY_HACKS
 			void uart1_putc(char data); // put character/data into transmitter ring buffer
 		#else
-			void uart1_putc(char data) __attribute__ ((naked));
+			void uart1_putc(char data) __attribute__ ((naked, noinline));
 		#endif
-			char uart1_putc_(char data); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+			char uart1_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 		
 		uint8_t uart1_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1728,9 +1728,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#ifdef USART_NO_DIRTY_HACKS
 			void uart2_putc(char data); // put character/data into transmitter ring buffer
 		#else
-			void uart2_putc(char data) __attribute__ ((naked));
+			void uart2_putc(char data) __attribute__ ((naked, noinline));
 		#endif
-			char uart2_putc_(char data); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+			char uart2_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 		
 		uint8_t uart2_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1776,9 +1776,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#ifdef USART_NO_DIRTY_HACKS
 			void uart3_putc(char data); // put character/data into transmitter ring buffer
 		#else
-			void uart3_putc(char data) __attribute__ ((naked));
+			void uart3_putc(char data) __attribute__ ((naked, noinline));
 		#endif
-			char uart3_putc_(char data); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+			char uart3_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 		
 		uint8_t uart3_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
