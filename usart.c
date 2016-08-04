@@ -269,7 +269,7 @@
 				"ret	\n\t"
 				
 			"normal_insert_%=:"
-				"subi	%[head], 0xff \n\t"
+				"inc	%[head] \n\t"
 			
 			#if (TX0_BUFFER_MASK != 0xff)
 				"andi	%[head], %M[mask] \n\t"
@@ -307,7 +307,7 @@
 		
 			asm volatile("\n\t"
 				"lds	%[head], (tx0_last_byte) \n\t"
-				"subi	%[head], 0xff \n\t"
+				"inc	%[head] \n\t"
 			
 			#if (TX0_BUFFER_MASK != 0xff)
 				"andi	%[head], %M[mask] \n\t"
@@ -833,7 +833,7 @@
 				"ret	\n\t"
 				
 			"normal_insert_%=:"
-				"subi	%[head], 0xff \n\t"
+				"inc	%[head] \n\t"
 			
 			#if (TX1_BUFFER_MASK != 0xff)
 				"andi	%[head], %M[mask] \n\t"
@@ -871,7 +871,7 @@
 		
 			asm volatile("\n\t"
 				"lds	%[head], (tx1_last_byte) \n\t"
-				"subi	%[head], 0xff \n\t"
+				"inc	%[head] \n\t"
 			
 			#if (TX1_BUFFER_MASK != 0xff)
 				"andi	%[head], %M[mask] \n\t"
@@ -1279,7 +1279,7 @@
 				"ret	\n\t"
 				
 			"normal_insert_%=:"
-				"subi	%[head], 0xff \n\t"
+				"inc	%[head] \n\t"
 			
 			#if (TX2_BUFFER_MASK != 0xff)
 				"andi	%[head], %M[mask] \n\t"
@@ -1317,7 +1317,7 @@
 		
 			asm volatile("\n\t"
 				"lds	%[head], (tx2_last_byte) \n\t"
-				"subi	%[head], 0xff \n\t"
+				"inc	%[head] \n\t"
 			
 			#if (TX2_BUFFER_MASK != 0xff)
 				"andi	%[head], %M[mask] \n\t"
@@ -1725,7 +1725,7 @@
 				"ret	\n\t"
 				
 			"normal_insert_%=:"
-				"subi	%[head], 0xff \n\t"
+				"inc	%[head] \n\t"
 			
 			#if (TX3_BUFFER_MASK != 0xff)
 				"andi	%[head], %M[mask] \n\t"
@@ -1763,7 +1763,7 @@
 		
 			asm volatile("\n\t"
 				"lds	%[head], (tx3_last_byte) \n\t"
-				"subi	%[head], 0xff \n\t"
+				"inc	%[head] \n\t"
 			
 			#if (TX3_BUFFER_MASK != 0xff)
 				"andi	%[head], %M[mask] \n\t"
@@ -4003,7 +4003,7 @@
 			"breq  USART0_TX_EXIT \n\t"              /* 1/2 */
 		#endif
 		
-			"subi  r30, 0xFF \n\t"                   /* 1 */
+			"inc  r30 \n\t"                   /* 1 */
 	
 		#if (TX0_BUFFER_MASK != 0xff)
 			"andi  r30, %M[mask]\n\t"                /* 1 */
@@ -4143,7 +4143,7 @@
 			"lds   r30, (rx0_last_byte) \n\t"        /* 2 */
 			"lds   r31, (rx0_first_byte) \n\t"       /* 2 */
 		
-			"subi  r30, 0xFF \n\t"                   /* 1 */
+			"inc  r30 \n\t"                   /* 1 */
 		
 		#if (RX0_BUFFER_MASK != 0xff)
 			"andi  r30, %M[mask]\n\t"                /* 1 */
@@ -4322,7 +4322,7 @@
 			"breq  USART1_TX_EXIT \n\t"
 		#endif
 		
-			"subi  r30, 0xFF \n\t"
+			"inc  r30 \n\t"
 		
 		#if (TX1_BUFFER_MASK != 0xff)
 			"andi  r30, %M[mask]\n\t"
@@ -4442,7 +4442,7 @@
 			"lds   r30, (rx1_last_byte) \n\t"
 			"lds   r31, (rx1_first_byte) \n\t"
 		
-			"subi  r30, 0xFF \n\t"
+			"inc  r30 \n\t"
 		
 		#if (RX1_BUFFER_MASK != 0xff)
 			"andi  r30, %M[mask]\n\t"
@@ -4603,7 +4603,7 @@
 			"breq  USART2_TX_EXIT \n\t"
 		#endif
 		
-			"subi  r30, 0xFF \n\t"
+			"inc	r30 \n\t"
 		
 		#if (TX2_BUFFER_MASK != 0xff)
 			"andi  r30, %M[mask]\n\t"
@@ -4702,7 +4702,7 @@
 			"lds   r30, (rx2_last_byte) \n\t"
 			"lds   r31, (rx2_first_byte) \n\t"
 		
-			"subi  r30, 0xFF \n\t"
+			"inc  r30 \n\t"
 		
 		#if (RX2_BUFFER_MASK != 0xff)
 			"andi  r30, %M[mask]\n\t"
@@ -4839,7 +4839,7 @@
 			"breq  USART3_TX_EXIT \n\t"
 		#endif
 		
-			"subi  r30, 0xFF \n\t"
+			"inc  r30 \n\t"
 		
 		#if (TX3_BUFFER_MASK != 0xff)
 			"andi  r30, %M[mask]\n\t"
@@ -4938,7 +4938,7 @@
 			"lds   r30, (rx3_last_byte) \n\t"
 			"lds   r31, (rx3_first_byte) \n\t"
 		
-			"subi  r30, 0xFF \n\t"
+			"inc  r30 \n\t"
 		
 		#if (RX3_BUFFER_MASK != 0xff)
 			"andi  r30, %M[mask]\n\t"
