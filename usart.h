@@ -395,14 +395,17 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#warning "usb may not work with TX ISR's"
 #endif
 
+#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)||defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)
+	#define USART_USE_TINY_MEMORY_MODEL
+#endif
+
 #if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 
 #if (TX0_BUFFER_SIZE > 8)||(RX0_BUFFER_SIZE > 8)
 	#warning "TX or RX buffer may be too large for this mcu"
 #endif
 
-#define USART0_IN_IO_ADDRESS_SPACE
-#define USART0_NOT_ACCESIBLE_FROM_CBI
+#define USART0_IN_UPPER_IO_ADDRESS_SPACE
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -464,8 +467,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #if defined(__AVR_ATtiny1634__)
 
-#define USART0_IN_IO_ADDRESS_SPACE
-#define USART0_NOT_ACCESIBLE_FROM_CBI
+#define USART0_IN_UPPER_IO_ADDRESS_SPACE
 
 #ifndef NO_USART0
 #define USE_USART0

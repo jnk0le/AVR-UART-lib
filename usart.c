@@ -249,12 +249,10 @@
 				"rjmp	normal_insert_%= \n\t"
 				
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in 	r26, %M[UCSRA_reg_IO] \n\t"
-					"sbrs	r26, %M[udre_bit] \n\t"
-				#else
-					"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
-				#endif
+				"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
+			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
+				"in 	r26, %M[UCSRA_reg_IO] \n\t"
+				"sbrs	r26, %M[udre_bit] \n\t"
 			#else
 				"lds	r26, %M[UCSRA_reg] \n\t"
 				"sbrs	r26, %M[udre_bit] \n\t"
@@ -284,8 +282,8 @@
 				[head] "=r" (tmp_tx_last_byte)
 				: /* input operands */
 			#ifdef USART0_USE_SOFT_CTS
-				[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS0_IOPORTNAME))),
-				[cts_pin]       "M"    (CTS0_PIN),
+				[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS0_IOPORTNAME))),
+				[cts_pin]       "M" (CTS0_PIN),
 			#endif
 				[mask]          "M" (TX0_BUFFER_MASK),
 				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
@@ -335,7 +333,10 @@
 			"mov	r26, %[index]  \n\t"
 			"ldi	r27, 0x00 \n\t"
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
+		
+		#ifndef USART_USE_TINY_MEMORY_MODEL
 			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
+		#endif
 			"st		X, %[dat] \n\t"
 			
 			: /* no outputs */
@@ -380,7 +381,7 @@
 					: /* no outputs */
 					: /* input operands */
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
-					[udrie_bit] "M" (UDRIE0_BIT)
+					[udrie_bit]   "M" (UDRIE0_BIT)
 					: /* clobbers */
 					"r25"
 				);
@@ -544,7 +545,7 @@
 //******************************************************************
 	void uart0_puts_p(const char *string)
 	{
-	#ifndef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+	#if !defined(__AVR_ATtiny102__)||!defined(__AVR_ATtiny104__)
 		#ifdef USART_NO_DIRTY_HACKS
 			register char c;
 			while ( (c = pgm_read_byte(string++)) ) uart0_putc(c);
@@ -904,7 +905,7 @@
 			
 			: /* no outputs */
 			: /* input operands */
-			[dat] "r" (data),
+			[dat]   "r" (data),
 			[index] "r" (tmp_tx_last_byte)
 			
 			: /* clobbers */
@@ -1350,7 +1351,7 @@
 			
 			: /* no outputs */
 			: /* input operands */
-			[dat] "r" (data),
+			[dat]   "r" (data),
 			[index] "r" (tmp_tx_last_byte)
 			
 			: /* clobbers */
@@ -1796,7 +1797,7 @@
 			
 			: /* no outputs */
 			: /* input operands */
-			[dat] "r" (data),
+			[dat]   "r" (data),
 			[index] "r" (tmp_tx_last_byte)
 			
 			: /* clobbers */
@@ -2150,7 +2151,10 @@
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+		
+		#ifndef USART_USE_TINY_MEMORY_MODEL
 			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+		#endif
 			"ld 	%[temp], X \n\t"
 			
 			: /* output operands */
@@ -2227,7 +2231,7 @@
 	#else
 		asm volatile("\n\t"
 		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 			"mov	r30, r24 \n\t"
 			"mov	r31, r25 \n\t"
 		#else
@@ -2287,7 +2291,7 @@
 	#else
 		asm volatile("\n\t"
 		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+		#ifdef defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 			"mov	r30, r24 \n\t"
 			"mov	r31, r25 \n\t"
 		#else
@@ -2379,7 +2383,7 @@
 	#else
 		asm volatile("\n\t"
 		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+		#ifdef defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 			"mov	r30, r24 \n\t"
 			"mov	r31, r25 \n\t"
 		#else
@@ -2534,7 +2538,10 @@
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+		
+		#ifndef USART_USE_TINY_MEMORY_MODEL
 			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+		#endif
 			"ld 	%[temp], X \n\t"
 			
 			: /* output operands */
@@ -3979,13 +3986,11 @@
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-					"andi	r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
-					"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
-				#else // cbi
-					"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
-				#endif // to cbi or not to cbi
+				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
+				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
+				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
+				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
 			#else
 				"lds	r31, %M[control_reg] \n\t"        /* 2 */
 				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
@@ -4014,13 +4019,11 @@
 			"rjmp	USART0_TX_CONTINUE \n\t"          /* 2 */
 			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-					"andi	r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
-					"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
-				#else // cbi
-					"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
-				#endif // to cbi or not to cbi
+				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
+				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
+				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
+				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
 			#else
 				"lds	r31, %M[control_reg] \n\t"        /* 2 */
 				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
@@ -4034,8 +4037,10 @@
 		
 			"ldi	r31, 0x00 \n\t"                   /* 1 */
 			"subi	r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
+		
+		#ifndef USART_USE_TINY_MEMORY_MODEL
 			"sbci	r31, hi8(-(tx0_buffer)) \n\t"     /* 1 */
-			
+		#endif
 			"ld		r30, Z \n\t"                      /* 2 */
 		
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
@@ -4049,13 +4054,11 @@
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"                               /* 1 */
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-					"ori	r31, (1<<%M[udrie_bit]) \n\t"             /* 1 */
-					"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
-				#else // cbi
-					"sbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
-				#endif // to cbi or not to cbi
+				"sbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)	
+				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
+				"ori	r31, (1<<%M[udrie_bit]) \n\t"             /* 1 */
+				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
 			#else
 				"lds	r31, %M[control_reg] \n\t"        /* 2 */
 				"ori	r31, (1<<%M[udrie_bit]) \n\t"    /* 1 */
@@ -4112,6 +4115,7 @@
 			"push	r25 \n\t"                         /* 2 */
 			
 		#ifndef USART0_EXTEND_RX_BUFFER
+		//" \n\t" // handle framing error here, can be palced here // r25 is free // can be moved below pushes if needed
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 			#else
@@ -4124,13 +4128,11 @@
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-					"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"             /* 1 */
-					"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
-				#else // cbi
-					"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
-				#endif // to cbi or not to cbi
+				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
+			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
+				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
+				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"             /* 1 */
+				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
 			#else
 				"lds	r31, %M[control_reg] \n\t"        /* 2 */
 				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"    /* 1 */
@@ -4159,6 +4161,7 @@
 		#endif
 		
 		#ifdef USART0_EXTEND_RX_BUFFER
+		//" \n\t" // handle framing error here// r25 and r31 are free to use // can be moved below pushes if needed
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 			#else
@@ -4198,22 +4201,23 @@
 		
 			"ldi	r31, 0x00 \n\t"                   /* 1 */
 			"subi	r30, lo8(-(rx0_buffer))\n\t"      /* 1 */
+		
+		#ifndef USART_USE_TINY_MEMORY_MODEL
 			"sbci	r31, hi8(-(rx0_buffer))\n\t"      /* 1 */
+		#endif	
 			"st		Z, r25 \n\t"                      /* 2 */
 		
-			//" \n\t" // inline asm code executed only when databyte was received, can be palced here // r25,r30,r31 are free to use // r25 contains received data byte 
+			//" \n\t" // inline asm code executed only when databyte was received, can be placed here // r25,r30,r31 are free to use // r25 contains received data byte 
 			
 		"USART0_RX_EXIT: "
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			"cli \n\t"                               /* 1 */
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-					"ori	r31, (1<<%M[rxcie_bit]) \n\t"             /* 1 */
-					"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
-				#else // cbi
-					"sbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
-				#endif // to cbi or not to cbi
+				"sbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
+			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
+				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
+				"ori	r31, (1<<%M[rxcie_bit]) \n\t"             /* 1 */
+				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
 			#else
 				"lds	r31, %M[control_reg] \n\t"        /* 2 */
 				"ori	r31, (1<<%M[rxcie_bit]) \n\t"    /* 1 */
@@ -4222,7 +4226,7 @@
 			
 		"USART0_RX_EXIT_SKIP: "
 		#endif
-			//" \n\t" // inline asm code executed on every ISR call, can be palced here // r25,r30,r31 are free to use // r25 contains received data byte (might not in 'extended buffer' mode)
+			//" \n\t" // inline asm code executed on every ISR call, can be placed here // r25,r30,r31 are free to use // r25 contains received data byte (might not in 'extended buffer' mode)
 			"pop	r31 \n\t"                         /* 2 */
 			"pop	r30 \n\t"                         /* 2 */
 			"pop	r25 \n\t"                         /* 2 */
@@ -4241,13 +4245,11 @@
 		
 		#ifndef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
-					"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-					"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"             /* 1 */
-					"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
-				#else // cbi
-					"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
-				#endif // to cbi or not to cbi
+				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
+			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
+				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
+				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"             /* 1 */
+				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
 			#else
 				"lds	r31, %M[control_reg] \n\t"        /* 2 */
 				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"    /* 1 */
