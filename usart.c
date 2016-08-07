@@ -2291,7 +2291,7 @@
 	#else
 		asm volatile("\n\t"
 		
-		#ifdef defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
+		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 			"mov	r30, r24 \n\t"
 			"mov	r31, r25 \n\t"
 		#else
@@ -2383,7 +2383,7 @@
 	#else
 		asm volatile("\n\t"
 		
-		#ifdef defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
+		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 			"mov	r30, r24 \n\t"
 			"mov	r31, r25 \n\t"
 		#else
