@@ -63,4 +63,4 @@ For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be defined.
 - RX best case - load byte and do nothing (buffer full): 37 cycles (36 if uart is placed in IO address space, up to 45 if soft RTS/extended buffer is used)
 - RX worst case - load byte and put it into buffer: 43 cycles (42 if uart is placed in IO address space)
 
-- Any case: +2 on >128k and some older mcu's, -1 for 256 byte buffers
+- Any case: +2 on >128k and some older mcu's, -1 for 256 byte buffers, -2 on ATtiny2313
