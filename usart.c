@@ -443,7 +443,10 @@
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
+		
+		#ifndef USART_USE_TINY_MEMORY_MODEL
 			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
+		#endif
 			"st		X, %[dat] \n\t"
 			
 			: /* no outputs */
