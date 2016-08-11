@@ -23,7 +23,7 @@
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces
 
 #define RX_STDIO_GETCHAR_ECHO // echoes back received characters in getchar() function (for reading in scanf()) 
-#define RX_GETC_ECHO // echoes back received characters in getc() function
+//#define RX_GETC_ECHO // echoes back received characters in getc() function
 
 //#define PUTC_CONVERT_LF_TO_CRLF // allow for unix style (\n only) newline terminator in stored strings // not included into putc_noblock
 #define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - \r\n
@@ -35,7 +35,7 @@
 //#define USART_NO_LOCAL_BUFFERS // do not allocate temporary buffers on stack and use globally visible u_tmp_buff[] instead // it have to be created in application part and have to be at least of 6-17 bytes wide (depending on what is being converted)
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
-#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
+//#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
 //#define USART_NO_DIRTY_HACKS // if UBBRH is not zero at startup, or if the code is not allowed to violate any conventions
 
 /*****************************config for multiple USART mcu's***********************************/

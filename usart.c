@@ -332,7 +332,7 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 		
-		#if defined(USART_NO_DIRTY_HACKS)&&(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
@@ -368,14 +368,14 @@
 			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
 		#endif
 			{
-			#if (defined(USART0_IN_IO_ADDRESS_SPACE)&&!defined(USART0_NOT_ACCESIBLE_FROM_CBI))||defined(USART_NO_DIRTY_HACKS)
+			#if (defined(USART0_IN_IO_ADDRESS_SPACE)&&!defined(USART0_IN_UPPER_IO_ADDRESS_SPACE))||defined(USART_NO_DIRTY_HACKS)
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 			#else
 				asm volatile("\n\t"
-				#ifdef USART0_NOT_ACCESIBLE_FROM_CBI
+				#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
 					"in   r25, %M[control_reg_IO] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
-					"out   %M[control_reg_IO], r31\n\t"
+					"out   %M[control_reg_IO], r25\n\t"
 				#else 
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
@@ -439,7 +439,7 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 		
-		#if defined(USART_NO_DIRTY_HACKS)&&(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
@@ -490,7 +490,7 @@
 	#else 
 		asm volatile("\n\t"
 		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 			"mov	r30, r24 \n\t"
 			"mov	r31, r25 \n\t"
 		#else
@@ -525,7 +525,7 @@
 	#else
 		asm volatile("\n\t"
 		
-		#ifdef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
 			"mov	r30, r24 \n\t"
 			"mov	r31, r25 \n\t"
 		#else
@@ -2159,7 +2159,7 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 		
-		#if defined(USART_NO_DIRTY_HACKS)&&(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
@@ -2549,7 +2549,7 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 		
-		#if defined(USART_NO_DIRTY_HACKS)&&(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
@@ -4050,7 +4050,7 @@
 			
 			"sts	(tx0_first_byte), r30 \n\t"       /* 2 */
 	
-		#if defined(USART_NO_DIRTY_HACKS)&&(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r31, 0x00 \n\t"                   /* 1 */
 		#endif
 			"subi	r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
@@ -4216,7 +4216,7 @@
 			
 			"sts	(rx0_last_byte), r30 \n\t"        /* 2 */
 		
-		#if defined(USART_NO_DIRTY_HACKS)&&(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__))	// on ATtiny2313 upper byte in pointer pair is ignored
+		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__))	// on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r31, 0x00 \n\t"                   /* 1 */
 		#endif
 			"subi	r30, lo8(-(rx0_buffer))\n\t"      /* 1 */
