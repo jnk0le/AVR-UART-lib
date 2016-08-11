@@ -4356,9 +4356,9 @@
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
 				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
 			#else
-				"lds	r25, %M[control_reg] \n\t"
-				"andi	r25, ~(1<<%M[udrie_bit]) \n\t"
-				"sts	%M[control_reg], r25 \n\t"
+				"lds	r31, %M[control_reg] \n\t"
+				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
+				"sts	%M[control_reg], r31 \n\t"
 			#endif
 			
 		"USART1_TX_CONTINUE: "
@@ -4634,9 +4634,9 @@
 			"cpse	r30, r31 \n\t"
 			"rjmp	USART2_TX_CONTINUE \n\t"
 			
-			"lds	r25, %M[control_reg] \n\t"
-			"andi	r25, ~(1<<%M[udrie_bit]) \n\t"
-			"sts	%M[control_reg], r25 \n\t"
+			"lds	r31, %M[control_reg] \n\t"
+			"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
+			"sts	%M[control_reg], r31 \n\t"
 			
 		"USART2_TX_CONTINUE: "
 		#endif
@@ -4870,9 +4870,9 @@
 			"cpse	r30, r31 \n\t"
 			"rjmp	USART3_TX_CONTINUE \n\t"
 			
-			"lds	r25, %M[control_reg] \n\t"
-			"andi	r25, ~(1<<%M[udrie_bit]) \n\t"
-			"sts	%M[control_reg], r25 \n\t"
+			"lds	r31, %M[control_reg] \n\t"
+			"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
+			"sts	%M[control_reg], r31 \n\t"
 		
 		"USART3_TX_CONTINUE: "
 		#endif
