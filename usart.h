@@ -1985,7 +1985,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#if defined(USART0_IN_IO_ADDRESS_SPACE)&&!defined(USART0_NOT_ACCESIBLE_FROM_CBI)
 		if(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN))
 		{
-			//UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
+			UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
 		}
 		else if (tx0_first_byte != tx0_last_byte)
 		{
