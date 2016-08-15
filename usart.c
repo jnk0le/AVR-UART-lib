@@ -2955,7 +2955,6 @@
 			[temp] "=r" (tmp)
 			: /* input operands */
 			[index] "r" (tmp_rx_first_byte)
-			
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
@@ -3992,7 +3991,7 @@
 	ISR(UDRE0_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
-		
+
 			"push	r16 \n\t"                         /* 2 */
 			"in		r16, __SREG__ \n\t"               /* 1 */
 
@@ -4125,7 +4124,7 @@
 	ISR(RX0_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"                      /* 4 ISR entry */
-	
+
 			"push	r16 \n\t"                         /* 2 */
 			"in		r16, __SREG__ \n\t"               /* 1 */
 		
@@ -4250,7 +4249,7 @@
 			"pop	r30 \n\t"                         /* 2 */
 			"pop	r25 \n\t"                         /* 2 */
 		
-			"out	__SREG__ , r16 \n\t"               /* 1 */
+			"out	__SREG__, r16 \n\t"               /* 1 */
 			"pop	r16 \n\t"                          /* 2 */
 
 			"reti \n\t"                              /* 4 ISR return */

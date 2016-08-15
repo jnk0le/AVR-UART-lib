@@ -24,8 +24,8 @@ int main(void)
 	{
 		uart_putc(++a);
 		
-		//uart_putc(uart_getc()); // if getc echo is disabled
-		uart_getc();
+		uart_putc(uart_getc()); 
+		//uart_getc(); // if getc echo is enabled
 	}
 
 }
@@ -34,7 +34,14 @@ ISR(PCINT2_vect)
 {
 	cts0_isr_handler();
 	//cts1_isr_handler();
+	//cts2_isr_handler();
 	//...
 
 	// add code here if required for other inputs (PCINT only)
+}
+
+// single signal INTn interrups can be used with naked handler (reduced overhead and resources usage)
+ISR(INT0_vect, ISR_NAKED)
+{
+	naked_cts0_isr_handler();
 }

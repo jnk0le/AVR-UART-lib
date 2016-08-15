@@ -32,7 +32,7 @@
 
 //#define USART_EXTEND_RX_BUFFER // extend RX buffer by hardware 2/3 byte FIFO // required for hardware and software RTS
 //#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (f_cpu/8)
-//#define USART_NO_LOCAL_BUFFERS // do not allocate temporary buffers on stack and use globally visible u_tmp_buff[] instead // it have to be created in application part and have to be at least of 6-17 bytes wide (depending on what is being converted)
+//#define USART_NO_LOCAL_BUFFERS // do not allocate temporary buffers on stack and use globally visible u_tmp_buff[] instead // it have to be declared in application part and have to be at least of 6-17 bytes wide (depending on what is being converted)
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
@@ -1982,7 +1982,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 	static inline void cts0_isr_handler(void)
 	{
-	#if defined(USART0_IN_IO_ADDRESS_SPACE)&&!defined(USART0_NOT_ACCESIBLE_FROM_CBI)
+	#if defined(USART0_IN_IO_ADDRESS_SPACE)
 		if(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN))
 		{
 			UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
@@ -2003,6 +2003,78 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		}
 		UCSR0B_REGISTER = tmp;
 	#endif
+	}
+	
+	static inline void naked_cts0_isr_handler(void) __attribute__((always_inline));
+	static inline void naked_cts0_isr_handler(void)
+	{
+		asm volatile("\n\t"
+		
+		#if defined(USART0_IN_IO_ADDRESS_SPACE)
+			"cbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"sbic	%M[cts_port], %M[cts_pin] \n\t"
+			"reti \n\t"
+			"push	r24 \n\t"
+			"push	r25 \n\t"
+			"lds	r25, (tx0_first_byte) \n\t"
+			"lds	r24, (tx0_last_byte) \n\t"
+			"cpse	r25, r24 \n\t"
+			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"pop	r25 \n\t"
+			"pop	r24 \n\t"
+			"reti \n\t"
+		#else
+			"push	r16 \n\t"
+			"in		r16,__SREG__ \n\t"
+			"push	r24 \n\t"
+			
+		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
+			"in 	r24, %M[UCSRB_reg_IO] \n\t"
+		#else
+			"lds	r24, %M[UCSRB_reg] \n\t"
+		#endif
+			
+			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
+			"sbic	%M[cts_port], %M[cts_pin]\n\t"
+			"rjmp	cts_apply_%= \n\t"
+			
+			"push	r25 \n\t"
+			"lds	r24, (tx0_last_byte) \n\t"
+			"lds	r25, (tx0_first_byte) \n\t"
+			"cp 	r25, r24 \n\t"
+			"pop	r25 \n\t" // branch after pooping
+			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
+		
+		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
+			"in 	r24, %M[UCSRB_reg_IO] \n\t"
+		#else
+			"lds	r24, %M[UCSRB_reg] \n\t"
+		#endif
+			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
+			
+		"cts_apply_%=:"	
+		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
+			"out	%M[UCSRB_reg_IO], r24 \n\t"
+		#else
+			"sts	%M[UCSRB_reg], r24 \n\t"
+		#endif
+		
+		"cts_exit_%=:"
+			"pop	r24 \n\t"
+			"out	__SREG__, r16 \n\t"
+			"pop	r16 \n\t"
+
+			"reti \n\t"
+		#endif
+			: /* output operands */
+			: /* input operands */
+			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
+			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
+			[UDRIE_bit]      "M" (UDRIE0_BIT),
+			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS0_IOPORTNAME))),
+			[cts_pin]        "M" (CTS0_PIN)
+			: /* clobbers */
+		);
 	}
 #endif
 
@@ -2035,6 +2107,62 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		UCSR1B_REGISTER = tmp;
 	#endif
 	}
+	
+	static inline void naked_cts1_isr_handler(void) __attribute__((always_inline));
+	static inline void naked_cts1_isr_handler(void)
+	{
+		asm volatile("\n\t"
+		
+		#if defined(USART1_IN_IO_ADDRESS_SPACE)
+			"cbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"sbic	%M[cts_port], %M[cts_pin] \n\t"
+			"reti \n\t"
+			"push	r24 \n\t"
+			"push	r25 \n\t"
+			"lds	r25, (tx1_first_byte) \n\t"
+			"lds	r24, (tx1_last_byte) \n\t"
+			"cpse	r25, r24 \n\t"
+			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"pop	r25 \n\t"
+			"pop	r24 \n\t"
+			"reti \n\t"
+		#else
+			"push	r16 \n\t"
+			"in		r16,__SREG__ \n\t"
+			"push	r24 \n\t"
+			"lds	r24, %M[UCSRB_reg] \n\t"
+			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
+			"sbic	%M[cts_port], %M[cts_pin]\n\t"
+			"rjmp	cts_apply_%= \n\t"
+			
+			"push	r25 \n\t"
+			"lds	r24, (tx1_last_byte) \n\t"
+			"lds	r25, (tx1_first_byte) \n\t"
+			"cp 	r25, r24 \n\t"
+			"pop	r25 \n\t" // branch after pooping
+			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
+			
+			"lds	r24, %M[UCSRB_reg] \n\t"
+			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
+		"cts_apply_%=:"	
+			"sts	%M[UCSRB_reg], r24 \n\t"
+		"cts_exit_%=:"
+			"pop	r24 \n\t"
+			"out	__SREG__, r16 \n\t"
+			"pop	r16 \n\t"
+
+			"reti \n\t"
+		#endif
+			: /* output operands */
+			: /* input operands */
+			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
+			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
+			[UDRIE_bit]      "M" (UDRIE1_BIT),
+			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS1_IOPORTNAME))),
+			[cts_pin]        "M" (CTS1_PIN)
+			: /* clobbers */
+		);
+	}
 #endif
 
 #if defined(USART2_USE_SOFT_CTS)&&!defined(NO_TX2_INTERRUPT)
@@ -2054,6 +2182,46 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		}
 		UCSR2B_REGISTER = tmp;
 	}
+	
+	static inline void naked_cts2_isr_handler(void) __attribute__((always_inline));
+	static inline void naked_cts2_isr_handler(void)
+	{
+		asm volatile("\n\t"
+			"push	r16 \n\t"
+			"in		r16,__SREG__ \n\t"
+			"push	r24 \n\t"
+			"lds	r24, %M[UCSRB_reg] \n\t"
+			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
+			"sbic	%M[cts_port], %M[cts_pin]\n\t"
+			"rjmp	cts_apply_%= \n\t"
+			
+			"push	r25 \n\t"
+			"lds	r24, (tx2_last_byte) \n\t"
+			"lds	r25, (tx2_first_byte) \n\t"
+			"cp 	r25, r24 \n\t"
+			"pop	r25 \n\t" // branch after pooping
+			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
+			
+			"lds	r24, %M[UCSRB_reg] \n\t"
+			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
+		"cts_apply_%=:"	
+			"sts	%M[UCSRB_reg], r24 \n\t"
+		"cts_exit_%=:"
+			"pop	r24 \n\t"
+			"out	__SREG__, r16 \n\t"
+			"pop	r16 \n\t"
+
+			"reti \n\t"
+			: /* output operands */
+			: /* input operands */
+			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
+			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR2B_REGISTER)),
+			[UDRIE_bit]      "M" (UDRIE2_BIT),
+			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS2_IOPORTNAME))),
+			[cts_pin]        "M" (CTS2_PIN)
+			: /* clobbers */
+		);
+	}
 #endif
 
 #if defined(USART3_USE_SOFT_CTS)&&!defined(NO_TX3_INTERRUPT)
@@ -2072,6 +2240,46 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			tmp |= (1<<UDRIE3_BIT);
 		}
 		UCSR3B_REGISTER = tmp;
+	}
+	
+	static inline void naked_cts3_isr_handler(void) __attribute__((always_inline));
+	static inline void naked_cts3_isr_handler(void)
+	{
+		asm volatile("\n\t"
+			"push	r16 \n\t"
+			"in		r16,__SREG__ \n\t"
+			"push	r24 \n\t"
+			"lds	r24, %M[UCSRB_reg] \n\t"
+			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
+			"sbic	%M[cts_port], %M[cts_pin]\n\t"
+			"rjmp	cts_apply_%= \n\t"
+			
+			"push	r25 \n\t"
+			"lds	r24, (tx3_last_byte) \n\t"
+			"lds	r25, (tx3_first_byte) \n\t"
+			"cp 	r25, r24 \n\t"
+			"pop	r25 \n\t" // branch after pooping
+			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
+			
+			"lds	r24, %M[UCSRB_reg] \n\t"
+			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
+		"cts_apply_%=:"	
+			"sts	%M[UCSRB_reg], r24 \n\t"
+		"cts_exit_%=:"
+			"pop	r24 \n\t"
+			"out	__SREG__, r16 \n\t"
+			"pop	r16 \n\t"
+
+			"reti \n\t"
+			: /* output operands */
+			: /* input operands */
+			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
+			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR3B_REGISTER)),
+			[UDRIE_bit]      "M" (UDRIE3_BIT),
+			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS3_IOPORTNAME))),
+			[cts_pin]        "M" (CTS3_PIN)
+			: /* clobbers */
+		);
 	}
 #endif
 
