@@ -4131,7 +4131,7 @@
 			"push	r25 \n\t"                         /* 2 */
 			
 		#ifndef USART0_EXTEND_RX_BUFFER
-		//" \n\t" // handle framing error here, can be palced here // r25 is free // can be moved below pushes if needed
+		//" \n\t" // handle framing error here // r25 is free // can be moved below rest pushes if needed
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 			#else
@@ -4286,7 +4286,7 @@
 		
 			: /* input operands */
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
-			[UDR_reg]	         "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
+			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
 			[mask]               "M" (RX0_BUFFER_MASK),
 			[mpcm_address]       "M" (MPCM0_ADDRESS),
 		#ifdef MPCM0_GCALL_ADDRESS

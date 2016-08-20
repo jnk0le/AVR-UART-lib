@@ -158,7 +158,7 @@
 	#error F_CPU is undefined, USART cannot work correctly without this parametr
 #endif
 
-#define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating UBBR value
+#define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating precise UBBR value
 #define BAUD_CALC_FAST(x) ((F_CPU)/(BAUD*16UL)-1) // for faster real time calculations ?
 #define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBBR value for double speed
 
@@ -440,9 +440,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
 	
 #endif //NO_USART0
 #endif
@@ -471,9 +471,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE
 	#define RXC0_BIT    		RXC
 	#define U2X0_BIT    		U2X
-	#define MPCM0_BIT           MPCM
-	#define UCSZ02_BIT          UCSZ2
-	#define TXB80_BIT           TXB8
+	#define MPCM0_BIT   		MPCM
+	#define UCSZ02_BIT  		UCSZ2
+	#define TXB80_BIT   		TXB8
 
 #endif //NO_USART0
 #endif
@@ -502,9 +502,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
 
 #endif //NO_USART0
 
@@ -528,9 +528,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE1_BIT   		UDRE1
 	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
-	#define MPCM1_BIT           MPCM1
-	#define UCSZ12_BIT          UCSZ12
-	#define TXB81_BIT           TXB81
+	#define MPCM1_BIT   		MPCM1
+	#define UCSZ12_BIT  		UCSZ12
+	#define TXB81_BIT   		TXB81
 
 #endif //NO_USART1
 #endif
@@ -558,9 +558,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
 
 #endif //NO_USART0
 
@@ -584,9 +584,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE1_BIT   		UDRE1
 	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
-	#define MPCM1_BIT           MPCM1
-	#define UCSZ12_BIT          UCSZ12
-	#define TXB81_BIT           TXB81
+	#define MPCM1_BIT   		MPCM1
+	#define UCSZ12_BIT  		UCSZ12
+	#define TXB81_BIT   		TXB81
 
 #endif //NO_USART1
 #endif
@@ -616,9 +616,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80	
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80	
 
 #endif //NO_USART0
 #endif
@@ -645,9 +645,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
 
 #endif //NO_USART0
 
@@ -671,9 +671,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE1_BIT   		UDRE1
 	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
-	#define MPCM1_BIT           MPCM1
-	#define UCSZ12_BIT          UCSZ12
-	#define TXB81_BIT           TXB81	
+	#define MPCM1_BIT   		MPCM1
+	#define UCSZ12_BIT  		UCSZ12
+	#define TXB81_BIT   		TXB81	
 
 #endif //NO_USART1
 #endif
@@ -704,9 +704,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE
 	#define RXC0_BIT    		RXC
 	#define U2X0_BIT    		U2X
-	#define MPCM0_BIT           MPCM
-	#define UCSZ02_BIT          UCSZ2
-	#define TXB80_BIT           TXB8
+	#define MPCM0_BIT   		MPCM
+	#define UCSZ02_BIT  		UCSZ2
+	#define TXB80_BIT   		TXB8
 	
 #endif //NO_USART0
 #endif
@@ -735,9 +735,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE
 	#define RXC0_BIT    		RXC
 	#define U2X0_BIT    		U2X
-	#define MPCM0_BIT           MPCM
-	#define UCSZ02_BIT          UCSZ2
-	#define TXB80_BIT           TXB8
+	#define MPCM0_BIT   		MPCM
+	#define UCSZ02_BIT  		UCSZ2
+	#define TXB80_BIT   		TXB8
 
 #endif //NO_USART0
 #endif
@@ -767,9 +767,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
 
 #endif //NO_USART0
 
@@ -793,9 +793,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE1_BIT   		UDRE1
 	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
-	#define MPCM1_BIT           MPCM1
-	#define UCSZ12_BIT          UCSZ12
-	#define TXB81_BIT           TXB81
+	#define MPCM1_BIT   		MPCM1
+	#define UCSZ12_BIT  		UCSZ12
+	#define TXB81_BIT   		TXB81
 
 #endif //NO_USART1
 #endif
@@ -832,9 +832,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
 
 #endif
 
@@ -858,9 +858,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE1_BIT   		UDRE1
 	#define RXC1_BIT    		RXC1
 	#define U2X1_BIT    		U2X1
-	#define MPCM1_BIT           MPCM1
-	#define UCSZ12_BIT          UCSZ12
-	#define TXB81_BIT           TXB81
+	#define MPCM1_BIT   		MPCM1
+	#define UCSZ12_BIT  		UCSZ12
+	#define TXB81_BIT   		TXB81
 	
 #endif // NO_USART1 && 644
 
@@ -888,9 +888,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE2_BIT   		UDRE2
 	#define RXC2_BIT    		RXC2
 	#define U2X2_BIT    		U2X2
-	#define MPCM2_BIT           MPCM2
-	#define UCSZ22_BIT          UCSZ22
-	#define TXB82_BIT           TXB82
+	#define MPCM2_BIT   		MPCM2
+	#define UCSZ22_BIT  		UCSZ22
+	#define TXB82_BIT   		TXB82
 	
 #endif // NO_USART2
 
@@ -914,9 +914,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE3_BIT   		UDRE3
 	#define RXC3_BIT    		RXC3
 	#define U2X3_BIT    		U2X3
-	#define MPCM3_BIT           MPCM3
-	#define UCSZ32_BIT          UCSZ32
-	#define TXB83_BIT           TXB83
+	#define MPCM3_BIT   		MPCM3
+	#define UCSZ32_BIT  		UCSZ32
+	#define TXB83_BIT   		TXB83
 	
 #endif // NO_USART3
 
@@ -948,11 +948,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE1
 	#define RXC0_BIT    		RXC1
 	#define U2X0_BIT    		U2X1
-	#define MPCM0_BIT           MPCM1
-	#define UCSZ02_BIT          UCSZ12
-	#define TXB80_BIT           TXB81
-	#define CTSEN0_BIT          CTSEN
-	#define RTSEN0_BIT          RTSEN
+	#define MPCM0_BIT   		MPCM1
+	#define UCSZ02_BIT  		UCSZ12
+	#define TXB80_BIT   		TXB81
+	#define CTSEN0_BIT  		CTSEN
+	#define RTSEN0_BIT  		RTSEN
 
 #endif // NO_USART0
 #endif
@@ -979,9 +979,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE
 	#define RXC0_BIT    		RXC
 	#define U2X0_BIT    		U2X
-	#define MPCM0_BIT           MPCM
-	#define UCSZ02_BIT          UCSZ2
-	#define TXB80_BIT           TXB8
+	#define MPCM0_BIT   		MPCM
+	#define UCSZ02_BIT  		UCSZ2
+	#define TXB80_BIT   		TXB8
 
 #endif //NO_USART0
 #endif
@@ -992,7 +992,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 ||defined(__AVR_ATmega325__)||defined(__AVR_ATmega325A__)||defined(__AVR_ATmega325P__)\
 ||defined(__AVR_ATmega325PA__)||defined(__AVR_ATmega645__)||defined(__AVR_ATmega645A__)\
 ||defined(__AVR_ATmega645P__)
-
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -1014,9 +1013,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
 
 #endif //NO_USART0
 #endif
@@ -1047,11 +1046,66 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE0
 	#define RXC0_BIT    		RXC0
 	#define U2X0_BIT    		U2X0
-	#define MPCM0_BIT           MPCM0
-	#define UCSZ02_BIT          UCSZ02
-	#define TXB80_BIT           TXB80
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
 
 #endif //NO_USART0
+#endif
+
+#if defined(__AVR_AT90CAN32__)||defined(__AVR_AT90CAN64__)||defined(__AVR_AT90CAN128__)
+
+#ifndef NO_USART0
+#define USE_USART0
+
+	#define RX0_INTERRUPT		USART0_RX_vect
+	#define TXC0_INTERRUPT		USART0_TX_vect
+	#define UDRE0_INTERRUPT		USART0_UDRE_vect 
+	#define UDR0_REGISTER		UDR0
+	#define UBRR0L_REGISTER		UBRR0L
+	#define UBRR0H_REGISTER		UBRR0H
+	#define UCSR0A_REGISTER		UCSR0A
+	#define UCSR0B_REGISTER		UCSR0B
+	#define UCSR0C_REGISTER		UCSR0C
+	#define TXCIE0_BIT      	TXCIE0
+	#define UDRIE0_BIT    		UDRIE0
+	#define RXCIE0_BIT  		RXCIE0
+	#define TXEN0_BIT   		TXEN0
+	#define RXEN0_BIT   		RXEN0
+	#define UDRE0_BIT   		UDRE0
+	#define RXC0_BIT    		RXC0
+	#define U2X0_BIT    		U2X0
+	#define MPCM0_BIT   		MPCM0
+	#define UCSZ02_BIT  		UCSZ02
+	#define TXB80_BIT   		TXB80
+
+#endif // NO_USART0
+
+#ifndef NO_USART1
+#define USE_USART1
+
+	#define RX1_INTERRUPT		USART1_RX_vect
+	#define TXC1_INTERRUPT		USART1_TX_vect
+	#define UDRE1_INTERRUPT		USART1_UDRE_vect 
+	#define UDR1_REGISTER		UDR1
+	#define UBRR1L_REGISTER		UBRR1L
+	#define UBRR1H_REGISTER		UBRR1H
+	#define UCSR1A_REGISTER		UCSR1A
+	#define UCSR1B_REGISTER		UCSR1B
+	#define UCSR1C_REGISTER		UCSR1C
+	#define TXCIE1_BIT      	TXCIE1
+	#define UDRIE1_BIT    		UDRIE1
+	#define RXCIE1_BIT  		RXCIE1
+	#define TXEN1_BIT   		TXEN1
+	#define RXEN1_BIT   		RXEN1
+	#define UDRE1_BIT   		UDRE1
+	#define RXC1_BIT    		RXC1
+	#define U2X1_BIT    		U2X1
+	#define MPCM1_BIT   		MPCM1
+	#define UCSZ12_BIT  		UCSZ12
+	#define TXB81_BIT   		TXB81
+	
+#endif // NO_USART1
 #endif
 
 #if defined(USART_REMAP_LAST_INTERFACE)&&!defined(USE_USART0)&&defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3)
@@ -1075,9 +1129,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE1_BIT
 	#define RXC0_BIT    		RXC1_BIT
 	#define U2X0_BIT    		U2X1_BIT
-	#define MPCM0_BIT           MPCM1_BIT
-	#define UCSZ02_BIT          UCSZ12_BIT
-	#define TXB80_BIT           TXB81_BIT
+	#define MPCM0_BIT   		MPCM1_BIT
+	#define UCSZ02_BIT  		UCSZ12_BIT
+	#define TXB80_BIT   		TXB81_BIT
 #endif
 
 #if defined(USART_REMAP_LAST_INTERFACE)&&!defined(USE_USART0)&&!defined(USE_USART1)&&defined(USE_USART2)&&!defined(USE_USART3)
@@ -1101,9 +1155,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE2_BIT
 	#define RXC0_BIT    		RXC2_BIT
 	#define U2X0_BIT    		U2X2_BIT
-	#define MPCM0_BIT           MPCM2_BIT
-	#define UCSZ02_BIT          UCSZ22_BIT
-	#define TXB80_BIT           TXB82_BIT
+	#define MPCM0_BIT   		MPCM2_BIT
+	#define UCSZ02_BIT   		UCSZ22_BIT
+	#define TXB80_BIT   		TXB82_BIT
 #endif
 
 #if defined(USART_REMAP_LAST_INTERFACE)&&!defined(USE_USART0)&&!defined(USE_USART1)&&!defined(USE_USART2)&&defined(USE_USART3)
@@ -1127,9 +1181,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define UDRE0_BIT   		UDRE3_BIT
 	#define RXC0_BIT    		RXC3_BIT
 	#define U2X0_BIT    		U2X3_BIT
-	#define MPCM0_BIT           MPCM3_BIT
-	#define UCSZ02_BIT          UCSZ32_BIT
-	#define TXB80_BIT           TXB83_BIT
+	#define MPCM0_BIT   		MPCM3_BIT
+	#define UCSZ02_BIT   		UCSZ32_BIT
+	#define TXB80_BIT   		TXB83_BIT
 #endif
 
 #if !defined(USE_USART0) && !defined(USE_USART1) && !defined(USE_USART2) && !defined(USE_USART3)
