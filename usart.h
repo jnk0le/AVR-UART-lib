@@ -17,7 +17,7 @@
 //#define USART_USE_SOFT_CTS // CTS handlers also have to be placed into INT/PCINT interrupt in the application code, see example(flow control).c
 //#define USART_USE_SOFT_RTS
 
-//#define USART_RS485_MODE // globally enable half duplex rs485 operation mode
+//#define USART_RS485_MODE // globally enable half duplex rs485 operation mode // used pin have to be initially kept in low state during boot
 //#define USART_MPCM_MODE // globally enable MPCM operation mode // 9 bit data frame only // always set frame format to 8 data bits
 
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces

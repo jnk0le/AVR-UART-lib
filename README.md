@@ -40,8 +40,9 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 
 In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint() or define USART_NO_DIRTY_HACKS macro.
 
-In half duplex (rs485) transmission modes, the aplication code is responsible of starting transmission only when bus is idle.
+In half duplex (RS485) transmission modes, the aplication code is responsible of starting transmission only when bus is idle.
 If RE and DE are shorted together additional pullup on RX pin is required.
+Pin used as a RS485 control line have to be kept in low state during boot process via a pulldown resistor or at least not driving it high even by an internall pull-up.
 
 In MPCM mode first received byte is address by which device was called (own or general call), application is also responsible of restoring into "idle listening" state withing described bus silence time after receiving entire packet.
 
