@@ -56,6 +56,8 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 
 For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be defined.
 
+Any used external IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO with this lib) 
+
 # ISR timmings
 
 - TX best case - send byte from buffer: 40 cycles (39 if uart is placed in IO address space)
