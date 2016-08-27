@@ -40,6 +40,8 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 
 In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint() or define USART_NO_DIRTY_HACKS macro.
 
+Any used external IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO with this lib) 
+
 In half duplex (RS485) transmission modes, the aplication code is responsible of starting transmission only when bus is idle.
 If RE and DE are shorted together additional pullup on RX pin is required.
 Pin used as a RS485 control line have to be kept in low state during boot process via a pulldown resistor or at least not driving it high even by an internall pull-up.
@@ -55,8 +57,6 @@ If interrupts are not missed, the receiver can accept up to 2 additional bytes, 
 and another if transmitter misses RTS signal (last one is stored in shift register).
 
 For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be defined.
-
-Any used external IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO with this lib) 
 
 # ISR timmings
 
