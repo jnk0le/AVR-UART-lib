@@ -68,7 +68,7 @@
 //Return    : none
 //Note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
 //          : All data inside UDR shift register will be lost.
-//          : U2X bit is cleared if USARTn_U2X_SPEED is not set.
+//          : U2X bit is cleared if USARTn_U2X_SPEED is not defined.
 //******************************************************************
 #ifdef USE_USART0
 	void uart0_reinit(uint16_t ubbr_value)
@@ -212,127 +212,100 @@
 //******************************************************************
 	void uart0_putc(char data)
 	{
+		register uint8_t tmp_tx_last_byte asm("r25");
+		
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
 		if (data == '\n')
 			uart0_putc('\r');
 	#endif
 		
 	#ifdef USART0_PUTC_FAST_INSERTIONS
-		#ifdef USART_NO_DIRTY_HACKS
-			register uint8_t tmp_tx_last_byte = tx0_last_byte;
 		
+		asm volatile("\n\t"
+			"lds	%[head], (tx0_last_byte) \n\t"
+			
 		#ifdef USART0_USE_SOFT_CTS
-			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+			"sbic	%M[cts_port], %M[cts_pin] \n\t"
+			"rjmp	normal_insert_%= \n\t"  
 		#endif
-			if(tx0_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & (1<<UDRE0_BIT)))
-			{
-				UDR0_REGISTER = data;
-				asm volatile("ret"); // return instead of jumping to the next function
-			}
-		
-			tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
-		
-			while(tx0_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+				
+			"lds	r27, (tx0_first_byte) \n\t"
+			"cpse	r27, %[head] \n\t"
+			"rjmp	normal_insert_%= \n\t"
+				
+		#ifdef USART0_IN_IO_ADDRESS_SPACE
+			"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
+		#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
+			"in 	r26, %M[UCSRA_reg_IO] \n\t"
+			"sbrs	r26, %M[udre_bit] \n\t"
 		#else
-			register uint8_t tmp_tx_last_byte asm("r25");
-		
-			asm volatile("\n\t"
-				"lds	%[head], (tx0_last_byte) \n\t"
-			
-			#ifdef USART0_USE_SOFT_CTS
-				"sbic	%M[cts_port], %M[cts_pin] \n\t"
-				"rjmp	normal_insert_%= \n\t"  
-			#endif
-				
-				"lds	r27, (tx0_first_byte) \n\t"
-				"cpse	r27, %[head] \n\t"
-				"rjmp	normal_insert_%= \n\t"
-				
-			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
-			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in 	r26, %M[UCSRA_reg_IO] \n\t"
-				"sbrs	r26, %M[udre_bit] \n\t"
-			#else
-				"lds	r26, %M[UCSRA_reg] \n\t"
-				"sbrs	r26, %M[udre_bit] \n\t"
-			#endif
-				"rjmp	normal_insert_%= \n\t"
-				
-			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"out	%M[UDR_reg], r24 \n\t"
-			#else
-				"sts	%M[UDR_reg], r24 \n\t"
-			#endif
-				"ret	\n\t"
-				
-			"normal_insert_%=:"
-				"inc	%[head] \n\t"
-			
-			#if (TX0_BUFFER_MASK != 0xff)
-				"andi	%[head], %M[mask] \n\t"
-			#endif
-				
-			"waitforspace_%=:"
-				"lds	r27, (tx0_first_byte) \n\t"
-				"cp		r27, %[head] \n\t"
-				"breq	waitforspace_%= \n\t"
-				
-				: /* outputs */
-				[head] "=r" (tmp_tx_last_byte)
-				: /* input operands */
-			#ifdef USART0_USE_SOFT_CTS
-				[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS0_IOPORTNAME))),
-				[cts_pin]       "M" (CTS0_PIN),
-			#endif
-				[mask]          "M" (TX0_BUFFER_MASK),
-				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
-				[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR0A_REGISTER)),
-				[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
-				[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
-				[udre_bit]      "M"	(UDRE0_BIT)
-				: /* clobbers */
-				"r26","r27"
-			);
+			"lds	r26, %M[UCSRA_reg] \n\t"
+			"sbrs	r26, %M[udre_bit] \n\t"
 		#endif
+			"rjmp	normal_insert_%= \n\t"
+				
+		#ifdef USART0_IN_IO_ADDRESS_SPACE
+			"out	%M[UDR_reg], r24 \n\t"
+		#else
+			"sts	%M[UDR_reg], r24 \n\t"
+		#endif
+			"ret	\n\t"
+				
+		"normal_insert_%=:"
+			"inc	%[head] \n\t"
+			
+		#if (TX0_BUFFER_MASK != 0xff)
+			"andi	%[head], %M[mask] \n\t"
+		#endif
+				
+		"waitforspace_%=:"
+			"lds	r27, (tx0_first_byte) \n\t"
+			"cp		r27, %[head] \n\t"
+			"breq	waitforspace_%= \n\t"
+				
+			: /* outputs */
+			[head] "=r" (tmp_tx_last_byte)
+			: /* input operands */
+		#ifdef USART0_USE_SOFT_CTS
+			[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS0_IOPORTNAME))),
+			[cts_pin]       "M" (CTS0_PIN),
+		#endif
+			[mask]          "M" (TX0_BUFFER_MASK),
+			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
+			[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR0A_REGISTER)),
+			[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
+			[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[udre_bit]      "M"	(UDRE0_BIT)
+			: /* clobbers */
+			"r26","r27"
+		);
 	#else
-		#ifdef USART_NO_DIRTY_HACKS
-			register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		asm volatile("\n\t"
+			"lds	%[head], (tx0_last_byte) \n\t"
+			"inc	%[head] \n\t"
 			
-			while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-		#else
-			register uint8_t tmp_tx_last_byte asm("r25");
-		
-			asm volatile("\n\t"
-				"lds	%[head], (tx0_last_byte) \n\t"
-				"inc	%[head] \n\t"
-			
-			#if (TX0_BUFFER_MASK != 0xff)
-				"andi	%[head], %M[mask] \n\t"
-			#endif
-				
-			"waitforspace_%=:"
-				"lds	r27, (tx0_first_byte) \n\t"
-				"cp		r27, %[head] \n\t"
-				"breq	waitforspace_%= \n\t"
-				
-				: /* outputs */
-				[head] "=r" (tmp_tx_last_byte)
-				: /* input operands */
-				[mask] "M" (TX0_BUFFER_MASK)
-				: /* clobbers */
-				"r27"
-			);
+		#if (TX0_BUFFER_MASK != 0xff)
+			"andi	%[head], %M[mask] \n\t"
 		#endif
+				
+		"waitforspace_%=:"
+			"lds	r27, (tx0_first_byte) \n\t"
+			"cp		r27, %[head] \n\t"
+			"breq	waitforspace_%= \n\t"
+				
+			: /* outputs */
+			[head] "=r" (tmp_tx_last_byte)
+			: /* input operands */
+			[mask] "M" (TX0_BUFFER_MASK)
+			: /* clobbers */
+			"r27"
+		);
 	#endif
 		
-	#ifdef USART_NO_DIRTY_HACKS
-		tx0_buffer[tmp_tx_last_byte] = data;
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 		
-		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
@@ -346,17 +319,11 @@
 			: /* input operands */
 			[dat] "r" (data),
 			[index] "r" (tmp_tx_last_byte)
-			
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
-		
-	#ifdef USART_NO_DIRTY_HACKS
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-	#else
+	
 		cli();
-	#endif
 		{
 			tx0_last_byte = tmp_tx_last_byte;
 		
@@ -368,7 +335,7 @@
 			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
 		#endif
 			{
-			#if (defined(USART0_IN_IO_ADDRESS_SPACE)&&!defined(USART0_IN_UPPER_IO_ADDRESS_SPACE))||defined(USART_NO_DIRTY_HACKS)
+			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 			#else
 				asm volatile("\n\t"
@@ -392,10 +359,8 @@
 			}
 		}
 	
-	#ifndef USART_NO_DIRTY_HACKS
 		reti();
-	#endif
-		
+	
 		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
 	}
 	
@@ -433,13 +398,10 @@
 			return BUFFER_FULL;
 	#endif
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tx0_buffer[tmp_tx_last_byte] = data;
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 		
-		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
@@ -457,7 +419,7 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
+	
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
@@ -484,10 +446,6 @@
 //******************************************************************
 	void uart0_putstr(char *string)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(*string)
-			uart0_putc(*string++);
-	#else 
 		asm volatile("\n\t"
 		
 		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
@@ -508,7 +466,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 //******************************************************************
@@ -519,10 +476,6 @@
 //******************************************************************
 	void uart0_putstrl(char *string, uint8_t BytesToWrite)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(BytesToWrite--)
-			uart0_putc(*string++);
-	#else
 		asm volatile("\n\t"
 		
 		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
@@ -544,7 +497,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function */
 		);
-	#endif
 	}
 
 //******************************************************************
@@ -555,25 +507,20 @@
 	void uart0_puts_p(const char *string)
 	{
 	#if !defined(__AVR_ATtiny102__)||!defined(__AVR_ATtiny104__)
-		#ifdef USART_NO_DIRTY_HACKS
-			register char c;
-			while ( (c = pgm_read_byte(string++)) ) uart0_putc(c);
-		#else
-			asm volatile("\n\t"
-				"movw	r30, r24 \n\t" // buff pointer
-			"load_loop_%=:"
-				"lpm 	r24, Z+ \n\t"
-				"and	r24, r24 \n\t" // test for NULL
-				"breq	skip_loop_%= \n\t"
-				"rcall	uart0_putc \n\t" // Z pointer will not be affected in uart_putc()
-				"rjmp	load_loop_%= \n\t"
-			"skip_loop_%=:"
+		asm volatile("\n\t"
+			"movw	r30, r24 \n\t" // buff pointer
+		"load_loop_%=:"
+			"lpm 	r24, Z+ \n\t"
+			"and	r24, r24 \n\t" // test for NULL
+			"breq	skip_loop_%= \n\t"
+			"rcall	uart0_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp	load_loop_%= \n\t"
+		"skip_loop_%=:"
 		
-				: /* no outputs */
-				: /* no inputs */
-				: /* no clobbers - this is the whole function*/
-			);
-		#endif
+			: /* no outputs */
+			: /* no inputs */
+			: /* no clobbers - this is the whole function*/
+		);
 	#endif
 	}
 
@@ -791,120 +738,93 @@
 #ifndef NO_TX1_INTERRUPT
 	void uart1_putc(char data)
 	{
+		register uint8_t tmp_tx_last_byte asm("r25");
+		
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
 		if (data == '\n')
 			uart1_putc('\r');
 	#endif
 		
 	#ifdef USART1_PUTC_FAST_INSERTIONS
-		#ifdef USART_NO_DIRTY_HACKS
-			register uint8_t tmp_tx_last_byte = tx1_last_byte;
 		
+		asm volatile("\n\t"
+			"lds	%[head], (tx1_last_byte) \n\t"
+			
 		#ifdef USART1_USE_SOFT_CTS
-			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+			"sbic	%M[cts_port], %M[cts_pin] \n\t"
+			"rjmp	normal_insert_%= \n\t"  
 		#endif
-			if(tx1_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
-			{
-				UDR1_REGISTER = data;
-				asm volatile("ret"); // return instead of jumping to the next function
-			}
-		
-			tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
-		
-			while(tx1_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+				
+			"lds	r27, (tx1_first_byte) \n\t"
+			"cpse	r27, %[head] \n\t"
+			"rjmp	normal_insert_%= \n\t"
+				
+		#ifdef USART1_IN_IO_ADDRESS_SPACE
+			"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
 		#else
-			register uint8_t tmp_tx_last_byte asm("r25");
-		
-			asm volatile("\n\t"
-				"lds	%[head], (tx1_last_byte) \n\t"
-			
-			#ifdef USART1_USE_SOFT_CTS
-				"sbic	%M[cts_port], %M[cts_pin] \n\t"
-				"rjmp	normal_insert_%= \n\t"  
-			#endif
-				
-				"lds	r27, (tx1_first_byte) \n\t"
-				"cpse	r27, %[head] \n\t"
-				"rjmp	normal_insert_%= \n\t"
-				
-			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
-			#else
-				"lds	r26, %M[UCSRA_reg] \n\t"
-				"sbrs	r26, %M[udre_bit] \n\t"
-			#endif
-				"rjmp	normal_insert_%= \n\t"
-				
-			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"out	%M[UDR_reg], r24 \n\t"
-			#else
-				"sts	%M[UDR_reg], r24 \n\t"
-			#endif
-				"ret	\n\t"
-				
-			"normal_insert_%=:"
-				"inc	%[head] \n\t"
-			
-			#if (TX1_BUFFER_MASK != 0xff)
-				"andi	%[head], %M[mask] \n\t"
-			#endif
-				
-			"waitforspace_%=:"
-				"lds	r27, (tx1_first_byte) \n\t"
-				"cp		r27, %[head] \n\t"
-				"breq	waitforspace_%= \n\t"
-				
-				: /* outputs */
-				[head] "=r" (tmp_tx_last_byte)
-				: /* input operands */
-			#ifdef USART1_USE_SOFT_CTS
-				[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS1_IOPORTNAME))),
-				[cts_pin]       "M"    (CTS1_PIN),
-			#endif
-				[mask]          "M" (TX1_BUFFER_MASK),
-				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
-				[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR1A_REGISTER)),
-				[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
-				[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
-				[udre_bit]      "M"	(UDRE1_BIT)
-				: /* clobbers */
-				"r26","r27"
-			);
+			"lds	r26, %M[UCSRA_reg] \n\t"
+			"sbrs	r26, %M[udre_bit] \n\t"
 		#endif
+			"rjmp	normal_insert_%= \n\t"
+				
+		#ifdef USART1_IN_IO_ADDRESS_SPACE
+			"out	%M[UDR_reg], r24 \n\t"
+		#else
+			"sts	%M[UDR_reg], r24 \n\t"
+		#endif
+			"ret	\n\t"
+				
+		"normal_insert_%=:"
+			"inc	%[head] \n\t"
+			
+		#if (TX1_BUFFER_MASK != 0xff)
+			"andi	%[head], %M[mask] \n\t"
+		#endif
+				
+		"waitforspace_%=:"
+			"lds	r27, (tx1_first_byte) \n\t"
+			"cp		r27, %[head] \n\t"
+			"breq	waitforspace_%= \n\t"
+				
+			: /* outputs */
+			[head] "=r" (tmp_tx_last_byte)
+			: /* input operands */
+		#ifdef USART1_USE_SOFT_CTS
+			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS1_IOPORTNAME))),
+			[cts_pin]       "M"    (CTS1_PIN),
+		#endif
+			[mask]          "M" (TX1_BUFFER_MASK),
+			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
+			[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR1A_REGISTER)),
+			[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
+			[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
+			[udre_bit]      "M"	(UDRE1_BIT)
+			: /* clobbers */
+			"r26","r27"
+		);
 	#else
-		#ifdef USART_NO_DIRTY_HACKS
-			register uint8_t tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
-		
-			while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-		#else
-			register uint8_t tmp_tx_last_byte asm("r25");
-		
-			asm volatile("\n\t"
-				"lds	%[head], (tx1_last_byte) \n\t"
-				"inc	%[head] \n\t"
+		asm volatile("\n\t"
+			"lds	%[head], (tx1_last_byte) \n\t"
+			"inc	%[head] \n\t"
 			
-			#if (TX1_BUFFER_MASK != 0xff)
-				"andi	%[head], %M[mask] \n\t"
-			#endif
-				
-			"waitforspace_%=:"
-				"lds	r27, (tx1_first_byte) \n\t"
-				"cp		r27, %[head] \n\t"
-				"breq	waitforspace_%= \n\t"
-				
-				: /* outputs */
-				[head] "=r" (tmp_tx_last_byte)
-				: /* input operands */
-				[mask] "M" (TX1_BUFFER_MASK)
-				: /* clobbers */
-				"r27"
-			);
+		#if (TX1_BUFFER_MASK != 0xff)
+			"andi	%[head], %M[mask] \n\t"
 		#endif
+				
+		"waitforspace_%=:"
+			"lds	r27, (tx1_first_byte) \n\t"
+			"cp		r27, %[head] \n\t"
+			"breq	waitforspace_%= \n\t"
+				
+			: /* outputs */
+			[head] "=r" (tmp_tx_last_byte)
+			: /* input operands */
+			[mask] "M" (TX1_BUFFER_MASK)
+			: /* clobbers */
+			"r27"
+		);
 	#endif
 		
-	#ifdef USART_NO_DIRTY_HACKS
-		tx1_buffer[tmp_tx_last_byte] = data;
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -916,29 +836,24 @@
 			: /* input operands */
 			[dat]   "r" (data),
 			[index] "r" (tmp_tx_last_byte)
-			
+				
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
-	#ifdef USART_NO_DIRTY_HACKS
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-	#else
 		cli();
-	#endif
 		{
 			tx1_last_byte = tmp_tx_last_byte;
 		
 		#ifdef USART1_RS485_MODE
 			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
 		#endif
-		
+	
 		#ifdef USART1_USE_SOFT_CTS
 			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
 		#endif
 			{
-			#if defined(USART1_IN_IO_ADDRESS_SPACE)||defined(USART_NO_DIRTY_HACKS)
+			#ifdef USART1_IN_IO_ADDRESS_SPACE
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
 			#else
 				asm volatile("\n\t"
@@ -956,9 +871,7 @@
 			}
 		}
 	
-	#ifndef USART_NO_DIRTY_HACKS
 		reti();
-	#endif
 		
 		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
 	}
@@ -991,9 +904,6 @@
 			return BUFFER_FULL;
 	#endif
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tx1_buffer[tmp_tx_last_byte] = data;
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -1009,7 +919,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
@@ -1031,10 +940,6 @@
 
 	void uart1_putstr(char *string)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(*string)
-			uart1_putc(*string++);
-	#else 
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		
@@ -1050,15 +955,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart1_putstrl(char *string, uint8_t BytesToWrite)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(BytesToWrite--)
-			uart1_putc(*string++);
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 
@@ -1075,15 +975,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function */
 		);
-	#endif
 	}
 
 	void uart1_puts_p(const char *string)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart1_putc(c);
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		"load_loop_%=:"
@@ -1098,7 +993,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart1_putint(int16_t data)
@@ -1245,112 +1139,85 @@
 #ifndef NO_TX2_INTERRUPT
 	void uart2_putc(char data)
 	{
+		register uint8_t tmp_tx_last_byte asm("r25");
+		
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
 		if (data == '\n')
 			uart2_putc('\r');
 	#endif
 		
 	#ifdef USART2_PUTC_FAST_INSERTIONS
-		#ifdef USART_NO_DIRTY_HACKS
-			register uint8_t tmp_tx_last_byte = tx2_last_byte;
-		
+			
+		asm volatile("\n\t"
+			"lds	%[head], (tx2_last_byte) \n\t"
+			
 		#ifdef USART2_USE_SOFT_CTS
-			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+			"sbic	%M[cts_port], %M[cts_pin] \n\t"
+			"rjmp	normal_insert_%= \n\t"  
 		#endif
-			if(tx2_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
-			{
-				UDR2_REGISTER = data;
-				asm volatile("ret"); // return instead of jumping to the next function
-			}
-		
-			tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
-		
-			while(tx2_first_byte == tmp_tx_last_byte) // wait for free space in buffer
-		#else
-			register uint8_t tmp_tx_last_byte asm("r25");
-		
-			asm volatile("\n\t"
-				"lds	%[head], (tx2_last_byte) \n\t"
+				
+			"lds	r27, (tx2_first_byte) \n\t"
+			"cpse	r27, %[head] \n\t"
+			"rjmp	normal_insert_%= \n\t"
 			
-			#ifdef USART2_USE_SOFT_CTS
-				"sbic	%M[cts_port], %M[cts_pin] \n\t"
-				"rjmp	normal_insert_%= \n\t"  
-			#endif
+			"lds	r26, %M[UCSRA_reg] \n\t"
+			"sbrs	r26, %M[udre_bit] \n\t"
+			"rjmp	normal_insert_%= \n\t"
 				
-				"lds	r27, (tx2_first_byte) \n\t"
-				"cpse	r27, %[head] \n\t"
-				"rjmp	normal_insert_%= \n\t"
+			"sts	%M[UDR_reg], r24 \n\t"
+			"ret	\n\t"
+				
+		"normal_insert_%=:"
+			"inc	%[head] \n\t"
 			
-				"lds	r26, %M[UCSRA_reg] \n\t"
-				"sbrs	r26, %M[udre_bit] \n\t"
-				"rjmp	normal_insert_%= \n\t"
-				
-				"sts	%M[UDR_reg], r24 \n\t"
-				"ret	\n\t"
-				
-			"normal_insert_%=:"
-				"inc	%[head] \n\t"
-			
-			#if (TX2_BUFFER_MASK != 0xff)
-				"andi	%[head], %M[mask] \n\t"
-			#endif
-				
-			"waitforspace_%=:"
-				"lds	r27, (tx2_first_byte) \n\t"
-				"cp		r27, %[head] \n\t"
-				"breq	waitforspace_%= \n\t"
-				
-				: /* outputs */
-				[head] "=r" (tmp_tx_last_byte)
-				: /* input operands */
-			#ifdef USART2_USE_SOFT_CTS
-				[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS2_IOPORTNAME))),
-				[cts_pin]       "M"    (CTS2_PIN),
-			#endif
-				[mask]          "M" (TX2_BUFFER_MASK),
-				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
-				[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR2A_REGISTER)),
-				[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
-				[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR2_REGISTER)),
-				[udre_bit]      "M"	(UDRE2_BIT)
-				: /* clobbers */
-				"r26","r27"
-			);
+		#if (TX2_BUFFER_MASK != 0xff)
+			"andi	%[head], %M[mask] \n\t"
 		#endif
+				
+		"waitforspace_%=:"
+			"lds	r27, (tx2_first_byte) \n\t"
+			"cp		r27, %[head] \n\t"
+			"breq	waitforspace_%= \n\t"
+				
+			: /* outputs */
+			[head] "=r" (tmp_tx_last_byte)
+			: /* input operands */
+		#ifdef USART2_USE_SOFT_CTS
+			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS2_IOPORTNAME))),
+			[cts_pin]       "M"    (CTS2_PIN),
+		#endif
+			[mask]          "M" (TX2_BUFFER_MASK),
+			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
+			[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR2A_REGISTER)),
+			[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
+			[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR2_REGISTER)),
+			[udre_bit]      "M"	(UDRE2_BIT)
+			: /* clobbers */
+			"r26","r27"
+		);
 	#else
-		#ifdef USART_NO_DIRTY_HACKS
-			register uint8_t tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
-		
-			while(tx2_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-		#else
-			register uint8_t tmp_tx_last_byte asm("r25");
-		
-			asm volatile("\n\t"
-				"lds	%[head], (tx2_last_byte) \n\t"
-				"inc	%[head] \n\t"
+		asm volatile("\n\t"
+			"lds	%[head], (tx2_last_byte) \n\t"
+			"inc	%[head] \n\t"
 			
-			#if (TX2_BUFFER_MASK != 0xff)
-				"andi	%[head], %M[mask] \n\t"
-			#endif
-				
-			"waitforspace_%=:"
-				"lds	r27, (tx2_first_byte) \n\t"
-				"cp		r27, %[head] \n\t"
-				"breq	waitforspace_%= \n\t"
-				
-				: /* outputs */
-				[head] "=r" (tmp_tx_last_byte)
-				: /* input operands */
-				[mask] "M" (TX2_BUFFER_MASK)
-				: /* clobbers */
-				"r27"
-			);
+		#if (TX2_BUFFER_MASK != 0xff)
+			"andi	%[head], %M[mask] \n\t"
 		#endif
+				
+		"waitforspace_%=:"
+			"lds	r27, (tx2_first_byte) \n\t"
+			"cp		r27, %[head] \n\t"
+			"breq	waitforspace_%= \n\t"
+				
+			: /* outputs */
+			[head] "=r" (tmp_tx_last_byte)
+			: /* input operands */
+			[mask] "M" (TX2_BUFFER_MASK)
+			: /* clobbers */
+			"r27"
+		);
 	#endif
 		
-	#ifdef USART_NO_DIRTY_HACKS
-		tx2_buffer[tmp_tx_last_byte] = data;
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -1366,13 +1233,8 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
-	#ifdef USART_NO_DIRTY_HACKS
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-	#else
 		cli();
-	#endif
 		{
 			tx2_last_byte = tmp_tx_last_byte;
 		
@@ -1384,9 +1246,6 @@
 			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
 		#endif
 			{
-			#ifdef USART_NO_DIRTY_HACKS
-				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
-			#else
 				asm volatile("\n\t"
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
@@ -1398,13 +1257,10 @@
 					: /* clobbers */
 					"r25"
 				);
-			#endif
 			}
 		}
 	
-	#ifndef USART_NO_DIRTY_HACKS
 		reti();
-	#endif
 		
 		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
 	}
@@ -1437,9 +1293,6 @@
 			return BUFFER_FULL;
 	#endif
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tx2_buffer[tmp_tx_last_byte] = data;
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -1455,7 +1308,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
@@ -1477,10 +1329,6 @@
 
 	void uart2_putstr(char *string)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(*string)
-			uart2_putc(*string++);
-	#else 
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		
@@ -1496,15 +1344,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart2_putstrl(char *string, uint8_t BytesToWrite)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(BytesToWrite--)
-			uart2_putc(*string++);
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 
@@ -1521,15 +1364,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function */
 		);
-	#endif
 	}
 
 	void uart2_puts_p(const char *string)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart2_putc(c);
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		"load_loop_%=:"
@@ -1544,7 +1382,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart2_putint(int16_t data)
@@ -1691,86 +1528,63 @@
 #ifndef NO_TX3_INTERRUPT
 	void uart3_putc(char data)
 	{
+		register uint8_t tmp_tx_last_byte asm("r25");
+		
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
 		if (data == '\n')
 			uart3_putc('\r');
 	#endif
 		
 	#ifdef USART3_PUTC_FAST_INSERTIONS
-		#ifdef USART_NO_DIRTY_HACKS
-			register uint8_t tmp_tx_last_byte = tx3_last_byte;
 		
+		asm volatile("\n\t"
+			"lds	%[head], (tx3_last_byte) \n\t"
+			
 		#ifdef USART3_USE_SOFT_CTS
-			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+			"sbic	%M[cts_port], %M[cts_pin] \n\t"
+			"rjmp	normal_insert_%= \n\t"  
 		#endif
-			if(tx3_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
-			{
-				UDR3_REGISTER = data;
-				asm volatile("ret"); // return instead of jumping to the next function
-			}
-		
-			tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
-		
-			while(tx3_first_byte == tmp_tx_last_byte) // wait for free space in buffer
-		#else
-			register uint8_t tmp_tx_last_byte asm("r25");
-		
-			asm volatile("\n\t"
-				"lds	%[head], (tx3_last_byte) \n\t"
+				
+			"lds	r27, (tx3_first_byte) \n\t"
+			"cpse	r27, %[head] \n\t"
+			"rjmp	normal_insert_%= \n\t"
 			
-			#ifdef USART3_USE_SOFT_CTS
-				"sbic	%M[cts_port], %M[cts_pin] \n\t"
-				"rjmp	normal_insert_%= \n\t"  
-			#endif
+			"lds	r26, %M[UCSRA_reg] \n\t"
+			"sbrs	r26, %M[udre_bit] \n\t"
+			"rjmp	normal_insert_%= \n\t"
 				
-				"lds	r27, (tx3_first_byte) \n\t"
-				"cpse	r27, %[head] \n\t"
-				"rjmp	normal_insert_%= \n\t"
+			"sts	%M[UDR_reg], r24 \n\t"
+			"ret	\n\t"
+				
+		"normal_insert_%=:"
+			"inc	%[head] \n\t"
 			
-				"lds	r26, %M[UCSRA_reg] \n\t"
-				"sbrs	r26, %M[udre_bit] \n\t"
-				"rjmp	normal_insert_%= \n\t"
-				
-				"sts	%M[UDR_reg], r24 \n\t"
-				"ret	\n\t"
-				
-			"normal_insert_%=:"
-				"inc	%[head] \n\t"
-			
-			#if (TX3_BUFFER_MASK != 0xff)
-				"andi	%[head], %M[mask] \n\t"
-			#endif
-				
-			"waitforspace_%=:"
-				"lds	r27, (tx3_first_byte) \n\t"
-				"cp		r27, %[head] \n\t"
-				"breq	waitforspace_%= \n\t"
-				
-				: /* outputs */
-				[head] "=r" (tmp_tx_last_byte)
-				: /* input operands */
-			#ifdef USART3_USE_SOFT_CTS
-				[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS3_IOPORTNAME))),
-				[cts_pin]       "M"    (CTS3_PIN),
-			#endif
-				[mask]          "M" (TX2_BUFFER_MASK),
-				[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
-				[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR3A_REGISTER)),
-				[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
-				[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR3_REGISTER)),
-				[udre_bit]      "M"	(UDRE3_BIT)
-				: /* clobbers */
-				"r26","r27"
-			);
+		#if (TX3_BUFFER_MASK != 0xff)
+			"andi	%[head], %M[mask] \n\t"
 		#endif
+				
+		"waitforspace_%=:"
+			"lds	r27, (tx3_first_byte) \n\t"
+			"cp		r27, %[head] \n\t"
+			"breq	waitforspace_%= \n\t"
+				
+			: /* outputs */
+			[head] "=r" (tmp_tx_last_byte)
+			: /* input operands */
+		#ifdef USART3_USE_SOFT_CTS
+			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS3_IOPORTNAME))),
+			[cts_pin]       "M"    (CTS3_PIN),
+		#endif
+			[mask]          "M" (TX2_BUFFER_MASK),
+			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
+			[UCSRA_reg_IO]  "M" (_SFR_IO_ADDR(UCSR3A_REGISTER)),
+			[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
+			[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR3_REGISTER)),
+			[udre_bit]      "M"	(UDRE3_BIT)
+			: /* clobbers */
+			"r26","r27"
+		);
 	#else
-		#ifdef USART_NO_DIRTY_HACKS
-			register uint8_t tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
-		
-			while(tx3_first_byte == tmp_tx_last_byte); // wait for free space in buffer
-		#else
-			register uint8_t tmp_tx_last_byte asm("r25");
-		
 			asm volatile("\n\t"
 				"lds	%[head], (tx3_last_byte) \n\t"
 				"inc	%[head] \n\t"
@@ -1791,12 +1605,8 @@
 				: /* clobbers */
 				"r27"
 			);
-		#endif
 	#endif
 		
-	#ifdef USART_NO_DIRTY_HACKS
-		tx3_buffer[tmp_tx_last_byte] = data;
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -1812,13 +1622,8 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
-	#ifdef USART_NO_DIRTY_HACKS
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-	#else
 		cli();
-	#endif
 		{
 			tx3_last_byte = tmp_tx_last_byte;
 		
@@ -1830,9 +1635,6 @@
 			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
 		#endif
 			{
-			#ifdef USART_NO_DIRTY_HACKS
-				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
-			#else
 				asm volatile("\n\t"
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
@@ -1844,13 +1646,10 @@
 					: /* clobbers */
 					"r25"
 				);
-			#endif
 			}
 		}
 	
-	#ifndef USART_NO_DIRTY_HACKS
 		reti();
-	#endif
 		
 		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
 	}
@@ -1883,9 +1682,6 @@
 			return BUFFER_FULL;
 	#endif
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tx3_buffer[tmp_tx_last_byte] = data;
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -1901,7 +1697,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
@@ -1923,10 +1718,6 @@
 
 	void uart3_putstr(char *string)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(*string)
-			uart3_putc(*string++);
-	#else 
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		
@@ -1942,15 +1733,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart3_putstrl(char *string, uint8_t BytesToWrite)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(BytesToWrite--)
-			uart3_putc(*string++);
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 
@@ -1967,15 +1753,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function */
 		);
-	#endif
 	}
 
 	void uart3_puts_p(const char *string)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart3_putc(c);
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		"load_loop_%=:"
@@ -1990,7 +1771,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart3_putint(int16_t data)
@@ -2153,13 +1933,10 @@
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx0_buffer[tmp_rx_first_byte];
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 		
-		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
@@ -2177,7 +1954,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 	
 		rx0_first_byte = tmp_rx_first_byte;
 	
@@ -2232,15 +2008,6 @@
 //******************************************************************
 	void uart0_gets(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			*buffer = uart0_getc();
-			if(*buffer++ == 0)
-				break;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 		
 		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
@@ -2264,7 +2031,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 //******************************************************************
@@ -2279,28 +2045,6 @@
 //******************************************************************
 	void uart0_getln(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart0_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart0_getc()) );
-			#endif
-				break;
-			}
-			buffer++;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 		
 		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
@@ -2345,7 +2089,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 //******************************************************************
@@ -2361,38 +2104,6 @@
 //******************************************************************
 	void uart0_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		do{
-			*buffer = uart0_getc();
-		}while(*buffer <= 32);
-		
-		buffer++;
-		bufferlimit--;
-		
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart0_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else //RX_NEWLINE_MODE_R
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart0_getc()) );
-			#endif
-				break;
-			}
-			else if(*buffer <= 32)
-				break; // string reading is done, we will exit
-
-			buffer++;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 		
 		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
@@ -2449,7 +2160,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 //******************************************************************
@@ -2532,24 +2242,17 @@
 		
 		if(tmp_rx_first_byte == rx0_last_byte) 
 		{
-		#ifndef USART_NO_DIRTY_HACKS
 			uint16_t tmp;
 			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
 			return tmp;
-		#else
-			return -1;
-		#endif
 		}
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx0_buffer[tmp_rx_first_byte];
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 		
-		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
@@ -2567,7 +2270,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
 		rx0_first_byte = tmp_rx_first_byte;
 		
@@ -2620,7 +2322,7 @@
 //Arguments : none
 //Return    : Number of bytes waiting in receiver buffer.
 //******************************************************************
-	//uint8_t auart0_AvailableBytes(void)
+	//uint8_t uart0_AvailableBytes(void)
 	//{
 	//	return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
 	//}
@@ -2646,9 +2348,6 @@
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx1_buffer[tmp_rx_first_byte];
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -2664,7 +2363,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 	
 		rx1_first_byte = tmp_rx_first_byte;
 	
@@ -2697,15 +2395,6 @@
 
 	void uart1_gets(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			*buffer = uart1_getc();
-			if(*buffer++ == 0)
-				break;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		
@@ -2723,33 +2412,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 	
 	void uart1_getln(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart1_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart1_getc()) );
-			#endif
-				break;
-			}
-			buffer++;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 			
@@ -2789,43 +2455,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart1_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		do{
-			*buffer = uart1_getc();
-		}while(*buffer <= 32);
-		
-		buffer++;
-		bufferlimit--;
-		
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart1_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else //RX_NEWLINE_MODE_R
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart1_getc()) );
-			#endif
-				break;
-			}
-			else if(*buffer <= 32)
-				break; // string reading is done, we will exit
-
-			buffer++;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 			
@@ -2876,7 +2509,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	char uart1_skipWhiteSpaces(void)
@@ -2930,20 +2562,13 @@
 		
 		if(tmp_rx_first_byte == rx1_last_byte) 
 		{
-		#ifndef USART_NO_DIRTY_HACKS
 			uint16_t tmp;
 			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
 			return tmp;
-		#else
-			return -1;
-		#endif
 		}
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx1_buffer[tmp_rx_first_byte];
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -2958,7 +2583,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
 		rx1_first_byte = tmp_rx_first_byte;
 		
@@ -3020,9 +2644,6 @@
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx2_buffer[tmp_rx_first_byte];
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -3038,7 +2659,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 	
 		rx2_first_byte = tmp_rx_first_byte;
 	
@@ -3071,15 +2691,6 @@
 
 	void uart2_gets(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			*buffer = uart2_getc();
-			if(*buffer++ == 0)
-				break;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		
@@ -3097,33 +2708,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 	
 	void uart2_getln(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart2_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart2_getc()) );
-			#endif
-				break;
-			}
-			buffer++;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 			
@@ -3163,43 +2751,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart2_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		do{
-			*buffer = uart2_getc();
-		}while(*buffer <= 32);
-		
-		buffer++;
-		bufferlimit--;
-		
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart2_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else //RX_NEWLINE_MODE_R
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart2_getc()) );
-			#endif
-				break;
-			}
-			else if(*buffer <= 32)
-				break; // string reading is done, we will exit
-
-			buffer++;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 			
@@ -3250,7 +2805,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	char uart2_skipWhiteSpaces(void)
@@ -3304,20 +2858,13 @@
 		
 		if(tmp_rx_first_byte == rx2_last_byte) 
 		{
-		#ifndef USART_NO_DIRTY_HACKS
 			uint16_t tmp;
 			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
 			return tmp;
-		#else
-			return -1;
-		#endif
 		}
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx2_buffer[tmp_rx_first_byte];
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -3333,7 +2880,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
 		rx2_first_byte = tmp_rx_first_byte;
 		
@@ -3395,9 +2941,6 @@
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx3_buffer[tmp_rx_first_byte];
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -3413,7 +2956,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 	
 		rx3_first_byte = tmp_rx_first_byte;
 	
@@ -3446,15 +2988,6 @@
 
 	void uart3_gets(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			*buffer = uart3_getc();
-			if(*buffer++ == 0)
-				break;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 		
@@ -3472,33 +3005,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 	
 	void uart3_getln(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart3_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart3_getc()) );
-			#endif
-				break;
-			}
-			buffer++;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 			
@@ -3538,43 +3048,10 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	void uart3_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
-	#ifdef USART_NO_DIRTY_HACKS
-		do{
-			*buffer = uart3_getc();
-		}while(*buffer <= 32);
-		
-		buffer++;
-		bufferlimit--;
-		
-		while(--bufferlimit)
-		{
-			do{
-				*buffer = uart3_getc();
-			}while(*buffer == 0);
-			
-		#ifdef RX_NEWLINE_MODE_N
-			if(*buffer == '\n')
-		#else //RX_NEWLINE_MODE_R
-			if(*buffer == '\r')
-		#endif
-			{
-			#ifdef RX_NEWLINE_MODE_RN
-				while( !(uart3_getc()) );
-			#endif
-				break;
-			}
-			else if(*buffer <= 32)
-				break; // string reading is done, we will exit
-
-			buffer++;
-		}
-		*buffer = 0;
-	#else
 		asm volatile("\n\t"
 			"movw	r30, r24 \n\t" // buff pointer
 			
@@ -3625,7 +3102,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	#endif
 	}
 
 	char uart3_skipWhiteSpaces(void)
@@ -3679,20 +3155,13 @@
 		
 		if(tmp_rx_first_byte == rx3_last_byte) 
 		{
-		#ifndef USART_NO_DIRTY_HACKS
 			uint16_t tmp;
 			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
 			return tmp;
-		#else
-			return -1;
-		#endif
 		}
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
 	
-	#ifdef USART_NO_DIRTY_HACKS
-		tmp = rx3_buffer[tmp_rx_first_byte];
-	#else
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
@@ -3708,7 +3177,6 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	#endif
 		
 		rx3_first_byte = tmp_rx_first_byte;
 		
@@ -4049,7 +3517,7 @@
 			
 			"sts	(tx0_first_byte), r30 \n\t"       /* 2 */
 	
-		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r31, 0x00 \n\t"                   /* 1 */
 		#endif
 			"subi	r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
@@ -4215,7 +3683,7 @@
 			
 			"sts	(rx0_last_byte), r30 \n\t"        /* 2 */
 		
-		#if defined(USART_NO_DIRTY_HACKS)||(!defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__))	// on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)	// on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r31, 0x00 \n\t"                   /* 1 */
 		#endif
 			"subi	r30, lo8(-(rx0_buffer))\n\t"      /* 1 */

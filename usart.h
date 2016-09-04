@@ -36,7 +36,7 @@
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
-//#define USART_NO_DIRTY_HACKS // if UBBRH is not zero at startup, or if the code is not allowed to violate any conventions
+#define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero // WORKS ONLY WITH CONSTANTS
 
 /*****************************config for multiple USART mcu's***********************************/
 
@@ -164,11 +164,10 @@
 
 #ifndef __OPTIMIZE__
 	#warning "Compiler optimizations disabled; functions from usart.h won't work as designed"
-	#define USART_NO_DIRTY_HACKS
 #endif
 	
 #ifdef DEBUG
-	#define USART_NO_DIRTY_HACKS
+
 #endif
 
 #ifndef RX_BUFFER_SIZE
@@ -1435,7 +1434,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		
-	#ifndef USART_NO_DIRTY_HACKS
+	#ifdef USART_SKIP_UBBRH_IF_ZERO
 		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
 			UBRR0H_REGISTER = (ubbr_value>>8);
@@ -1511,7 +1510,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		UBRR1L_REGISTER = (uint8_t) ubbr_value;
 		
-	#ifndef USART_NO_DIRTY_HACKS
+	#ifdef USART_SKIP_UBBRH_IF_ZERO
 		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
 		UBRR1H_REGISTER = (ubbr_value>>8);
@@ -1567,7 +1566,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		UBRR2L_REGISTER = (uint8_t) ubbr_value;
 		
-	#ifndef USART_NO_DIRTY_HACKS
+	#ifdef USART_SKIP_UBBRH_IF_ZERO
 		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
 			UBRR2H_REGISTER = (ubbr_value>>8);
@@ -1623,7 +1622,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		UBRR3L_REGISTER = (uint8_t) ubbr_value;
 		
-	#ifndef USART_NO_DIRTY_HACKS
+	#ifdef USART_SKIP_UBBRH_IF_ZERO
 		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
 			UBRR3H_REGISTER = (ubbr_value>>8);
@@ -1673,12 +1672,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #ifndef NO_USART_TX
 	
 	#ifndef NO_TX0_INTERRUPT
-		#ifdef USART_NO_DIRTY_HACKS
-			void uart0_putc(char data); // put character/data into transmitter ring buffer
-		#else
-			void uart0_putc(char data) __attribute__ ((naked, noinline));
-		#endif
-			char uart0_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		void uart0_putc(char data) __attribute__ ((naked, noinline));
+		char uart0_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 		
 		uint8_t uart0_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1746,12 +1741,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif // NO_TX0_INTERRUPT
 	
 	#ifndef NO_TX1_INTERRUPT
-		#ifdef USART_NO_DIRTY_HACKS
-			void uart1_putc(char data); // put character/data into transmitter ring buffer
-		#else
-			void uart1_putc(char data) __attribute__ ((naked, noinline));
-		#endif
-			char uart1_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		void uart1_putc(char data) __attribute__ ((naked, noinline));
+		char uart1_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 		
 		uint8_t uart1_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1794,12 +1785,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif // NO_TX1_INTERRUPT
 	
 	#ifndef NO_TX2_INTERRUPT
-		#ifdef USART_NO_DIRTY_HACKS
-			void uart2_putc(char data); // put character/data into transmitter ring buffer
-		#else
-			void uart2_putc(char data) __attribute__ ((naked, noinline));
-		#endif
-			char uart2_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		void uart2_putc(char data) __attribute__ ((naked, noinline));
+		char uart2_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 		
 		uint8_t uart2_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1842,12 +1829,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif // NO_TX2_INTERRUPT
 	
 	#ifndef NO_TX3_INTERRUPT
-		#ifdef USART_NO_DIRTY_HACKS
-			void uart3_putc(char data); // put character/data into transmitter ring buffer
-		#else
-			void uart3_putc(char data) __attribute__ ((naked, noinline));
-		#endif
-			char uart3_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		void uart3_putc(char data) __attribute__ ((naked, noinline));
+		char uart3_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 		
 		uint8_t uart3_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1917,8 +1900,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx0_last_byte, rx0_first_byte;
-		//static inline uint8_t uart0_AvailableBytes(void) __attribute__((always_inline)); // just let the compiler
-		static inline uint8_t uart0_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
+		inline uint8_t uart0_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
 		{
 			return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
 		}
@@ -1959,8 +1941,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx1_last_byte, rx1_first_byte;
-		//static inline uint8_t uart1_AvailableBytes(void) __attribute__((always_inline)); // just let the compiler
-		static inline uint8_t uart1_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
+		inline uint8_t uart1_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
 		{
 			return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK;
 		}
@@ -1988,8 +1969,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx2_last_byte, rx2_first_byte;
-		//static inline uint8_t uart2_AvailableBytes(void) __attribute__((always_inline)); // just let the compiler
-		static inline uint8_t uart2_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
+		inline uint8_t uart2_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
 		{
 			return (rx2_last_byte - rx2_first_byte) & RX2_BUFFER_MASK;
 		}
@@ -2017,8 +1997,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx3_last_byte, rx3_first_byte;
-		//static inline uint8_t uart3_AvailableBytes(void) __attribute__((always_inline)); // just let the compiler
-		static inline uint8_t uart3_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
+		inline uint8_t uart3_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
 		{
 			return (rx3_last_byte - rx3_first_byte) & RX3_BUFFER_MASK;
 		}
