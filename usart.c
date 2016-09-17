@@ -305,7 +305,7 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 		
-		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
@@ -401,7 +401,7 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index]  \n\t"
 		
-		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(tx0_buffer)) \n\t"
@@ -1936,7 +1936,7 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 		
-		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
@@ -2252,7 +2252,7 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 		
-		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r27, 0x00 \n\t"
 		#endif
 			"subi	r26, lo8(-(rx0_buffer)) \n\t"
@@ -3517,7 +3517,7 @@
 			
 			"sts	(tx0_first_byte), r30 \n\t"       /* 2 */
 	
-		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r31, 0x00 \n\t"                   /* 1 */
 		#endif
 			"subi	r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
@@ -3683,7 +3683,7 @@
 			
 			"sts	(rx0_last_byte), r30 \n\t"        /* 2 */
 		
-		#if !defined(__AVR_ATtiny2313__)||!defined(__AVR_ATtiny2313A__)	// on ATtiny2313 upper byte in pointer pair is ignored
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)	// on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r31, 0x00 \n\t"                   /* 1 */
 		#endif
 			"subi	r30, lo8(-(rx0_buffer))\n\t"      /* 1 */
