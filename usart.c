@@ -723,10 +723,10 @@
 //Arguments : none
 //Return    : Number of bytes waiting in transmitter buffer.
 //******************************************************************
-	//uint8_t uart0_BytesToSend(void)
-	//{
-	//	return (tx0_last_byte - tx0_first_byte) & TX0_BUFFER_MASK;
-	//}
+//uint8_t uart0_BytesToSend(void)
+//	{
+//		return (tx0_last_byte - tx0_first_byte) & TX0_BUFFER_MASK;
+//	}
 
 //******************************************************************
 //Function  : Transmit address of selected slave in MPCM mode.
@@ -2178,16 +2178,16 @@
 //Return    : First received nonspace character.
 //Note      : First nonspace character is cut from receiver buffer.
 //******************************************************************
-	char uart0_skipWhiteSpaces(void)
-	{
-		register char c;
-		
-		do{
-			c = uart_getc();
-		}while(c <= 32);
-		
-		return c;
-	}
+// 	char uart0_skipWhiteSpaces(void)
+// 	{
+// 		register char c;
+// 		
+// 		do{
+//			c = uart0_getc();
+//		}while(c <= 32);
+// 		
+// 		return c;
+// 	}
 
 //******************************************************************
 //Function  : Read 16bit integer value from the input stream.
@@ -2332,10 +2332,10 @@
 //Arguments : none
 //Return    : Number of bytes waiting in receiver buffer.
 //******************************************************************
-	//uint8_t uart0_AvailableBytes(void)
-	//{
-	//	return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
-	//}
+//	uint8_t uart0_AvailableBytes(void)
+//	{
+//		return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
+//	}
 	
 //******************************************************************
 //Function  : Peek at the next byte in buffer.
@@ -2519,17 +2519,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	}
-
-	char uart1_skipWhiteSpaces(void)
-	{
-		register char c;
-		
-		do{
-			c = uart1_getc();
-		}while(c <= 32);
-		
-		return c;
 	}
 
 	int16_t uart1_getint(void)
@@ -2817,17 +2806,6 @@
 		);
 	}
 
-	char uart2_skipWhiteSpaces(void)
-	{
-		register char c;
-		
-		do{
-			c = uart2_getc();
-		}while(c <= 32);
-		
-		return c;
-	}
-
 	int16_t uart2_getint(void)
 	{
 	#ifndef USART_NO_LOCAL_BUFFERS
@@ -3112,17 +3090,6 @@
 			: /* no inputs */
 			: /* no clobbers - this is the whole function*/
 		);
-	}
-
-	char uart3_skipWhiteSpaces(void)
-	{
-		register char c;
-		
-		do{
-			c = uart3_getc();
-		}while(c <= 32);
-		
-		return c;
 	}
 
 	int16_t uart3_getint(void)

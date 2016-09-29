@@ -1913,8 +1913,17 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart0_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 	
-		char uart0_skipWhiteSpaces(void); // returns first nonspace character found in the buffer
-	
+		inline char uart0_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
+		{
+			register char c;
+			
+			do{
+				c = uart0_getc();
+			}while(c <= 32);
+			
+			return c;
+		}
+		
 		int16_t uart0_getint(void);
 		int32_t uart0_getlong(void);
 		float uart0_getfloat(void);
@@ -1954,7 +1963,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart1_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
-		char uart1_skipWhiteSpaces(void); // returns first nonspace character found in the buffer
+		inline char uart1_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
+		{
+			register char c;
+			
+			do{
+				c = uart1_getc();
+			}while(c <= 32);
+			
+			return c;
+		}
 		
 		int16_t uart1_getint(void);
 		int32_t uart1_getlong(void);
@@ -1982,7 +2000,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart2_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
-		char uart2_skipWhiteSpaces(void); // returns first nonspace character found in the buffer
+		inline char uart2_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
+		{
+			register char c;
+			
+			do{
+				c = uart2_getc();
+			}while(c <= 32);
+			
+			return c;
+		}
 		
 		int16_t uart2_getint(void);
 		int32_t uart2_getlong(void);
@@ -2010,7 +2037,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart3_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
-		char uart3_skipWhiteSpaces(void); // returns first nonspace character found in the buffer
+		inline char uart3_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
+		{
+			register char c;
+			
+			do{
+				c = uart3_getc();
+			}while(c <= 32);
+			
+			return c;
+		}
 		
 		int16_t uart3_getint(void);
 		int32_t uart3_getlong(void);
