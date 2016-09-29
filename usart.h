@@ -1709,6 +1709,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart0_fputfloat(float data, uint8_t precision);
 	
 		void uart0_flush(void); // flush tx buffer
+		
+		extern volatile uint8_t tx0_last_byte, tx0_first_byte;
+		inline uint8_t uart0_BytesToSend(void) // returns number of bytes waiting in the receiver buffer
+		{
+			return (tx0_last_byte - tx0_first_byte) & TX0_BUFFER_MASK;
+		}
 	
 		#ifdef USART0_MPCM_MODE
 			void uart0_mpcm_transmit_addres_Frame(uint8_t dat);
@@ -1778,6 +1784,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart1_fputfloat(float data, uint8_t precision);
 	
 		void uart1_flush(void); // flush tx buffer
+		
+		extern volatile uint8_t tx1_last_byte, tx1_first_byte;
+		inline uint8_t uart1_BytesToSend(void) // returns number of bytes waiting in the receiver buffer
+		{
+			return (tx1_last_byte - tx1_first_byte) & TX1_BUFFER_MASK;
+		}
 	
 		#ifdef USART1_MPCM_MODE
 			void uart1_mpcm_transmit_addres_Frame(uint8_t dat);
@@ -1822,6 +1834,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart2_fputfloat(float data, uint8_t precision);
 	
 		void uart2_flush(void); // flush tx buffer
+		
+		extern volatile uint8_t tx2_last_byte, tx2_first_byte;
+		inline uint8_t uart2_BytesToSend(void) // returns number of bytes waiting in the receiver buffer
+		{
+			return (tx2_last_byte - tx2_first_byte) & TX2_BUFFER_MASK;
+		}
 	
 		#ifdef USART2_MPCM_MODE
 			void uart2_mpcm_transmit_addres_Frame(uint8_t dat);
@@ -1866,6 +1884,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart3_fputfloat(float data, uint8_t precision);
 	
 		void uart3_flush(void); // flush tx buffer
+		
+		extern volatile uint8_t tx3_last_byte, tx3_first_byte;
+		inline uint8_t uart3_BytesToSend(void) // returns number of bytes waiting in the receiver buffer
+		{
+			return (tx3_last_byte - tx3_first_byte) & TX3_BUFFER_MASK;
+		}
 	
 		#ifdef USART3_MPCM_MODE
 			void uart3_mpcm_transmit_addres_Frame(uint8_t dat);

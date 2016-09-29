@@ -419,7 +419,7 @@
 			: /* clobbers */
 			"r26","r27"          //lock X pointer from the scope
 		);
-	
+		
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
@@ -717,6 +717,16 @@
 		while(tx0_first_byte != tx0_last_byte); // just flush the buffer 
 	#endif
 	}
+	
+//******************************************************************
+//Function  : To check how many bytes are waiting in the transmitter buffer.
+//Arguments : none
+//Return    : Number of bytes waiting in transmitter buffer.
+//******************************************************************
+	//uint8_t uart0_BytesToSend(void)
+	//{
+	//	return (tx0_last_byte - tx0_first_byte) & TX0_BUFFER_MASK;
+	//}
 
 //******************************************************************
 //Function  : Transmit address of selected slave in MPCM mode.
