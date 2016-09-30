@@ -3473,6 +3473,8 @@
 			"sei \n\t"                               /* 1 */
 		#endif
 		
+			//" \n\t" // inline asm code executed on every ISR call, can be placed here // r30 and r31 are free to use
+		
 			"lds	r30, (tx0_first_byte) \n\t"       /* 2 */
 			"lds	r31, (tx0_last_byte) \n\t"        /* 2 */
 		
@@ -3542,7 +3544,6 @@
 		#endif
 			
 		"USART0_TX_EXIT: "
-			//" \n\t" // inline asm code executed on every ISR call, can be placed here // r30 and r31 are free to use // r30 contains currently transmitted data byte (might not in unsafe mode)
 			"pop	r31 \n\t"                         /* 2 */
 			"pop	r30 \n\t"                         /* 2 */
 		
@@ -3617,6 +3618,8 @@
 			"sei \n\t"                               /* 1 */
 		#endif
 	
+			//" \n\t" // inline asm code executed on every ISR call, can be placed here // r30 and r31 are free to use // r25 contains received data byte if 'extended buffer' mode is not used, free to use otherwise
+	
 			"lds	r30, (rx0_last_byte) \n\t"        /* 2 */
 			"lds	r31, (rx0_first_byte) \n\t"       /* 2 */
 		
@@ -3636,13 +3639,15 @@
 		#endif
 		
 		#ifdef USART0_EXTEND_RX_BUFFER
-		//" \n\t" // handle framing error here // r25 and r31 are free to use // can be moved below pushes if needed
+		//" \n\t" // handle framing error here // r25 and r31 are free to use
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 			#else
 				"lds	r25, %M[UDR_reg] \n\t"            /* 2 */
 			#endif
 		#endif
+		
+		//" \n\t" // inline asm code executed only when databyte was received, before buffer store, can be placed here // r31 is free to use // r25 contains received data byte, r30 rxn_last_byte buffer index
 		
 		#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
 
@@ -3684,7 +3689,7 @@
 		#endif	
 			"st		Z, r25 \n\t"                      /* 2 */
 		
-			//" \n\t" // inline asm code executed only when databyte was received, can be placed here // r25,r30,r31 are free to use // r25 contains received data byte 
+			//" \n\t" // inline asm code executed only when databyte was received, can be placed here // r25,r30,r31 are free to use // r25 contains received data byte
 			
 		"USART0_RX_EXIT: "
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -3703,7 +3708,6 @@
 			
 		"USART0_RX_EXIT_SKIP: "
 		#endif
-			//" \n\t" // inline asm code executed on every ISR call, can be placed here // r25,r30,r31 are free to use // r25 contains received data byte (might not in 'extended buffer' mode)
 			"pop	r31 \n\t"                         /* 2 */
 			"pop	r30 \n\t"                         /* 2 */
 			"pop	r25 \n\t"                         /* 2 */
