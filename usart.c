@@ -3407,6 +3407,7 @@
 		UDRn_REGISTER = txn_buffer[tmp_tx_first_byte]; // transmit character from the buffer
 	}
 	
+	ISR(TXn_INTERRUPT) // non racing one // not used anymore
 	{
 		register uint8_t tmp_tx_first_byte = txn_first_byte;
 		
