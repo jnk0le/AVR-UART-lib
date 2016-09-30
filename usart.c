@@ -3401,10 +3401,23 @@
 		register uint8_t tmp_tx_first_byte = (txn_first_byte + 1) & TXn_BUFFER_MASK;
 		
 		if(tmp_tx_first_byte == txn_last_byte)
-			UCSRnB_REGISTER &= ~(1<<UDRIEn_BIT);
+			UCSRnB_REGISTER &= ~(1<<UDRIEn_BIT); // may be racing with putc insertions
 			
 		txn_first_byte = tmp_tx_first_byte; // it would create race condition if not used in isr
 		UDRn_REGISTER = txn_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+	}
+	
+	{
+		register uint8_t tmp_tx_first_byte = txn_first_byte;
+		
+		if(tmp_tx_first_byte != txn_last_byte)
+		{
+			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TXn_BUFFER_MASK;
+			txn_first_byte = tmp_tx_first_byte; // it would create race condition if not used in isr
+			UDRn_REGISTER = txn_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+		}
+		else
+			UCSRnB_REGISTER &= ~(1<<UDRIEn_BIT);
 	}
 
 	ISR(RXn_INTERRUPT)
@@ -3510,7 +3523,7 @@
 			"sts	%M[UDR_reg], r30 \n\t"            /* 2 */
 		#endif
 			
-			//" \n\t" // inline asm code executed on every byte transmission, can be palced here // r30 and r31 are free to use // r30 contains currently transmitted data byte
+			//" \n\t" // inline asm code executed on every byte transmission, can be placed here // r30 and r31 are free to use // r30 contains currently transmitted data byte
 			
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"                               /* 1 */
@@ -3528,7 +3541,7 @@
 		#endif
 			
 		"USART0_TX_EXIT: "
-			//" \n\t" // inline asm code executed on every ISR call, can be palced here // r30 and r31 are free to use // r30 contains currently transmitted data byte (might not in unsafe mode)
+			//" \n\t" // inline asm code executed on every ISR call, can be placed here // r30 and r31 are free to use // r30 contains currently transmitted data byte (might not in unsafe mode)
 			"pop	r31 \n\t"                         /* 2 */
 			"pop	r30 \n\t"                         /* 2 */
 		
@@ -3622,7 +3635,7 @@
 		#endif
 		
 		#ifdef USART0_EXTEND_RX_BUFFER
-		//" \n\t" // handle framing error here// r25 and r31 are free to use // can be moved below pushes if needed
+		//" \n\t" // handle framing error here // r25 and r31 are free to use // can be moved below pushes if needed
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 			#else
