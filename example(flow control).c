@@ -43,5 +43,5 @@ ISR(PCINT2_vect)
 // single signal INTn interrups can be used with naked handler (reduced overhead and resources usage)
 ISR(INT0_vect, ISR_NAKED)
 {
-	naked_cts0_isr_handler();
+	naked_cts3_isr_handler();
 }

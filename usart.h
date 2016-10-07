@@ -37,6 +37,7 @@
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
 #define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero // WORKS ONLY WITH CONSTANTS
+//#define USART_USE_INLINE_EVENTS // include optional file "usart_events.h" with inline asm code to be executed inside of interrupts (eg. implementing timeouts or something weird)
 
 /*****************************config for multiple USART mcu's***********************************/
 
@@ -397,6 +398,50 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif
 #else
 	#define RX_NEWLINE_MODE_RN // 2
+#endif
+
+#ifdef USART_USE_INLINE_EVENTS
+	#include "usart_events.h"
+#else
+	#define TX0_EVERYCAL_EVENT "\n\t"
+	#define TX0_TRANSMIT_EVENT "\n\t"
+	#define TX0_INPUT_OPERAND_LIST 
+
+	#define RX0_FRAMING_EVENT "\n\t"
+	#define RX0_EVERYCALL_EVENT "\n\t"
+	#define RX0_EARLY_RECEIVE_EVENT "\n\t"
+	#define RX0_LATE_RECEIVE_EVENT "\n\t"
+	#define RX0_INPUT_OPERAND_LIST
+	
+	#define TX1_EVERYCAL_EVENT "\n\t"
+	#define TX1_TRANSMIT_EVENT "\n\t"
+	#define TX1_INPUT_OPERAND_LIST
+
+	#define RX1_FRAMING_EVENT "\n\t"
+	#define RX1_EVERYCALL_EVENT "\n\t"
+	#define RX1_EARLY_RECEIVE_EVENT "\n\t"
+	#define RX1_LATE_RECEIVE_EVENT "\n\t"
+	#define RX1_INPUT_OPERAND_LIST
+
+	#define TX2_EVERYCAL_EVENT "\n\t"
+	#define TX2_TRANSMIT_EVENT "\n\t"
+	#define TX2_INPUT_OPERAND_LIST
+
+	#define RX2_FRAMING_EVENT "\n\t"
+	#define RX2_EVERYCALL_EVENT "\n\t"
+	#define RX2_EARLY_RECEIVE_EVENT "\n\t"
+	#define RX2_LATE_RECEIVE_EVENT "\n\t"
+	#define RX2_INPUT_OPERAND_LIST
+
+	#define TX3_EVERYCAL_EVENT "\n\t"
+	#define TX3_TRANSMIT_EVENT "\n\t"
+	#define TX3_INPUT_OPERAND_LIST
+
+	#define RX3_FRAMING_EVENT "\n\t"
+	#define RX3_EVERYCALL_EVENT "\n\t"
+	#define RX3_EARLY_RECEIVE_EVENT "\n\t"
+	#define RX3_LATE_RECEIVE_EVENT "\n\t"
+	#define RX3_INPUT_OPERAND_LIST
 #endif
 
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_RX_INTERRUPT)

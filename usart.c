@@ -3473,7 +3473,7 @@
 			"sei \n\t"                               /* 1 */
 		#endif
 		
-			//" \n\t" // inline asm code executed on every ISR call, can be placed here // r30 and r31 are free to use
+			TX0_EVERYCAL_EVENT
 		
 			"lds	r30, (tx0_first_byte) \n\t"       /* 2 */
 			"lds	r31, (tx0_last_byte) \n\t"        /* 2 */
@@ -3526,7 +3526,7 @@
 			"sts	%M[UDR_reg], r30 \n\t"            /* 2 */
 		#endif
 			
-			//" \n\t" // inline asm code executed on every byte transmission, can be placed here // r30 and r31 are free to use // r30 contains currently transmitted data byte
+			TX0_TRANSMIT_EVENT
 			
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"                               /* 1 */
@@ -3554,6 +3554,7 @@
 			: /* output operands */
 		
 			: /* input operands */
+			TX0_INPUT_OPERAND_LIST
 			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]        "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
 			[control_reg_IO] "M" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
@@ -3590,8 +3591,14 @@
 		
 			"push	r25 \n\t"                         /* 2 */
 			
+		#ifdef USART0_PUSH_BEFORE_RX
+			"push	r30 \n\t"                         /* 2 */
+			"push	r31 \n\t"                         /* 2 */
+		#endif
+			
 		#ifndef USART0_EXTEND_RX_BUFFER
-		//" \n\t" // handle framing error here // r25 is free // can be moved below rest pushes if needed
+			RX0_FRAMING_EVENT
+			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 			#else
@@ -3599,8 +3606,10 @@
 			#endif
 		#endif
 			
+		#ifndef USART0_PUSH_BEFORE_RX
 			"push	r30 \n\t"                         /* 2 */
 			"push	r31 \n\t"                         /* 2 */
+		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
@@ -3618,7 +3627,7 @@
 			"sei \n\t"                               /* 1 */
 		#endif
 	
-			//" \n\t" // inline asm code executed on every ISR call, can be placed here // r30 and r31 are free to use // r25 contains received data byte if 'extended buffer' mode is not used, free to use otherwise
+			RX0_EVERYCALL_EVENT
 	
 			"lds	r30, (rx0_last_byte) \n\t"        /* 2 */
 			"lds	r31, (rx0_first_byte) \n\t"       /* 2 */
@@ -3639,7 +3648,8 @@
 		#endif
 		
 		#ifdef USART0_EXTEND_RX_BUFFER
-		//" \n\t" // handle framing error here // r25 and r31 are free to use
+			RX0_FRAMING_EVENT
+			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
 			#else
@@ -3647,7 +3657,7 @@
 			#endif
 		#endif
 		
-		//" \n\t" // inline asm code executed only when databyte was received, before buffer store, can be placed here // r31 is free to use // r25 contains received data byte, r30 rxn_last_byte buffer index
+		RX0_EARLY_RECEIVE_EVENT
 		
 		#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
 
@@ -3689,7 +3699,7 @@
 		#endif	
 			"st		Z, r25 \n\t"                      /* 2 */
 		
-			//" \n\t" // inline asm code executed only when databyte was received, can be placed here // r25,r30,r31 are free to use // r25 contains received data byte
+			RX0_LATE_RECEIVE_EVENT
 			
 		"USART0_RX_EXIT: "
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -3748,6 +3758,7 @@
 			: /* output operands */
 		
 			: /* input operands */
+			RX0_INPUT_OPERAND_LIST
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
 			[mask]               "M" (RX0_BUFFER_MASK),
@@ -3796,7 +3807,9 @@
 		
 			"sei \n\t"
 		#endif
-		
+			
+			TX1_EVERYCAL_EVENT
+			
 			"lds	r30, (tx1_first_byte) \n\t"
 			"lds	r31, (tx1_last_byte) \n\t"
 		
@@ -3840,6 +3853,8 @@
 			"sts	%M[UDR_reg], r30 \n\t"
 		#endif
 		
+			TX1_TRANSMIT_EVENT
+		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
@@ -3862,6 +3877,7 @@
 			: /* output operands */
 		
 			: /* input operands */
+			TX1_INPUT_OPERAND_LIST
 			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
 			[UDR_reg]        "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
 			[control_reg_IO] "M" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
@@ -3899,7 +3915,14 @@
 	
 			"push	r25 \n\t"
 		
+		#ifdef USART1_PUSH_BEFORE_RX
+			"push	r30 \n\t"
+			"push	r31 \n\t"
+		#endif
+		
 		#ifndef USART1_EXTEND_RX_BUFFER
+			RX1_FRAMING_EVENT
+		
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"
 			#else
@@ -3907,8 +3930,10 @@
 			#endif
 		#endif
 			
+		#ifndef USART1_PUSH_BEFORE_RX
 			"push	r30 \n\t"
 			"push	r31 \n\t"
+		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
@@ -3921,7 +3946,9 @@
 		
 			"sei \n\t"
 		#endif
-	
+			
+			RX1_EVERYCALL_EVENT
+			
 			"lds	r30, (rx1_last_byte) \n\t"
 			"lds	r31, (rx1_first_byte) \n\t"
 		
@@ -3941,12 +3968,16 @@
 		#endif
 			
 		#ifdef USART1_EXTEND_RX_BUFFER
+			RX1_FRAMING_EVENT
+			
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
 				"in		r25, %M[UDR_reg_IO] \n\t"
 			#else
 				"lds	r25, %M[UDR_reg] \n\t"
 			#endif
 		#endif
+			
+		RX1_EARLY_RECEIVE_EVENT
 			
 		#if defined(USART1_MPCM_MODE)&&!defined(MPCM1_MASTER_ONLY)
 		
@@ -3982,6 +4013,8 @@
 			"subi	r30, lo8(-(rx1_buffer))\n\t"
 			"sbci	r31, hi8(-(rx1_buffer))\n\t"
 			"st		Z, r25 \n\t"
+		
+			RX1_LATE_RECEIVE_EVENT
 		
 		"USART1_RX_EXIT: "
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -4033,6 +4066,7 @@
 			: /* output operands */
 		
 			: /* input operands */
+			RX1_INPUT_OPERAND_LIST
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
 			[mask]               "M" (RX1_BUFFER_MASK),
@@ -4078,6 +4112,8 @@
 			"sei \n\t"
 		#endif
 		
+			TX2_EVERYCAL_EVENT
+		
 			"lds	r30, (tx2_first_byte) \n\t"
 			"lds	r31, (tx2_last_byte) \n\t"
 		
@@ -4113,6 +4149,8 @@
 			
 			"sts	%M[UDR_reg], r30 \n\t"
 
+			TX2_TRANSMIT_EVENT
+
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"
 			
@@ -4132,6 +4170,7 @@
 			: /* output operands */
 		
 			: /* input operands */
+			TX2_INPUT_OPERAND_LIST
 			[UDR_reg]     "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
 			[control_reg] "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[udrie_bit]   "M" (UDRIE2_BIT),
@@ -4167,12 +4206,20 @@
 
 			"push	r25 \n\t"
 			
+		#ifdef USART2_PUSH_BEFORE_RX
+			"push	r30 \n\t"
+			"push	r31 \n\t"
+		#endif	
+			
 		#ifndef USART2_EXTEND_RX_BUFFER
+			RX2_FRAMING_EVENT
 			"lds	r25, %M[UDR_reg] \n\t"
 		#endif
 			
+		#ifndef USART2_PUSH_BEFORE_RX
 			"push	r30 \n\t"
 			"push	r31 \n\t"
+		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			"lds	r31, %M[control_reg] \n\t"
@@ -4181,6 +4228,8 @@
 			
 			"sei \n\t"
 		#endif
+		
+			RX2_EVERYCALL_EVENT
 		
 			"lds	r30, (rx2_last_byte) \n\t"
 			"lds	r31, (rx2_first_byte) \n\t"
@@ -4201,8 +4250,11 @@
 		#endif
 		
 		#ifdef USART2_EXTEND_RX_BUFFER
+			RX2_FRAMING_EVENT
 			"lds	r25, %M[UDR_reg] \n\t"
 		#endif
+		
+			RX2_EARLY_RECEIVE_EVENT
 		
 		#if defined(USART2_MPCM_MODE)&&!defined(MPCM2_MASTER_ONLY)
 			"lds	r31, %M[UCSRA_reg] \n\t"
@@ -4229,6 +4281,8 @@
 			"subi	r30, lo8(-(rx2_buffer))\n\t"
 			"sbci	r31, hi8(-(rx2_buffer))\n\t"
 			"st		Z, r25 \n\t"
+		
+			RX2_LATE_RECEIVE_EVENT
 		
 		"USART2_RX_EXIT: "
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -4272,6 +4326,7 @@
 			: /* output operands */
 		
 			: /* input operands */
+			RX2_INPUT_OPERAND_LIST
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
 			[mask]               "M" (RX2_BUFFER_MASK),
 			[mpcm_address]       "M" (MPCM2_ADDRESS),
@@ -4313,7 +4368,9 @@
 		
 			"sei \n\t"
 		#endif
-		
+			
+			TX3_EVERYCAL_EVENT
+			
 			"lds	r30, (tx3_first_byte) \n\t"
 			"lds	r31, (tx3_last_byte) \n\t"
 		
@@ -4349,6 +4406,8 @@
 		
 			"sts	%M[UDR_reg], r30 \n\t"
 			
+			TX3_TRANSMIT_EVENT
+			
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"
 			
@@ -4368,6 +4427,7 @@
 			: /* output operands */
 		
 			: /* input operands */
+			TX3_INPUT_OPERAND_LIST
 			[UDR_reg]     "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
 			[control_reg] "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[udrie_bit]   "M" (UDRIE3_BIT),
@@ -4402,13 +4462,21 @@
 			"in		r16, __SREG__ \n\t"
 	
 			"push	r25 \n\t"
-			
+		
+		#ifdef USART3_PUSH_BEFORE_RX
+			"push	r30 \n\t"
+			"push	r31 \n\t"
+		#endif
+				
 		#ifndef USART3_EXTEND_RX_BUFFER
+			RX3_FRAMING_EVENT
 			"lds	r25, %M[UDR_reg] \n\t"
 		#endif
 			
+		#ifndef USART3_PUSH_BEFORE_RX
 			"push	r30 \n\t"
 			"push	r31 \n\t"
+		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			"lds	r31, %M[control_reg] \n\t"
@@ -4417,7 +4485,9 @@
 		
 			"sei \n\t"
 		#endif
-	
+		
+			RX3_EVERYCALL_EVENT
+		
 			"lds	r30, (rx3_last_byte) \n\t"
 			"lds	r31, (rx3_first_byte) \n\t"
 		
@@ -4437,8 +4507,11 @@
 		#endif
 		
 		#ifdef USART3_EXTEND_RX_BUFFER
+			RX3_FRAMING_EVENT
 			"lds	r25, %M[UDR_reg] \n\t"
 		#endif
+			
+			RX3_EARLY_RECEIVE_EVENT
 			
 		#if defined(USART3_MPCM_MODE)&&!defined(MPCM3_MASTER_ONLY)
 			"lds	r31, %M[UCSRA_reg] \n\t"
@@ -4465,6 +4538,8 @@
 			"subi	r30, lo8(-(rx3_buffer))\n\t"
 			"sbci	r31, hi8(-(rx3_buffer))\n\t"
 			"st		Z, r25 \n\t"
+		
+			RX3_LATE_RECEIVE_EVENT
 		
 		"USART3_RX_EXIT: "
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -4508,6 +4583,7 @@
 			: /* output operands */
 		
 			: /* input operands */
+			RX3_INPUT_OPERAND_LIST
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
 			[mask]               "M" (RX3_BUFFER_MASK),
 			[mpcm_address]       "M" (MPCM3_ADDRESS),
