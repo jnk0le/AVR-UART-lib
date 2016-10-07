@@ -442,6 +442,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RX3_EARLY_RECEIVE_EVENT "\n\t"
 	#define RX3_LATE_RECEIVE_EVENT "\n\t"
 	#define RX3_INPUT_OPERAND_LIST
+	
+	#define TXC0_interrupt_event() ((void)0)
+	#define TXC1_interrupt_event() ((void)0)
+	#define TXC2_interrupt_event() ((void)0)
+	#define TXC3_interrupt_event() ((void)0)
 #endif
 
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_RX_INTERRUPT)
@@ -1334,6 +1339,22 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#if !defined(RS485_CONTROL3_IOPORTNAME)||!defined(RS485_CONTROL3_PIN)
 		#error "define valid DE/RE output for USART3 RS485 operation"
 	#endif
+#endif
+
+#if defined(USART0_RS485_MODE)&&!defined(NO_TX0_INTERRUPT)
+	#define USART0_USE_TXC_INTERRUPT
+#endif
+
+#if defined(USART1_RS485_MODE)&&!defined(NO_TX1_INTERRUPT)
+	#define USART1_USE_TXC_INTERRUPT
+#endif
+
+#if defined(USART2_RS485_MODE)&&!defined(NO_TX2_INTERRUPT)
+	#define USART2_USE_TXC_INTERRUPT
+#endif
+
+#if defined(USART3_RS485_MODE)&&!defined(NO_TX3_INTERRUPT)
+	#define USART3_USE_TXC_INTERRUPT
 #endif
 
 #ifndef USART0_CONFIG_B // set config bytes for UCSR0B_REGISTER

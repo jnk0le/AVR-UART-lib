@@ -17,14 +17,11 @@
 // http://www.nongnu.org/avr-libc/user-manual/inline_asm.html
 
 // example:
-//#define STH_EVENT "nop \n\t"\
-//                  "ldi r31, %M[A_MASK]"\
-//                  "out %M[TIMADDR], r31"
-	
-//#define OPERAND_LIST [A_MASK] "M" (0x55),\
+//#define STH_EVENT "nop \n\t"\                              //
+//                  "ldi r31, %M[A_MASK] \n\t"\                   //
+//                  "out %M[TIMADDR], r31 \n\t"	
+//#define OPERAND_LIST [A_MASK] "M" (0x55),\                 //
 //                     [TIMADDR]  "M" (_SFR_IO_ADDR(TCCR0A)),
-
-// TODO: TXC
 
 // code executed on every ISR call, before feeding UDR can (for this racing implementation only), can be placed here // r30 and r31 are free to use
 #define TX0_EVERYCAL_EVENT "\n\t"
@@ -47,7 +44,7 @@
 // code executed on every ISR call, can be placed here // r30 and r31 are free to use // r25 contains received data byte if 'extended buffer' mode is not used, free to use otherwise
 #define RX0_EVERYCALL_EVENT "\n\t"
 
-// code executed only when databyte was received, before buffer store, can be placed here // r31 is free to use // r25 contains received data byte, r30 rxn_last_byte buffer index // MPCM
+// code executed only when databyte was received, before buffer store, can be placed here // r31 is free to use // r25 contains received data byte, r30 rxn_last_byte buffer index // MPCM ??
 #define RX0_EARLY_RECEIVE_EVENT "\n\t"
 
 // code executed only when databyte was received, can be placed here // r25,r30,r31 are free to use // r25 contains received data byte
@@ -114,5 +111,41 @@
 #define RX3_LATE_RECEIVE_EVENT "\n\t"
 
 #define RX3_INPUT_OPERAND_LIST
+
+// events executed inside transmit complete interrupts (last byte has been transmitted, UDR buffer is empty)
+// little different but still inline asm is required
+//inline void TXCn_interrupt_event(void)
+//{
+//	asm volatile("\n\t"
+//		"nop \n\t"
+//		"lpm \n\t"
+//		"st Z+, r0 \n\t"
+//	:: );
+//}
+// mpcm ??
+
+//#define USART0_USE_TXC_INTERRUPT // if rs485 is not used
+inline void TXC0_interrupt_event(void) __attribute__((always_inline));
+inline void TXC0_interrupt_event(void)
+{
+}
+
+//#define USART1_USE_TXC_INTERRUPT
+inline void TXC1_interrupt_event(void) __attribute__((always_inline));
+inline void TXC1_interrupt_event(void)
+{
+}
+
+//#define USART2_USE_TXC_INTERRUPT
+inline void TXC2_interrupt_event(void) __attribute__((always_inline));
+inline void TXC2_interrupt_event(void)
+{
+}
+
+//#define USART3_USE_TXC_INTERRUPT
+inline void TXC3_interrupt_event(void) __attribute__((always_inline));
+inline void TXC3_interrupt_event(void)
+{
+}
 
 #endif /* USART_EVENTS_H_ */
