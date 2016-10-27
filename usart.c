@@ -76,8 +76,8 @@
 		UCSR0B_REGISTER = 0; //flush all buffers
 	
 	#ifdef USART0_RS485_MODE
-		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
 		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); //set low
+		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
 	#endif
 		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
@@ -109,8 +109,8 @@
 		UCSR1B_REGISTER = 0; //flush all buffers
 	
 	#ifdef USART1_RS485_MODE
-		___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN);
 		___PORT(RS485_CONTROL1_IOPORTNAME) &= ~(1<<RS485_CONTROL1_PIN); //set low
+		___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN);
 	#endif
 		
 		UBRR1L_REGISTER = (uint8_t) ubbr_value;
@@ -141,9 +141,9 @@
 	{
 		UCSR2B_REGISTER = 0; //flush all buffers
 	
-	#ifdef USART2_RS485_MODE
-		___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN);
+	#ifdef 
 		___PORT(RS485_CONTROL2_IOPORTNAME) &= ~(1<<RS485_CONTROL2_PIN); //set low
+		___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN);
 	#endif
 		
 		UBRR2L_REGISTER = (uint8_t) ubbr_value;
@@ -175,8 +175,8 @@
 		UCSR3B_REGISTER = 0; //flush all buffers
 	
 	#ifdef USART3_RS485_MODE
-		___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN);
 		___PORT(RS485_CONTROL3_IOPORTNAME) &= ~(1<<RS485_CONTROL3_PIN); //set low
+		___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN);
 	#endif
 		
 		UBRR3L_REGISTER = (uint8_t) ubbr_value;
@@ -245,9 +245,9 @@
 			"rjmp	normal_insert_%= \n\t"
 				
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"out	%M[UDR_reg], r24 \n\t"
+			"out	%M[UDR_reg], %[dat] \n\t"
 		#else
-			"sts	%M[UDR_reg], r24 \n\t"
+			"sts	%M[UDR_reg], %[dat] \n\t"
 		#endif
 			"ret	\n\t"
 				
@@ -264,8 +264,9 @@
 			"breq	waitforspace_%= \n\t"
 				
 			: /* outputs */
-			[head] "=r" (tmp_tx_last_byte)
-			: /* input operands */
+			[head] "=r" (tmp_tx_last_byte),
+			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
+			: /* inputs */
 		#ifdef USART0_USE_SOFT_CTS
 			[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS0_IOPORTNAME))),
 			[cts_pin]       "M" (CTS0_PIN),
@@ -295,7 +296,7 @@
 				
 			: /* outputs */
 			[head] "=r" (tmp_tx_last_byte)
-			: /* input operands */
+			: /* inputs */
 			[mask] "M" (TX0_BUFFER_MASK)
 			: /* clobbers */
 			"r27"
@@ -315,12 +316,12 @@
 		#endif
 			"st		X, %[dat] \n\t"
 			
-			: /* no outputs */
-			: /* input operands */
-			[dat] "r" (data),
-			[index] "r" (tmp_tx_last_byte)
+			: /* outputs */
+			[index] "+r" (tmp_tx_last_byte), // will be used later, do not let the compiler to do anything weird
+			[dat]   "+r" (data) // not modified, so reduce register moves if inlined
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 	
 		cli();
@@ -328,7 +329,7 @@
 			tx0_last_byte = tmp_tx_last_byte;
 		
 		#ifdef USART0_RS485_MODE
-			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
+			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // start transmitting
 		#endif
 		
 		#ifdef USART0_USE_SOFT_CTS
@@ -348,8 +349,8 @@
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
 					"sts   %M[control_reg], r25 \n\t"
 				#endif
-					: /* no outputs */
-					: /* input operands */
+					: /* outputs */
+					: /* inputs */
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 					[udrie_bit]   "M" (UDRIE0_BIT)
 					: /* clobbers */
@@ -411,13 +412,15 @@
 		#endif
 			"st		X, %[dat] \n\t"
 			
-			: /* no outputs */
-			: /* input operands */
-			[dat] "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-			
+			: /* outputs */
+			[index] "+r" (tmp_tx_last_byte), // will be used later, do not let the compiler to do anything weird
+			[dat]   "+r" (data) // not modified, so reduce register moves if inlined
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)
+			"r27",
+		#endif
+			"r26"
 		);
 		
 		
@@ -426,7 +429,7 @@
 			tx0_last_byte = tmp_tx_last_byte;
 			
 		#ifdef USART0_RS485_MODE
-			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
+			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // start transmitting
 		#endif
 			
 		#ifdef USART0_USE_SOFT_CTS
@@ -448,12 +451,6 @@
 	{
 		asm volatile("\n\t"
 		
-		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
 		"load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -462,9 +459,12 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (string)
+			: /* clobbers*/
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
@@ -477,25 +477,22 @@
 	void uart0_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
-		
-		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
-			"add	r22, r24 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
+			"add	%[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp 	r22, r30\n\t"
+			"cp 	%[counter], r30\n\t"
 			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"rcall	uart0_putc \n\t" // r22 and Z pointer will not be affected in uart_putc()
+			"rcall	uart0_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function */
+			: /* outputs */
+			: /* inputs */
+			[counter] "r" (BytesToWrite),
+			"z" (string)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
@@ -508,7 +505,7 @@
 	{
 	#if !defined(__AVR_ATtiny102__)||!defined(__AVR_ATtiny104__)
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
+		
 		"load_loop_%=:"
 			"lpm 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -517,9 +514,12 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (string)
+			: /*clobbers */
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	#endif
 	}
@@ -778,9 +778,9 @@
 			"rjmp	normal_insert_%= \n\t"
 				
 		#ifdef USART1_IN_IO_ADDRESS_SPACE
-			"out	%M[UDR_reg], r24 \n\t"
+			"out	%M[UDR_reg], %[dat] \n\t"
 		#else
-			"sts	%M[UDR_reg], r24 \n\t"
+			"sts	%M[UDR_reg], %[dat] \n\t"
 		#endif
 			"ret	\n\t"
 				
@@ -797,11 +797,12 @@
 			"breq	waitforspace_%= \n\t"
 				
 			: /* outputs */
-			[head] "=r" (tmp_tx_last_byte)
-			: /* input operands */
+			[head] "=r" (tmp_tx_last_byte),
+			[dat]  "+r" (data)
+			: /* inputs */
 		#ifdef USART1_USE_SOFT_CTS
-			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS1_IOPORTNAME))),
-			[cts_pin]       "M"    (CTS1_PIN),
+			[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS1_IOPORTNAME))),
+			[cts_pin]       "M" (CTS1_PIN),
 		#endif
 			[mask]          "M" (TX1_BUFFER_MASK),
 			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
@@ -828,7 +829,7 @@
 				
 			: /* outputs */
 			[head] "=r" (tmp_tx_last_byte)
-			: /* input operands */
+			: /* inputs */
 			[mask] "M" (TX1_BUFFER_MASK)
 			: /* clobbers */
 			"r27"
@@ -842,13 +843,12 @@
 			"sbci	r27, hi8(-(tx1_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* no outputs */
-			: /* input operands */
-			[dat]   "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-				
+			: /* outputs */
+			[index] "+r" (tmp_tx_last_byte),
+			[dat]   "+r" (data)
+			: /* inputs*/
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		cli();
@@ -856,7 +856,7 @@
 			tx1_last_byte = tmp_tx_last_byte;
 		
 		#ifdef USART1_RS485_MODE
-			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
+			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // start transmitting
 		#endif
 	
 		#ifdef USART1_USE_SOFT_CTS
@@ -870,10 +870,10 @@
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
 					"sts   %M[control_reg], r25 \n\t"
-					: /* no outputs */
-					: /* input operands */
+					: /* outputs */
+					: /* inputs */
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
-					[udrie_bit] "M" (UDRIE1_BIT)
+					[udrie_bit]   "M" (UDRIE1_BIT)
 					: /* clobbers */
 					"r25"
 				);
@@ -921,13 +921,12 @@
 			"sbci	r27, hi8(-(tx1_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* no outputs */
-			: /* input operands */
-			[dat] "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-			
+			: /* outputs */
+			[index] "+r" (tmp_tx_last_byte),
+			[dat]   "+r" (data) 
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
@@ -935,7 +934,7 @@
 			tx1_last_byte = tmp_tx_last_byte;
 			
 		#ifdef USART1_RS485_MODE
-			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
+			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // start transmitting
 		#endif
 			
 		#ifdef USART1_USE_SOFT_CTS
@@ -951,7 +950,6 @@
 	void uart1_putstr(char *string)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 		
 		"load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
@@ -961,36 +959,41 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (string)
+			: /* clobbers*/
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
 	void uart1_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
-
-			"add	r22, r24 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
+			"add	%[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp 	r22, r30\n\t"
+			"cp 	%[counter], r30\n\t"
 			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"rcall	uart1_putc \n\t" // r22 and Z pointer will not be affected in uart_putc()
+			"rcall	uart1_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function */
+			: /* outputs */
+			: /* inputs */
+			[counter] "r" (BytesToWrite),
+			"z" (string)
+			: /* clobbers*/
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
 	void uart1_puts_p(const char *string)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
+		
 		"load_loop_%=:"
 			"lpm 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -999,9 +1002,12 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (string)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
@@ -1174,7 +1180,7 @@
 			"sbrs	r26, %M[udre_bit] \n\t"
 			"rjmp	normal_insert_%= \n\t"
 				
-			"sts	%M[UDR_reg], r24 \n\t"
+			"sts	%M[UDR_reg], %[dat] \n\t"
 			"ret	\n\t"
 				
 		"normal_insert_%=:"
@@ -1190,8 +1196,9 @@
 			"breq	waitforspace_%= \n\t"
 				
 			: /* outputs */
-			[head] "=r" (tmp_tx_last_byte)
-			: /* input operands */
+			[head] "=r" (tmp_tx_last_byte),
+			[dat]  "+r" (data)
+			: /* inputs */
 		#ifdef USART2_USE_SOFT_CTS
 			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS2_IOPORTNAME))),
 			[cts_pin]       "M"    (CTS2_PIN),
@@ -1221,7 +1228,7 @@
 				
 			: /* outputs */
 			[head] "=r" (tmp_tx_last_byte)
-			: /* input operands */
+			: /* inputs */
 			[mask] "M" (TX2_BUFFER_MASK)
 			: /* clobbers */
 			"r27"
@@ -1235,13 +1242,12 @@
 			"sbci	r27, hi8(-(tx2_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* no outputs */
-			: /* input operands */
-			[dat]   "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-			
+			: /* outputs */
+			: /* inputs */
+			[index] "+r" (tmp_tx_last_byte),
+			[dat]   "+r" (data)
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		cli();
@@ -1249,7 +1255,7 @@
 			tx2_last_byte = tmp_tx_last_byte;
 		
 		#ifdef USART2_RS485_MODE
-			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); //set high
+			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // start transmitting
 		#endif
 		
 		#ifdef USART2_USE_SOFT_CTS
@@ -1260,10 +1266,10 @@
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
 					"sts   %M[control_reg], r25 \n\t"
-					: /* no outputs */
-					: /* input operands */
+					: /* outputs */
+					: /* inputs */
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
-					[udrie_bit] "M" (UDRIE2_BIT)
+					[udrie_bit]   "M" (UDRIE2_BIT)
 					: /* clobbers */
 					"r25"
 				);
@@ -1310,13 +1316,12 @@
 			"sbci	r27, hi8(-(tx2_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* no outputs */
-			: /* input operands */
-			[dat] "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-			
+			: /* outputs */
+			[index] "+r" (tmp_tx_last_byte),
+			[dat]   "+r" (data)
+			: /* inputs*/
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
@@ -1324,7 +1329,7 @@
 			tx2_last_byte = tmp_tx_last_byte;
 			
 		#ifdef USART2_RS485_MODE
-			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); //set high
+			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // start transmitting
 		#endif
 			
 		#ifdef USART2_USE_SOFT_CTS
@@ -1340,8 +1345,7 @@
 	void uart2_putstr(char *string)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
-		
+			
 		"load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -1350,36 +1354,41 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (string)
+			: /* clobbers*/
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
 	void uart2_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
-
-			"add	r22, r24 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
+			"add	%[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp 	r22, r30\n\t"
+			"cp 	%[counter], r30\n\t"
 			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"rcall	uart2_putc \n\t" // r22 and Z pointer will not be affected in uart_putc()
+			"rcall	uart2_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function */
+			: /* outputs */
+			: /* inputs */
+			[counter] "r" (BytesToWrite),
+			"z" (string)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
 	void uart2_puts_p(const char *string)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
+		
 		"load_loop_%=:"
 			"lpm 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -1388,9 +1397,12 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (string)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
@@ -1563,7 +1575,7 @@
 			"sbrs	r26, %M[udre_bit] \n\t"
 			"rjmp	normal_insert_%= \n\t"
 				
-			"sts	%M[UDR_reg], r24 \n\t"
+			"sts	%M[UDR_reg], %[dat] \n\t"
 			"ret	\n\t"
 				
 		"normal_insert_%=:"
@@ -1579,8 +1591,9 @@
 			"breq	waitforspace_%= \n\t"
 				
 			: /* outputs */
-			[head] "=r" (tmp_tx_last_byte)
-			: /* input operands */
+			[head] "=r" (tmp_tx_last_byte),
+			[dat]  "+r" (data)
+			: /* inputs */
 		#ifdef USART3_USE_SOFT_CTS
 			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS3_IOPORTNAME))),
 			[cts_pin]       "M"    (CTS3_PIN),
@@ -1610,7 +1623,7 @@
 				
 				: /* outputs */
 				[head] "=r" (tmp_tx_last_byte)
-				: /* input operands */
+				: /* inputs */
 				[mask] "M" (TX3_BUFFER_MASK)
 				: /* clobbers */
 				"r27"
@@ -1624,13 +1637,12 @@
 			"sbci	r27, hi8(-(tx3_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* no outputs */
-			: /* input operands */
-			[dat]   "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-			
+			: /* outputs */
+			: /* inputs */
+			[index] "+r" (tmp_tx_last_byte),
+			[dat]   "+r" (data)
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		cli();
@@ -1638,7 +1650,7 @@
 			tx3_last_byte = tmp_tx_last_byte;
 		
 		#ifdef USART3_RS485_MODE
-			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); //set high
+			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // start transmitting
 		#endif
 		
 		#ifdef USART3_USE_SOFT_CTS
@@ -1649,10 +1661,10 @@
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
 					"sts   %M[control_reg], r25 \n\t"
-					: /* no outputs */
-					: /* input operands */
+					: /* outputs */
+					: /* inputs */
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
-					[udrie_bit] "M" (UDRIE3_BIT)
+					[udrie_bit]   "M" (UDRIE3_BIT)
 					: /* clobbers */
 					"r25"
 				);
@@ -1699,13 +1711,12 @@
 			"sbci	r27, hi8(-(tx3_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* no outputs */
-			: /* input operands */
-			[dat] "r" (data),
-			[index] "r" (tmp_tx_last_byte)
-			
+			: /* outputs */
+			[index] "+r" (tmp_tx_last_byte),
+			[dat]   "+r" (data)
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
@@ -1713,7 +1724,7 @@
 			tx3_last_byte = tmp_tx_last_byte;
 			
 		#ifdef USART3_RS485_MODE
-			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); //set high
+			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // start transmitting
 		#endif
 			
 		#ifdef USART3_USE_SOFT_CTS
@@ -1729,7 +1740,6 @@
 	void uart3_putstr(char *string)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 		
 		"load_loop_%=:"
 			"ld 	r24, Z+ \n\t"
@@ -1739,36 +1749,41 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (string)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
 	void uart3_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
-
-			"add	r22, r24 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
+			"add	%[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp 	r22, r30\n\t"
+			"cp 	%[counter], r30\n\t"
 			"breq	skip_loop_%= \n\t"
 			"ld 	r24, Z+ \n\t"
-			"rcall	uart3_putc \n\t" // r22 and Z pointer will not be affected in uart_putc()
+			"rcall	uart3_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function */
+			: /* outputs */
+			: /* inputs */
+			[counter] "r" (BytesToWrite),
+			"z" (string)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
 	void uart3_puts_p(const char *string)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
+			
 		"load_loop_%=:"
 			"lpm 	r24, Z+ \n\t"
 			"and	r24, r24 \n\t" // test for NULL
@@ -1777,9 +1792,12 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (string)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_putc()
 		);
 	}
 
@@ -1939,7 +1957,8 @@
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx0_last_byte) return 0;
+		if(tmp_rx_first_byte == rx0_last_byte) 
+			return 0;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 	
@@ -1956,13 +1975,15 @@
 		#endif
 			"ld 	%[temp], X \n\t"
 			
-			: /* output operands */
-			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
+			: /* outputs */
+			[index] "+r" (tmp_rx_first_byte),
+			[temp]  "=r" (tmp)
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)
+			"r27",
+		#endif
+			"r26"
 		);
 	
 		rx0_first_byte = tmp_rx_first_byte;
@@ -2020,26 +2041,23 @@
 	{
 		asm volatile("\n\t"
 		
-		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
-		
 		"loop_%=:"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart0_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
-			"cpse	r24, r1 \n\t"
+			"cpse	r24, __zero_reg__ \n\t"
 			"rjmp	loop_%= \n\t"
 		"store_NULL_%=:"
-			"st 	Z, r1 \n\t"
+			"st 	Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 
@@ -2057,17 +2075,11 @@
 	{
 		asm volatile("\n\t"
 		
-		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
 		"loop_%=:"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart0_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
@@ -2093,11 +2105,14 @@
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st		Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24"
 		);
 	}
 
@@ -2116,25 +2131,18 @@
 	{
 		asm volatile("\n\t"
 		
-		#if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)
-			"mov	r30, r24 \n\t"
-			"mov	r31, r25 \n\t"
-		#else
-			"movw	r30, r24 \n\t" // buff pointer
-		#endif
-			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart0_getc \n\t" // r22 and Z pointer will not be affected in uart0_getc()
+			"rcall	uart0_getc \n\t" // counter and Z pointer will not be affected in uart0_getc()
 			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
 			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
 			"st		Z+, r24 \n\t"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 		
 		"loop_%=:"	
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart0_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		
@@ -2164,11 +2172,15 @@
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st		Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 
@@ -2251,11 +2263,7 @@
 		uint8_t tmp;
 		
 		if(tmp_rx_first_byte == rx0_last_byte) 
-		{
-			uint16_t tmp;
-			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
-			return tmp;
-		}
+			return -1;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 	
@@ -2272,13 +2280,15 @@
 		#endif
 			"ld 	%[temp], X \n\t"
 			
-			: /* output operands */
-			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
+			: /* outputs */
+			[index] "+r" (tmp_rx_first_byte),
+			[temp]  "=r" (tmp)
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)	
+			"r27",
+		#endif
+			"r26"
 		);
 		
 		rx0_first_byte = tmp_rx_first_byte;
@@ -2354,7 +2364,8 @@
 		register uint8_t tmp_rx_first_byte = rx1_first_byte;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx1_last_byte) return 0;
+		if(tmp_rx_first_byte == rx1_last_byte) 
+			return 0;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
 	
@@ -2365,13 +2376,12 @@
 			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* output operands */
+			: /* outputs */
+			[index] "+r" (tmp_rx_first_byte),
 			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 	
 		rx1_first_byte = tmp_rx_first_byte;
@@ -2406,34 +2416,36 @@
 	void uart1_gets(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 		
 		"loop_%=:"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart1_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
-			"cpse	r24, r1 \n\t"
+			"cpse	r24, __zero_reg__ \n\t"
 			"rjmp	loop_%= \n\t"
 		"store_NULL_%=:"
-			"st 	Z, r1 \n\t"
+			"st 	Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 	
 	void uart1_getln(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
-			
+		
 		"loop_%=:"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart1_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
@@ -2459,31 +2471,34 @@
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st		Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 
 	void uart1_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart1_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
 			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
 			"st		Z+, r24 \n\t"
-			"dec	r0 \n\t"
+			"dec	%[limit] \n\t"
 		
 		"loop_%=:"	
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart1_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		
@@ -2513,11 +2528,15 @@
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st		Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 
@@ -2560,11 +2579,7 @@
 		uint8_t tmp;
 		
 		if(tmp_rx_first_byte == rx1_last_byte) 
-		{
-			uint16_t tmp;
-			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
-			return tmp;
-		}
+			return -1;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
 	
@@ -2575,12 +2590,12 @@
 			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* output operands */
-			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
+			: /* outputs */
+			[index] "+r" (tmp_rx_first_byte),
+			[temp]  "=r" (tmp)
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		rx1_first_byte = tmp_rx_first_byte;
@@ -2639,7 +2654,8 @@
 		register uint8_t tmp_rx_first_byte = rx2_first_byte;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx2_last_byte) return 0;
+		if(tmp_rx_first_byte == rx2_last_byte) 
+			return 0;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
 	
@@ -2650,13 +2666,12 @@
 			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* output operands */
-			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
+			: /* outputs */
+			[index] "+r" (tmp_rx_first_byte),
+			[temp]  "=r" (tmp)
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 	
 		rx2_first_byte = tmp_rx_first_byte;
@@ -2691,34 +2706,36 @@
 	void uart2_gets(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 		
 		"loop_%=:"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart2_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
-			"cpse	r24, r1 \n\t"
+			"cpse	r24, __zero_reg__ \n\t"
 			"rjmp	loop_%= \n\t"
 		"store_NULL_%=:"
-			"st 	Z, r1 \n\t"
+			"st 	Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 	
 	void uart2_getln(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 			
 		"loop_%=:"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart2_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
@@ -2744,31 +2761,34 @@
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st		Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 
 	void uart2_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart2_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
 			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
 			"st		Z+, r24 \n\t"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 		
 		"loop_%=:"	
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart2_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		
@@ -2798,11 +2818,15 @@
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st		Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 
@@ -2844,12 +2868,8 @@
 		register uint8_t tmp_rx_first_byte = rx2_first_byte;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx2_last_byte) 
-		{
-			uint16_t tmp;
-			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
-			return tmp;
-		}
+		if(tmp_rx_first_byte == rx2_last_byte)
+			return -1;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
 	
@@ -2860,13 +2880,12 @@
 			"sbci	r27, hi8(-(rx2_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* output operands */
+			: /* outputs */
+			[index] "+r" (tmp_rx_first_byte),
 			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		rx2_first_byte = tmp_rx_first_byte;
@@ -2925,7 +2944,8 @@
 		register uint8_t tmp_rx_first_byte = rx3_first_byte;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx3_last_byte) return 0;
+		if(tmp_rx_first_byte == rx3_last_byte) 
+			return 0;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
 	
@@ -2936,13 +2956,12 @@
 			"sbci	r27, hi8(-(rx3_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* output operands */
-			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
+			: /* outputs */
+			[index] "+r" (tmp_rx_first_byte),
+			[temp]  "=r" (tmp)
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 	
 		rx3_first_byte = tmp_rx_first_byte;
@@ -2977,34 +2996,36 @@
 	void uart3_gets(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 		
 		"loop_%=:"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart3_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"st 	Z+, r24 \n\t"
-			"cpse	r24, r1 \n\t"
+			"cpse	r24, __zero_reg__ \n\t"
 			"rjmp	loop_%= \n\t"
 		"store_NULL_%=:"
-			"st 	Z, r1 \n\t"
+			"st 	Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 	
 	void uart3_getln(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 			
 		"loop_%=:"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart3_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
@@ -3030,31 +3051,34 @@
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st		Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 
 	void uart3_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
-			"movw	r30, r24 \n\t" // buff pointer
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart3_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
 			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
 			"st		Z+, r24 \n\t"
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 		
 		"loop_%=:"	
-			"dec	r22 \n\t"
+			"dec	%[limit] \n\t"
 			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart3_getc \n\t" // r22 and Z pointer will not be affected in uart_getc()
+			"rcall	uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
 			"and	r24, r24 \n\t" // test for NULL
 			"breq	wait_loop_%= \n\t"
 		
@@ -3084,11 +3108,15 @@
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, r1 \n\t"
+			"st		Z, __zero_reg__ \n\t"
 		
-			: /* no outputs */
-			: /* no inputs */
-			: /* no clobbers - this is the whole function*/
+			: /* outputs */
+			: /* inputs */
+			"z" (buffer),
+			[limit] "r" (bufferlimit)
+			: /* clobbers */
+			"r24",
+			"r25","r26","r27" // uart_getc()
 		);
 	}
 
@@ -3131,11 +3159,7 @@
 		uint8_t tmp;
 		
 		if(tmp_rx_first_byte == rx3_last_byte) 
-		{
-			uint16_t tmp;
-			asm volatile("ldi r25, 0xff \n\t" : "=r"(tmp));
-			return tmp;
-		}
+			return -1;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
 	
@@ -3146,13 +3170,12 @@
 			"sbci	r27, hi8(-(rx3_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* output operands */
+			: /* outputs */
+			[index] "+r" (tmp_rx_first_byte),
 			[temp] "=r" (tmp)
-			: /* input operands */
-			[index] "r" (tmp_rx_first_byte)
-			
+			: /* inputs */
 			: /* clobbers */
-			"r26","r27"          //lock X pointer from the scope
+			"r26","r27"
 		);
 		
 		rx3_first_byte = tmp_rx_first_byte;

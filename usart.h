@@ -1743,9 +1743,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		uint8_t uart0_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
-		void uart0_putstrl(char *string, uint8_t BytesToWrite) __attribute__ ((noinline)); // in case of bascom users or buffers without NULL byte ending
-		void uart0_putstr(char *string) __attribute__ ((noinline)); // send string from the memory buffer
-			// stops when NULL byte is hit (NULL byte is not included into transmission)
+		void uart0_putstr(char *string); // send string from the memory buffer // stops when NULL byte is hit (NULL byte is not included into transmission)
+		void uart0_putstrl(char *string, uint8_t BytesToWrite); // send specified number of bytes from the pointed buffer (up to 255 bytes)
+		
 		#ifdef __cplusplus
 			#define uart0_puts(str) uart0_putstr((const char*)(str))// macro to avoid const char* conversion restrictions
 		#else
@@ -1753,8 +1753,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-		void uart0_puts_p(const char *string) __attribute__ ((noinline)); // send string from flash memory
-			#define uart0_puts_P(__strP)    uart0_puts_p(PSTR(__strP))
+		void uart0_puts_p(const char *string); // send string from flash memory
+			#define uart0_puts_P(__strP) uart0_puts_p(PSTR(__strP))
 			// macro to automatically put a string constant into flash
 	
 		void uart0_putint(int16_t data);
@@ -1818,9 +1818,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		uint8_t uart1_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
-		void uart1_putstrl(char *string, uint8_t BytesToWrite) __attribute__ ((noinline)); // in case of bascom users or buffers without NULL byte ending
-		void uart1_putstr(char *string) __attribute__ ((noinline)); // send string from the memory buffer
-			// stops when NULL byte is hit (NULL byte is not included into transmission)
+		void uart1_putstr(char *string); // send string from the memory buffer // stops when NULL byte is hit (NULL byte is not included into transmission)
+		void uart1_putstrl(char *string, uint8_t BytesToWrite); // send specified number of bytes from the pointed buffer (up to 255 bytes)
+		
 		#ifdef __cplusplus
 			#define uart1_puts(str) uart1_putstr((const char*)(str))// macro to avoid const char* conversion restrictions
 		#else
@@ -1828,7 +1828,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-		void uart1_puts_p(const char *string) __attribute__ ((noinline)); // send string from flash memory
+		void uart1_puts_p(const char *string); // send string from flash memory
 			#define uart1_puts_P(__s)    uart1_puts_p(PSTR(__s))
 			// macro to automatically put a string constant into flash
 	
@@ -1868,17 +1868,17 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		uint8_t uart2_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
-		void uart2_putstrl(char *string, uint8_t BytesToWrite) __attribute__ ((noinline)); // in case of bascom users or buffers without NULL byte ending
-		void uart2_putstr(char *string) __attribute__ ((noinline)); // send string from the memory buffer
-			// stops when NULL byte is hit (NULL byte is not included into transmission)
+		void uart2_putstr(char *string); // send string from the memory buffer // stops when NULL byte is hit (NULL byte is not included into transmission)
+		void uart2_putstrl(char *string, uint8_t BytesToWrite); // send specified number of bytes from the pointed buffer (up to 255 bytes)
+		
 		#ifdef __cplusplus
-			#define uart2_puts(str) uart2_putstr((const char*)(str))// macro to avoid const char* conversion restrictions
+			#define uart2_puts(str) uart2_putstr((const char*)(str)) // macro to avoid const char* conversion restrictions
 		#else
 			#define uart2_puts(str) uart2_putstr(str)
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-		void uart2_puts_p(const char *string) __attribute__ ((noinline)); // send string from flash memory
+		void uart2_puts_p(const char *string); // send string from flash memory
 			#define uart2_puts_P(__s)    uart2_puts_p(PSTR(__s))
 			// macro to automatically put a string constant into flash
 	
@@ -1918,9 +1918,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		
 		uint8_t uart3_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
-		void uart3_putstrl(char *string, uint8_t BytesToWrite) __attribute__ ((noinline)); // in case of bascom users or buffers without NULL byte ending
-		void uart3_putstr(char *string) __attribute__ ((noinline)); // send string from the memory buffer
-			// stops when NULL byte is hit (NULL byte is not included into transmission)
+		void uart3_putstr(char *string); // send string from the memory buffer // stops when NULL byte is hit (NULL byte is not included into transmission)
+		void uart3_putstrl(char *string, uint8_t BytesToWrite); // send specified number of bytes from the pointed buffer (up to 255 bytes)
+		
 		#ifdef __cplusplus
 			#define uart3_puts(str) uart3_putstr((const char*)(str))// macro to avoid const char* conversion restrictions
 		#else
@@ -1928,7 +1928,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-		void uart3_puts_p(const char *string) __attribute__ ((noinline)); // send string from flash memory
+		void uart3_puts_p(const char *string); // send string from flash memory
 			#define uart3_puts_P(__s)    uart3_puts_p(PSTR(__s))
 			// macro to automatically put a string constant into flash
 	
@@ -1972,11 +1972,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#ifndef NO_RX0_INTERRUPT
 		char uart0_getc(void); // get character from receiver ring buffer
 	
-		void uart0_gets(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // reads whole receiver buffer or bufferlimit-1 characters
+		void uart0_gets(char *buffer, uint8_t bufferlimit); // reads whole receiver buffer or bufferlimit-1 characters
 		// newline terminator will not be cut // adds NULL byte at the end of string
-		void uart0_getln(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // reads one line from the buffer
+		void uart0_getln(char *buffer, uint8_t bufferlimit); // reads one line from the buffer
 		// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string
-		void uart0_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // read one line to the first whitespace after the string
+		void uart0_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 	
 		inline char uart0_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
@@ -2022,11 +2022,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#ifndef NO_RX1_INTERRUPT
 		char uart1_getc(void); // get character from receiver ring buffer
 		
-		void uart1_gets(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // reads whole receiver buffer or bufferlimit-1 characters
+		void uart1_gets(char *buffer, uint8_t bufferlimit); // reads whole receiver buffer or bufferlimit-1 characters
 		// newline terminator will not be cut // adds NULL byte at the end of string
-		void uart1_getln(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // reads one line from the buffer
+		void uart1_getln(char *buffer, uint8_t bufferlimit); // reads one line from the buffer
 		// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string
-		void uart1_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // read one line to the first whitespace after the string
+		void uart1_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
 		inline char uart1_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
@@ -2059,11 +2059,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#ifndef NO_RX2_INTERRUPT
 		char uart2_getc(void); // get character from receiver ring buffer
 		
-		void uart2_gets(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // reads whole receiver buffer or bufferlimit-1 characters
+		void uart2_gets(char *buffer, uint8_t bufferlimit); // reads whole receiver buffer or bufferlimit-1 characters
 		// newline terminator will not be cut // adds NULL byte at the end of string
-		void uart2_getln(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // reads one line from the buffer
+		void uart2_getln(char *buffer, uint8_t bufferlimit); // reads one line from the buffer
 		// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string
-		void uart2_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // read one line to the first whitespace after the string
+		void uart2_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
 		inline char uart2_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
@@ -2096,11 +2096,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#ifndef NO_RX3_INTERRUPT
 		char uart3_getc(void); // get character from receiver ring buffer
 		
-		void uart3_gets(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // reads whole receiver buffer or bufferlimit-1 characters
+		void uart3_gets(char *buffer, uint8_t bufferlimit); // reads whole receiver buffer or bufferlimit-1 characters
 		// newline terminator will not be cut // adds NULL byte at the end of string
-		void uart3_getln(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // reads one line from the buffer
+		void uart3_getln(char *buffer, uint8_t bufferlimit); // reads one line from the buffer
 		// waits for newline terminator or reached bufferlimit // adds NULL byte at the end of string
-		void uart3_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit) __attribute__ ((noinline)); // read one line to the first whitespace after the string
+		void uart3_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
 		inline char uart3_skipWhiteSpaces(void) // returns first nonspace character found in the buffer

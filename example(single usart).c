@@ -23,7 +23,10 @@ void main(void)
 	// if you do not have enough SRAM memory space to keep all strings, try to use puts_P instead
 	uart_puts_P("hello from flashed, usart\r\n"); // write string to usart buffer from flash memory // string is parsed by PSTR() macro
 	uart_puts_p(foo_string);
-		
+	uart_puts_p(PSTR("we can also do like this\r\n"));
+	
+	printf("hello from printf\n");
+
 	char buffer[25];
 	uart_gets(buffer, 25); // read at most 24 bytes from buffer (CR,LF will not be cut)
 	
@@ -46,7 +49,7 @@ void main(void)
 		{
 			uart_putc('>');
 			_delay_ms(5000);
-			uart_puts_P(" naggers");
+			uart_puts_P(" Googles");
 		}
 		uart_puts("\r\n");
 		
