@@ -2155,7 +2155,7 @@
 		#ifdef RX_NEWLINE_MODE_RN
 			"breq	exit_wait_loop_%= \n\t"
 		#else
-			"breq	load_NULL_%= \n\t"
+			"breq	store_NULL_%= \n\t"
 		#endif
 			
 			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
@@ -2511,7 +2511,7 @@
 		#ifdef RX_NEWLINE_MODE_RN
 			"breq	exit_wait_loop_%= \n\t"
 		#else
-			"breq	load_NULL_%= \n\t"
+			"breq	store_NULL_%= \n\t"
 		#endif
 			
 			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
@@ -2801,7 +2801,7 @@
 		#ifdef RX_NEWLINE_MODE_RN
 			"breq	exit_wait_loop_%= \n\t"
 		#else
-			"breq	load_NULL_%= \n\t"
+			"breq	store_NULL_%= \n\t"
 		#endif
 			
 			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
@@ -3091,7 +3091,7 @@
 		#ifdef RX_NEWLINE_MODE_RN
 			"breq	exit_wait_loop_%= \n\t"
 		#else
-			"breq	load_NULL_%= \n\t"
+			"breq	store_NULL_%= \n\t"
 		#endif
 			
 			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
