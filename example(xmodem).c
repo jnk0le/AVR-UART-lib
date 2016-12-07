@@ -24,6 +24,7 @@ typedef enum {
 	transmission_aborted
 } ProgramStatus;
 
+#define XMODEM_USED_BAUDRATE 9600 // used to calculate delays 
 #define XMODEM_VALIDATION_CRC // comment out to use checksum instead of CRC
 // some terminals/devices still doesn't provide support for crc error handling
 
@@ -74,7 +75,7 @@ int main(void)
 	ProgramStatus transmission_status = ready_for_transmission;
 	char cmd;
 
-	uart_init(BAUD_CALC(9600));
+	uart_init(BAUD_CALC(XMODEM_USED_BAUDRATE));
 
 	sei();
 	
@@ -141,7 +142,7 @@ int main(void)
 				uart_putc(NACK);
 			#endif
 
-				_delay_ms(5*1.04); // 5 bytes at 9600 // flush out the buffer // required for checksum mode without error handling // massive transmission also may not be tolerated by some senders
+				_delay_ms(5.0f*(1.0f/XMODEM_USED_BAUDRATE)*1000.0f*10.0f); // 5 bytes for sure // flush out the buffer // required for checksum mode without error handling // massive transmission also may not be tolerated by some senders
 				
 				break;
 			case transmission_in_progres:
