@@ -111,6 +111,8 @@ int main(void)
 
 							HexDump16(file, 1024);
 							
+							transmission_status = ready_for_transmission;
+
 							break;
 						default:
 							uart_puts_P("Usage:\r\n");
@@ -132,13 +134,14 @@ int main(void)
 					transmission_status = transmission_in_progres;
 					break;
 				}
+
 			#ifdef XMODEM_VALIDATION_CRC
 				uart_putc('C');
 			#else
 				uart_putc(NACK);
 			#endif
-				
-				_delay_ms(1000); // poor delay
+
+				_delay_ms(5*1.04); // 5 bytes at 9600 // flush out the buffer // required for checksum mode without error handling // massive transmission also may not be tolerated by some senders
 				
 				break;
 			case transmission_in_progres:
@@ -242,7 +245,7 @@ uint8_t validate_packet(uint8_t *bufptr, uint8_t *packet_number)
 	
 	if ((bufptr[131] == (uint8_t)(crc >> 8)) && (bufptr[132] == (uint8_t)(crc)))
 #else 
-	uint8_t cksum = calchecksum(uint8_t *bufptr, uint8_t size)
+	uint8_t cksum = calchecksum(&bufptr[3], 128);
 	
 	if (bufptr[131] == cksum)
 #endif
@@ -261,6 +264,7 @@ uint16_t calcrc(uint8_t *bufptr, uint8_t size)
 	while(size--)
 	{
 		crc = _crc_xmodem_update(crc, *bufptr++);
+		//crc = small_crc_update(crc, *bufptr++);
 	}
 
 	return crc;
@@ -275,14 +279,14 @@ uint8_t calchecksum(uint8_t *bufptr, uint8_t size)
 	return cksum;
 }
 
-void MoveData(uint8_t *bufptr, uint8_t BytesToMove)
+void MoveData(uint8_t *bufptr, uint8_t BytesToMove) // adapt this function to your needs (eg. store data into external memory) 
 {
-	for(uint8_t i = 0; i < BytesToMove ;i++)
+	for(uint8_t i = 0; i < BytesToMove; i++)
 	{
 		file[fileposition] = bufptr[i];
-		fileposition = (fileposition+1);
+		fileposition++;
 		
-		if(fileposition == 1024) fileposition = 0; // overwrite our file if sent file is >1K
+		if(fileposition == 1024) fileposition = 0; // this is an example, so just overwrite our file if sent file is >1K
 	}
 }
 
@@ -310,7 +314,7 @@ void HexDump16(uint8_t *bufptr, uint16_t ByteCount)
 			// Output the offset.
             uart_puts("  ");
 			
-			uart_puthex(i>>2);
+			uart_puthex(i>>8);
 			uart_puthex(i);
 
 			uart_putc(' ');
