@@ -1,4 +1,4 @@
-// TODO: add timeouts error handling
+// TODO: add timeouts error handling, fallback to checksum
 
 #include <util/delay.h>
 #include <util/crc16.h>
@@ -99,6 +99,7 @@ int main(void)
 					switch (cmd)
 					{
 						case 'd':
+							xmdm.last_packet = 0;
 							transmission_status = preparing_transmission;
 							uart_puts_P("Waiting for transmission ...\r\n");
 							break;
@@ -142,7 +143,7 @@ int main(void)
 				uart_putc(NACK);
 			#endif
 
-				_delay_ms(5.0f*(1.0f/XMODEM_USED_BAUDRATE)*1000.0f*10.0f); // 5 bytes for sure // flush out the buffer // required for checksum mode without error handling // massive transmission also may not be tolerated by some senders
+				_delay_ms(5.0f*(1.0f/XMODEM_USED_BAUDRATE)*1000.0f*10.0f); // 5 bytes for sure // flush out the buffer // massive transmission also may not be tolerated by some masters
 				
 				break;
 			case transmission_in_progres:
@@ -163,7 +164,7 @@ int main(void)
 
 				break;
 			case transmission_completed:
-				uart_puts_P("Tansmission completed, thanks for your attention\r\n");
+				uart_puts_P("Transmission completed, thanks for your attention\r\n");
 				transmission_status = ready_for_transmission;
 
 				break;
@@ -235,12 +236,12 @@ uint8_t validate_packet(uint8_t *bufptr, uint8_t *packet_number)
 	if (bufptr[0] != SOH) // valid start
 		return bad_packet;
 		
+	if (bufptr[1] == *packet_number)
+		return duplicate;
+
 	if (bufptr[1] != ((*packet_number+1) & 0xff) || (bufptr[1] + bufptr[2]) != 0xff) // block number and checksum are ok?
 		return bad_packet;
 
-	if (bufptr[1] == *packet_number)
-		return duplicate;
-	
 #ifdef XMODEM_VALIDATION_CRC
 	uint16_t crc = calcrc(&bufptr[3],128);      // compute CRC and validate it
 	
