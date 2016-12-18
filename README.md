@@ -65,7 +65,7 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 - TX best case - send byte from buffer: 40 cycles (39 if uart is placed in IO address space)
 - TX worst case - send byte from buffer and disable UDRIE interrupt: 44 cycles (40 if uart is placed in IO address space) 
 
-- RX best case - load byte and do nothing (buffer full): 37 cycles (36 if uart is placed in IO address space, up to 45 if soft RTS/extended buffer is used)
+- RX best case - load byte and do nothing (buffer full): 37 cycles (36 if uart is placed in IO address space, up to 45 if soft RTS/extended buffer is used (byte is not loaded))
 - RX worst case - load byte and put it into buffer: 43 cycles (42 if uart is placed in IO address space)
 
 - Any case: +2 on >128k and some older mcu's, -1 for 256 byte buffers, -2 on ATtiny2313
