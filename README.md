@@ -6,8 +6,9 @@ buffers for receive/transmit. Designed especially for real-time or high throughp
 - easy to use
 - intuitive frame format settings
 - support for up to 4 USART's
+- up to 255 byte FIFOs
 - extremly light interrupts 
-- software and hardware flow control (DCE naming)
+- software(RTS/CTS) and hardware flow control support (DCE naming)
 - RS 485 compatibility
 - MPCM master and slave mode support
 - printf()/scanf() streams compatibility

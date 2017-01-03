@@ -30,7 +30,7 @@ int main(void)
 
 }
 
-ISR(PCINT2_vect)
+ISR(PCINT2_vect) // should have higher priority than UDRIEn interrupt
 {
 	cts0_isr_handler();
 	//cts1_isr_handler();
@@ -41,7 +41,7 @@ ISR(PCINT2_vect)
 }
 
 // single signal INTn interrups can be used with naked handler (reduced overhead and resources usage)
-ISR(INT0_vect, ISR_NAKED)
+ISR(INT0_vect, ISR_NAKED) // should have higher priority than UDRIEn interrupt
 {
 	naked_cts3_isr_handler();
 }

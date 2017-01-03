@@ -2,158 +2,14 @@
 #define _USART_H_
 
 /************************************************************************************
- *  Published on: 21-02-2015                                                        *
+ *  Published: 21-02-2015                                                           *
  *  Author: jnk0le@hotmail.com                                                      *
  *  https://github.com/jnk0le                                                       *
  *  This library is distributed under MIT license terms                             *
  ************************************************************************************/
 
-// DO NOT DEFINE BUFFERS SIZES OR ANY SHARED MACROS IN 'main.c' CODE
-// instead of this, define it in "Project Properties -> AVR C Compiler -> Symbols" or try to use -D gcc flag (eg. -DF_CPU=8000000)
-
-//#define NO_USART_RX // disable all receiver code and dependencies
-//#define NO_USART_TX // disable all transmitter code and dependencies
-
-//#define USART_USE_SOFT_CTS // CTS handlers also have to be placed into INT/PCINT interrupt in the application code, see example(flow control).c
-//#define USART_USE_SOFT_RTS
-
-//#define USART_RS485_MODE // globally enable half duplex rs485 operation mode // used pin have to be initially kept in low state during boot
-//#define USART_MPCM_MODE // globally enable MPCM operation mode // 9 bit data frame only // always set frame format to 8 data bits
-
-//#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces
-
-#define RX_STDIO_GETCHAR_ECHO // echoes back received characters in getchar() function (for reading in scanf()) 
-//#define RX_GETC_ECHO // echoes back received characters in getc() function
-
-//#define PUTC_CONVERT_LF_TO_CRLF // allow for unix style (\n only) newline terminator in stored strings // not included into putc_noblock
-#define RX_NEWLINE_MODE 2 // 0 - \r,  1 - \n,  2 - \r\n
-// lot of terminals sends only \r character as a newline terminator, instead of \r\n or even unix style \n
-// (BTW PuTTY doesn't allow to change this) but in return requires \r\n terminator to show not broken text
-
-//#define USART_EXTEND_RX_BUFFER // extend RX buffer by hardware 2/3 byte FIFO // required for hardware and software RTS
-//#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (f_cpu/8)
-//#define USART_NO_LOCAL_BUFFERS // do not allocate temporary buffers on stack and use globally visible u_tmp_buff[] instead // it have to be declared in application part and have to be at least of 6-17 bytes wide (depending on what is being converted)
-//#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
-//#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
-//#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
-#define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero // FOR USE WITH CONSTANTS ONLY
-//#define USART_USE_INLINE_EVENTS // include optional file "usart_events.h" with inline asm code to be executed inside of interrupts (eg. implementing timeouts or something weird)
-
-/*****************************config for multiple USART mcu's***********************************/
-
-//#define NO_USART0 // disable usage of uart0
-//#define NO_USART1 // disable usage of uart1
-//#define NO_USART2 // disable usage of uart2
-//#define NO_USART3 // disable usage of uart3
-
-//#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary 
-//#define NO_RX1_INTERRUPT // disables interrupt handling and frees RX1 gpio port
-//#define NO_RX2_INTERRUPT // disables interrupt handling and frees RX2 gpio port
-//#define NO_RX3_INTERRUPT // disables interrupt handling and frees RX3 gpio port
-
-//#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
-//#define NO_TX1_INTERRUPT // disables interrupt handling and frees TX1 gpio port
-//#define NO_TX2_INTERRUPT // disables interrupt handling and frees TX2 gpio port
-//#define NO_TX3_INTERRUPT // disables interrupt handling and frees TX3 gpio port
-
-//#define USART0_U2X_SPEED // enables double speed for USART0
-//#define USART1_U2X_SPEED // enables double speed for USART1
-//#define USART2_U2X_SPEED // enables double speed for USART2
-//#define USART3_U2X_SPEED // enables double speed for USART3
-
-//#define RX0_GETC_ECHO
-//#define RX1_GETC_ECHO
-//#define RX2_GETC_ECHO
-//#define RX3_GETC_ECHO
-
-//#define USART0_EXTEND_RX_BUFFER
-//#define USART1_EXTEND_RX_BUFFER
-//#define USART2_EXTEND_RX_BUFFER
-//#define USART3_EXTEND_RX_BUFFER
-
-//#define USART0_PUTC_FAST_INSERTIONS
-//#define USART1_PUTC_FAST_INSERTIONS
-//#define USART2_PUTC_FAST_INSERTIONS
-//#define USART3_PUTC_FAST_INSERTIONS
-
-//#define USART0_MPCM_MODE
-//#define USART1_MPCM_MODE
-//#define USART2_MPCM_MODE
-//#define USART3_MPCM_MODE
-
-//#define USART0_USE_SOFT_CTS
-//#define USART1_USE_SOFT_CTS
-//#define USART2_USE_SOFT_CTS
-//#define USART3_USE_SOFT_CTS
-
-//#define USART0_USE_SOFT_RTS
-//#define USART1_USE_SOFT_RTS
-//#define USART2_USE_SOFT_RTS
-//#define USART3_USE_SOFT_RTS
-
-//#define USART0_RS485_MODE 
-//#define USART1_RS485_MODE	
-//#define USART2_RS485_MODE	
-//#define USART3_RS485_MODE	
-
-/*****************************soft flow control config***********************************/
-
-//#define CTS0_IOPORTNAME D // A,B,C,D ... port naming
-//#define CTS0_PIN 2 // 1,2,3,4 ... pin naming
-
-//#define CTS1_IOPORTNAME
-//#define CTS1_PIN
-
-//#define CTS2_IOPORTNAME
-//#define CTS2_PIN
-
-//#define CTS3_IOPORTNAME
-//#define CTS3_PIN
-
-//#define RTS0_IOPORTNAME D // A,B,C,D ... port naming
-//#define RTS0_PIN 6 // 1,2,3,4 ... pin naming
-
-//#define RTS1_IOPORTNAME
-//#define RTS1_PIN
-
-//#define RTS2_IOPORTNAME
-//#define RTS2_PIN
-
-//#define RTS3_IOPORTNAME
-//#define RTS3_PIN
-
-/*****************************RS 485 config***********************************/
-
-//#define RS485_CONTROL0_IOPORTNAME D // A,B,C,D ... port naming - define valid destination of pin connected to DE + RE 
-//#define RS485_CONTROL0_PIN 2 // 1,2,3,4 ... pin naming - define valid pin connected to DE + RE
-
-//#define RS485_CONTROL1_IOPORTNAME 
-//#define RS485_CONTROL1_PIN 
-
-//#define RS485_CONTROL2_IOPORTNAME
-//#define RS485_CONTROL2_PIN
-
-//#define RS485_CONTROL3_IOPORTNAME
-//#define RS485_CONTROL3_PIN
-
-/*****************************MPCM config***********************************/
-
-#define MPCM0_ADDRESS 0x01
-#define MPCM1_ADDRESS 0x02
-#define MPCM2_ADDRESS 0x03
-#define MPCM3_ADDRESS 0x04
-
-//#define MPCM0_GCALL_ADDRESS 0x00
-//#define MPCM1_GCALL_ADDRESS 0x00
-//#define MPCM2_GCALL_ADDRESS 0x00
-//#define MPCM3_GCALL_ADDRESS 0x00
-
-//#define MPCM0_MASTER_ONLY // do not include slave code into RX ISR
-//#define MPCM1_MASTER_ONLY // do not include slave code into RX ISR
-//#define MPCM2_MASTER_ONLY // do not include slave code into RX ISR
-//#define MPCM3_MASTER_ONLY // do not include slave code into RX ISR
-
 #include <avr/io.h> // for inline func
+#include "usart_config.h"
 
 #ifndef F_CPU
 	#error F_CPU is undefined, USART cannot work correctly without this parametr
@@ -164,7 +20,7 @@
 #define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBBR value for double speed
 
 #ifndef __OPTIMIZE__
-	#warning "Compiler optimizations disabled; functions from usart.h won't work as designed"
+	#warning "Compiler optimizations disabled; functions from usart.h might not work as designed"
 #endif
 	
 #ifdef DEBUG
@@ -179,28 +35,28 @@
 	#define TX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
 #endif
 
-#ifndef TX0_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+#ifndef TX0_BUFFER_SIZE
 	#define TX0_BUFFER_SIZE TX_BUFFER_SIZE
 #endif
-#ifndef RX0_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+#ifndef RX0_BUFFER_SIZE
 	#define RX0_BUFFER_SIZE RX_BUFFER_SIZE
 #endif
-#ifndef TX1_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+#ifndef TX1_BUFFER_SIZE
 	#define TX1_BUFFER_SIZE TX_BUFFER_SIZE
 #endif
-#ifndef RX1_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+#ifndef RX1_BUFFER_SIZE
 	#define RX1_BUFFER_SIZE RX_BUFFER_SIZE
 #endif
-#ifndef TX2_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+#ifndef TX2_BUFFER_SIZE
 	#define TX2_BUFFER_SIZE TX_BUFFER_SIZE
 #endif
-#ifndef RX2_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+#ifndef RX2_BUFFER_SIZE
 	#define RX2_BUFFER_SIZE RX_BUFFER_SIZE
 #endif
-#ifndef TX3_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+#ifndef TX3_BUFFER_SIZE
 	#define TX3_BUFFER_SIZE TX_BUFFER_SIZE
 #endif
-#ifndef RX3_BUFFER_SIZE // Size of the ring buffers, must be power of 2
+#ifndef RX3_BUFFER_SIZE
 	#define RX3_BUFFER_SIZE RX_BUFFER_SIZE
 #endif
 
@@ -398,55 +254,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif
 #else
 	#define RX_NEWLINE_MODE_RN // 2
-#endif
-
-#ifdef USART_USE_INLINE_EVENTS
-	#include "usart_events.h"
-#else
-	#define TX0_EVERYCAL_EVENT "\n\t"
-	#define TX0_TRANSMIT_EVENT "\n\t"
-	#define TX0_INPUT_OPERAND_LIST 
-
-	#define RX0_FRAMING_EVENT "\n\t"
-	#define RX0_EVERYCALL_EVENT "\n\t"
-	#define RX0_EARLY_RECEIVE_EVENT "\n\t"
-	#define RX0_LATE_RECEIVE_EVENT "\n\t"
-	#define RX0_INPUT_OPERAND_LIST
-	
-	#define TX1_EVERYCAL_EVENT "\n\t"
-	#define TX1_TRANSMIT_EVENT "\n\t"
-	#define TX1_INPUT_OPERAND_LIST
-
-	#define RX1_FRAMING_EVENT "\n\t"
-	#define RX1_EVERYCALL_EVENT "\n\t"
-	#define RX1_EARLY_RECEIVE_EVENT "\n\t"
-	#define RX1_LATE_RECEIVE_EVENT "\n\t"
-	#define RX1_INPUT_OPERAND_LIST
-
-	#define TX2_EVERYCAL_EVENT "\n\t"
-	#define TX2_TRANSMIT_EVENT "\n\t"
-	#define TX2_INPUT_OPERAND_LIST
-
-	#define RX2_FRAMING_EVENT "\n\t"
-	#define RX2_EVERYCALL_EVENT "\n\t"
-	#define RX2_EARLY_RECEIVE_EVENT "\n\t"
-	#define RX2_LATE_RECEIVE_EVENT "\n\t"
-	#define RX2_INPUT_OPERAND_LIST
-
-	#define TX3_EVERYCAL_EVENT "\n\t"
-	#define TX3_TRANSMIT_EVENT "\n\t"
-	#define TX3_INPUT_OPERAND_LIST
-
-	#define RX3_FRAMING_EVENT "\n\t"
-	#define RX3_EVERYCALL_EVENT "\n\t"
-	#define RX3_EARLY_RECEIVE_EVENT "\n\t"
-	#define RX3_LATE_RECEIVE_EVENT "\n\t"
-	#define RX3_INPUT_OPERAND_LIST
-	
-	#define TXC0_interrupt_event() ((void)0)
-	#define TXC1_interrupt_event() ((void)0)
-	#define TXC2_interrupt_event() ((void)0)
-	#define TXC3_interrupt_event() ((void)0)
 #endif
 
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_RX_INTERRUPT)
