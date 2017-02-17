@@ -2,7 +2,6 @@
 #define _USART_H_
 
 /************************************************************************************
- *  Published: 21-02-2015                                                           *
  *  Author: jnk0le@hotmail.com                                                      *
  *  https://github.com/jnk0le                                                       *
  *  This library is distributed under MIT license terms                             *
@@ -12,7 +11,7 @@
 #include "usart_config.h"
 
 #ifndef F_CPU
-	#error F_CPU is undefined, USART cannot work correctly without this parametr
+	#error F_CPU is undefined, USART may not work correctly without this parametr
 #endif
 
 #define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating precise UBBR value

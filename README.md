@@ -1,11 +1,11 @@
 # Easy-AVR-USART-C-Library
-An interrupt-driven USART (RS232) library for AVR microcontrollers, with support for multiple UARTs, using ring
+An interrupt-driven USART (RS232) library for AVR microcontrollers, with support for multiple hardware UARTs, using ring
 buffers for receive/transmit. Designed especially for real-time or high throughput applications, with narrow resource limits.
 
 ##Features
 - easy to use
 - intuitive frame format settings
-- support for up to 4 USART's
+- selectable support for up to 4 USART's
 - up to 255 byte FIFOs
 - extremly light interrupts 
 - software(RTS/CTS) and hardware flow control support (DCE naming)

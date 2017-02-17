@@ -4,7 +4,6 @@
 //Compiler          : AVR-GCC
 //Author            : jnk0le@hotmail.com
 //                    https://github.com/jnk0le
-//Date              : 24 June 2015
 //License           : MIT
 //**************************************************************
 
@@ -210,6 +209,63 @@
 //Arguments : Character/byte to send.
 //Return    : none
 //******************************************************************
+/*
+	void uart_putc(char data)
+	{
+	#ifdef PUTC_CONVERT_LF_TO_CRLF
+		if (data == '\n')
+		uart0_putc('\r');
+	#endif
+		
+	#ifdef USART0_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx0_last_byte;
+		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		
+	#ifdef USART0_USE_SOFT_CTS
+		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		{
+			UDR0_REGISTER = data;
+			return;
+		}
+		
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+		
+		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		{
+			tmp_tx_first_byte = tx0_first_byte; // for faster pass through, results in a little bigger code
+		}
+	#else
+		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		
+		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+	#endif
+		
+		tx0_buffer[tmp_tx_last_byte] = data;
+		
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		//cli();
+		{
+			tx0_last_byte = tmp_tx_last_byte;
+			
+		#ifdef USART0_RS485_MODE
+			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
+		#endif
+			
+		#ifdef USART0_USE_SOFT_CTS
+			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+		#endif
+			{
+				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+			}
+		}
+		
+		//reti();
+		
+		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler
+	}
+*/
 	void uart0_putc(char data)
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
@@ -373,6 +429,53 @@
 //Return    : Status value: 0 = BUFFER_FULL, 1 = COMPLETED.
 //Note      : If character cannot be sent due to full transmit buffer, function will abort transmitting character
 //******************************************************************
+/*
+	uint8_t uart_putc_noblock(char data)
+	{
+	#ifdef USART0_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx0_last_byte;
+		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+	
+	#ifdef USART0_USE_SOFT_CTS
+		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		{
+			UDR0_REGISTER = data;
+			return COMPLETED;
+		}
+	
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+	
+		if(tmp_tx_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#else
+		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+	
+		if(tx0_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#endif
+	
+		tx0_buffer[tmp_tx_last_byte] = data;
+	
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		{
+			tx0_last_byte = tmp_tx_last_byte;
+		
+		#ifdef USART0_RS485_MODE
+			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
+		#endif
+		
+		#ifdef USART0_USE_SOFT_CTS
+			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+		#endif
+			{
+				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
+			}
+		}
+		return COMPLETED;
+	}
+*/
 	uint8_t uart0_putc_noblock(char data)
 	{
 	#ifdef USART0_PUTC_FAST_INSERTIONS
@@ -447,6 +550,13 @@
 //Arguments : Pointer to string array terminated by NULL.
 //Return    : none
 //******************************************************************
+/*
+	void uart_putstr(char *string)
+	{
+		while(*string)
+			uart0_putc(*string++);
+	}
+*/
 	void uart0_putstr(char *string)
 	{
 		asm volatile("\n\t"
@@ -474,6 +584,13 @@
 //          : 2. Number of characters/bytes to send.
 //Return    :    none
 //******************************************************************
+/*
+	void uart_putstrl(char *string, uint8_t BytesToWrite)
+	{
+		while(BytesToWrite--)
+			uart0_putc(*string++);
+	}
+*/
 	void uart0_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
@@ -501,6 +618,15 @@
 //Arguments : Pointer to string placed in flash memory.
 //Return    : none
 //******************************************************************
+/*
+	void uart0_puts_p(const char *string) // const __flash ??
+	{
+	#ifndef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
+		register char c;
+		while ( (c = pgm_read_byte(string++)) ) uart0_putc(c);
+	#endif
+	}
+*/
 	void uart0_puts_p(const char *string)
 	{
 	#if !defined(__AVR_ATtiny102__)||!defined(__AVR_ATtiny104__)
@@ -1952,6 +2078,46 @@
 //Arguments : none
 //Return    : Received character or NULL if buffer is empty.
 //******************************************************************
+/*
+	char uart_getc(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		char tmp;
+		
+		if(tmp_rx_first_byte == rx0_last_byte) return 0;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		tmp = rx0_buffer[tmp_rx_first_byte];
+		
+		rx0_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART0_EXTEND_RX_BUFFER
+		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
+	#endif
+		
+	#ifdef USART0_USE_SOFT_RTS
+		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
+			___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+	#endif
+		
+	#ifdef RX0_GETC_ECHO
+		#ifdef RX_NEWLINE_MODE_N
+			if(tmp == '\n')
+				tmp = uart0_putc_('\r');
+		#endif
+		
+		tmp = uart0_putc_(tmp);
+		
+		#ifdef RX_NEWLINE_MODE_R
+			if(tmp == '\r')
+				tmp = uart0_putc_('\n');
+		#endif
+	#endif // RX0_GETC_ECHO
+		
+		return tmp;
+	}
+*/
 	char uart0_getc(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
@@ -1994,7 +2160,7 @@
 	
 	#ifdef USART0_USE_SOFT_RTS
 		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
-			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS signal)		
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)		
 				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
 	#endif
 	
@@ -2037,6 +2203,18 @@
 //          : or at the end of the string if it's shorter than bufferlimit-1
 //			: terminators CR LF will not be cut
 //******************************************************************
+/*
+	void uart_gets(char *buffer, uint8_t bufferlimit)
+	{
+		while(--bufferlimit)
+		{
+			*buffer = uart0_getc();
+			if(*buffer++ == 0)
+				break;
+		}
+		*buffer = 0;
+	}
+*/
 	void uart0_gets(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2071,6 +2249,31 @@
 //          : CR and LF terminators will be cut. 
 //          : Function will return if bufferlimit is reached without waiting for newline terminator
 //******************************************************************
+/*
+	void uart_getln(char *buffer, uint8_t bufferlimit)
+	{
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart0_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart0_getc()) );
+			#endif
+				break;
+			}
+			buffer++;
+		}
+		*buffer = 0;
+	}
+*/
 	void uart0_getln(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2127,6 +2330,41 @@
 //          : Function will return if bufferlimit is reached without waiting for newline terminator
 //          : Function will cut all whitespaces before first nonspace character
 //******************************************************************
+/*
+	void uart_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
+	{
+		do{
+			*buffer = uart0_getc();
+		}while(*buffer <= 32);
+		
+		buffer++;
+		bufferlimit--;
+		
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart0_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else //RX_NEWLINE_MODE_R
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart0_getc()) );
+			#endif
+				break;
+			}
+			else if(*buffer <= 32)
+				break; // string reading is done, we will exit
+
+			buffer++;
+		}
+		*buffer = 0;
+	}
+*/
 	void uart0_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2257,6 +2495,32 @@
 //          : If receiver buffer is empty, return value is negative 
 //          : so only sign bit have to be checked (x < 0 // x >= 0)
 //******************************************************************
+/*
+	int16_t uart_getData(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		uint8_t tmp;
+		
+		if(tmp_rx_first_byte == rx0_last_byte) 
+			return -1;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		tmp = rx0_buffer[tmp_rx_first_byte];
+		rx0_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART0_EXTEND_RX_BUFFER
+		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
+	#endif
+	
+	#ifdef USART0_USE_SOFT_RTS
+		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+	#endif
+		
+		return tmp;
+	}
+*/
 	int16_t uart0_getData(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
@@ -2392,7 +2656,7 @@
 	
 	#ifdef USART1_USE_SOFT_RTS
 		if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
-			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS signal)		
+			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)		
 				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
 	#endif
 	
@@ -2682,7 +2946,7 @@
 	
 	#ifdef USART2_USE_SOFT_RTS
 		if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
-			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS signal)		
+			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)		
 				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
 	#endif
 	
@@ -2972,7 +3236,7 @@
 	
 	#ifdef USART3_USE_SOFT_RTS
 		if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
-			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS signal)		
+			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)		
 				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
 	#endif
 	
