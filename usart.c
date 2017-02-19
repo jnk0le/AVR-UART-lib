@@ -721,10 +721,18 @@
 		uint8_t tmp; 
 		
 		tmp = (data >> 4) & 0x0f;
+	#ifdef USART_PUTHEX_IN_UPPERCASE
+		uart0_putc( (tmp <= 9 ? '0' + tmp : 'A' - 10 + tmp));
+	#else
 		uart0_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	#endif
 		
 		tmp = data & 0x0f;
+	#ifdef USART_PUTHEX_IN_UPPERCASE
+		uart0_putc( (tmp <= 9 ? '0' + tmp : 'A' - 10 + tmp));
+	#else
 		uart0_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	#endif
 	}
 
 //******************************************************************
@@ -1181,10 +1189,18 @@
 		uint8_t tmp; 
 		
 		tmp = (data >> 4) & 0x0f;
+	#ifdef USART_PUTHEX_IN_UPPERCASE
+		uart1_putc( (tmp <= 9 ? '0' + tmp : 'A' - 10 + tmp));
+	#else
 		uart1_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	#endif
 		
 		tmp = data & 0x0f;
+	#ifdef USART_PUTHEX_IN_UPPERCASE
+		uart1_putc( (tmp <= 9 ? '0' + tmp : 'A' - 10 + tmp));
+	#else
 		uart1_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	#endif
 	}
 
 	void uart1_putlong(int32_t data)
@@ -1576,10 +1592,18 @@
 		uint8_t tmp; 
 		
 		tmp = (data >> 4) & 0x0f;
+	#ifdef USART_PUTHEX_IN_UPPERCASE
+		uart2_putc( (tmp <= 9 ? '0' + tmp : 'A' - 10 + tmp));
+	#else
 		uart2_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	#endif
 		
 		tmp = data & 0x0f;
+	#ifdef USART_PUTHEX_IN_UPPERCASE
+		uart2_putc( (tmp <= 9 ? '0' + tmp : 'A' - 10 + tmp));
+	#else
 		uart2_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	#endif
 	}
 
 	void uart2_putlong(int32_t data)
@@ -1971,10 +1995,18 @@
 		uint8_t tmp; 
 		
 		tmp = (data >> 4) & 0x0f;
+	#ifdef USART_PUTHEX_IN_UPPERCASE
+		uart3_putc( (tmp <= 9 ? '0' + tmp : 'A' - 10 + tmp));
+	#else
 		uart3_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	#endif
 		
 		tmp = data & 0x0f;
+	#ifdef USART_PUTHEX_IN_UPPERCASE
+		uart3_putc( (tmp <= 9 ? '0' + tmp : 'A' - 10 + tmp));
+	#else
 		uart3_putc( (tmp <= 9 ? '0' + tmp : 'a' - 10 + tmp));
+	#endif
 	}
 
 	void uart3_putlong(int32_t data)
