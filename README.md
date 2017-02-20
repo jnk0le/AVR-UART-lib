@@ -41,7 +41,7 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 
 - In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint().
 
-- Any used external IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO with this lib) 
+- Any used external IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO) 
 
 - In half duplex (RS485) transmission modes, the aplication code is responsible of starting transmission only when bus is idle.
 If RE and DE are shorted together additional pullup on RX pin is required.

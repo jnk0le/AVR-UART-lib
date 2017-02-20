@@ -778,38 +778,39 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif // 640/1280/2560 usart 2 & 3 
 
 #if defined(__AVR_ATmega8U2__) || defined(__AVR_ATmega16U2__) || defined(__AVR_ATmega16U4__)\
-||defined(__AVR_ATmega32U2__) || defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega32U6__)
+||defined(__AVR_ATmega32U2__) || defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega32U6__)\
+||defined(__AVR_AT90USB82__)||defined(__AVR_AT90USB162__)
 
-#define USART0_HARDWARE_FLOW_CONTROL_AVAILABLE
+#define USART1_HARDWARE_FLOW_CONTROL_AVAILABLE
 
-#ifndef NO_USART0 // we will call the only usart, as an usart0
-#define USE_USART0
+#ifndef NO_USART1 // we will call the only usart, as an usart0
+#define USE_USART1
 
-	#define RX0_INTERRUPT		USART1_RX_vect
-	#define TXC0_INTERRUPT		USART1_TX_vect
-	#define UDRE0_INTERRUPT		USART1_UDRE_vect 
-	#define UDR0_REGISTER		UDR1
-	#define UBRR0L_REGISTER		UBRR1L
-	#define UBRR0H_REGISTER		UBRR1H
-	#define UCSR0A_REGISTER		UCSR1A
-	#define UCSR0B_REGISTER		UCSR1B
-	#define UCSR0C_REGISTER		UCSR1C
-	#define UCSR0D_REGISTER		UCSR1D
-	#define TXCIE0_BIT      	TXCIE1
-	#define UDRIE0_BIT    		UDRIE1
-	#define RXCIE0_BIT  		RXCIE1
-	#define TXEN0_BIT   		TXEN1
-	#define RXEN0_BIT   		RXEN1
-	#define UDRE0_BIT   		UDRE1
-	#define RXC0_BIT    		RXC1
-	#define U2X0_BIT    		U2X1
-	#define MPCM0_BIT   		MPCM1
-	#define UCSZ02_BIT  		UCSZ12
-	#define TXB80_BIT   		TXB81
-	#define CTSEN0_BIT  		CTSEN
-	#define RTSEN0_BIT  		RTSEN
+	#define RX1_INTERRUPT		USART1_RX_vect
+	#define TXC1_INTERRUPT		USART1_TX_vect
+	#define UDRE1_INTERRUPT		USART1_UDRE_vect 
+	#define UDR1_REGISTER		UDR1
+	#define UBRR1L_REGISTER		UBRR1L
+	#define UBRR1H_REGISTER		UBRR1H
+	#define UCSR1A_REGISTER		UCSR1A
+	#define UCSR1B_REGISTER		UCSR1B
+	#define UCSR1C_REGISTER		UCSR1C
+	#define UCSR1D_REGISTER		UCSR1D
+	#define TXCIE1_BIT      	TXCIE1
+	#define UDRIE1_BIT    		UDRIE1
+	#define RXCIE1_BIT  		RXCIE1
+	#define TXEN1_BIT   		TXEN1
+	#define RXEN1_BIT   		RXEN1
+	#define UDRE1_BIT   		UDRE1
+	#define RXC1_BIT    		RXC1
+	#define U2X1_BIT    		U2X1
+	#define MPCM1_BIT   		MPCM1
+	#define UCSZ12_BIT  		UCSZ12
+	#define TXB81_BIT   		TXB81
+	#define CTSEN1_BIT  		CTSEN
+	#define RTSEN1_BIT  		RTSEN
 
-#endif // NO_USART0
+#endif // NO_USART1
 #endif
 
 #if defined(__AVR_ATmega169A__)||defined(__AVR_ATmega169__)||defined(__AVR_ATmega169P__)||defined(__AVR_ATmega169PA__)
@@ -908,7 +909,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif //NO_USART0
 #endif
 
-#if defined(__AVR_AT90CAN32__)||defined(__AVR_AT90CAN64__)||defined(__AVR_AT90CAN128__)
+#if defined(__AVR_AT90CAN32__)||defined(__AVR_AT90CAN64__)||defined(__AVR_AT90CAN128__)\
+||defined(__AVR_ATmega64RFR2__)||defined(__AVR_ATmega128RFR2__)||defined(__AVR_ATmega256RFR2__)\
+||defined(__AVR_ATmega644RFR2__)||defined(__AVR_ATmega1284RFR2__)||defined(__AVR_ATmega2564RFR2__)
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -963,9 +966,42 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif // NO_USART1
 #endif
 
+#if defined(__AVR_AT90USB646__)||defined(__AVR_AT90USB647__)||defined(__AVR_AT90USB1286__)||defined(__AVR_AT90USB1287__)
+
+#ifndef NO_USART1
+#define USE_USART1
+
+	#define RX1_INTERRUPT		USART1_RX_vect
+	#define TXC1_INTERRUPT		USART1_TX_vect
+	#define UDRE1_INTERRUPT		USART1_UDRE_vect 
+	#define UDR1_REGISTER		UDR1
+	#define UBRR1L_REGISTER		UBRR1L
+	#define UBRR1H_REGISTER		UBRR1H
+	#define UCSR1A_REGISTER		UCSR1A
+	#define UCSR1B_REGISTER		UCSR1B
+	#define UCSR1C_REGISTER		UCSR1C
+	#define TXCIE1_BIT      	TXCIE1
+	#define UDRIE1_BIT    		UDRIE1
+	#define RXCIE1_BIT  		RXCIE1
+	#define TXEN1_BIT   		TXEN1
+	#define RXEN1_BIT   		RXEN1
+	#define UDRE1_BIT   		UDRE1
+	#define RXC1_BIT    		RXC1
+	#define U2X1_BIT    		U2X1
+	#define MPCM1_BIT   		MPCM1
+	#define UCSZ12_BIT  		UCSZ12
+	#define TXB81_BIT   		TXB81
+
+#endif // NO_USART1
+#endif
+
 #if defined(USART_REMAP_LAST_INTERFACE)&&!defined(USE_USART0)&&defined(USE_USART1)&&!defined(USE_USART2)&&!defined(USE_USART3)
 	#undef USE_USART1
 	#define USE_USART0
+	
+	#ifdef USART1_HARDWARE_FLOW_CONTROL_AVAILABLE
+		#define USART0_HARDWARE_FLOW_CONTROL_AVAILABLE
+	#endif
 	
 	#define RX0_INTERRUPT		RX1_INTERRUPT
 	#define TXC0_INTERRUPT		TXC1_INTERRUPT
@@ -1424,6 +1460,20 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		UCSR1A_REGISTER |= (1<<MPCM1_BIT);
 	}
 #endif
+
+#ifdef USART1_HARDWARE_FLOW_CONTROL_AVAILABLE
+	void uart1_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) __attribute__((always_inline));
+	void uart1_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) // pass true to enable
+	{
+		if(ctsenable && rtsenable) // -Os dependent, do not use in non-inline functions 
+			UCSR1D_REGISTER = (1<<CTSEN1_BIT)|(1<<RTSEN1_BIT);
+		else if(ctsenable)
+			UCSR1D_REGISTER = (1<<CTSEN1_BIT);
+		else
+			UCSR1D_REGISTER = (1<<RTSEN1_BIT);
+	}
+#endif
+
 #endif // USE_USART1
 
 #ifdef USE_USART2
