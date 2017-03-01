@@ -669,7 +669,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 ||defined(__AVR_ATmega128A__)||defined(__AVR_ATmega64__)||defined(__AVR_ATmega64A__)\
 ||defined(__AVR_ATmega1281__)||defined(__AVR_ATmega2561__)||defined(__AVR_ATmega640__)\
 ||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)||defined(__AVR_ATmega164P__)\
-||defined(__AVR_ATmega324P__)||defined(__AVR_ATmega324A__)
+||defined(__AVR_ATmega324P__)||defined(__AVR_ATmega324A__)||defined(__AVR_ATmega324PA__)\
+||defined(__AVR_ATmega324PB__)
 
 #ifndef NO_USART0
 #define USE_USART0
@@ -725,7 +726,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #endif
 
-#if defined(__AVR_ATmega640__)||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega640__)||defined(__AVR_ATmega1280__)||defined(__AVR_ATmega2560__)||defined(__AVR_ATmega324PB__)
 
 #ifndef NO_USART2
 #define USE_USART2
@@ -753,7 +754,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	
 #endif // NO_USART2
 
-#ifndef NO_USART3
+#if !defined(NO_USART3)&&!defined(__AVR_ATmega324PB__)
 #define USE_USART3
 
 	#define RX3_INTERRUPT		USART3_RX_vect
@@ -778,7 +779,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define TXB83_BIT   		TXB83
 	
 #endif // NO_USART3
-
 #endif // 640/1280/2560 usart 2 & 3 
 
 #if defined(__AVR_ATmega8U2__) || defined(__AVR_ATmega16U2__) || defined(__AVR_ATmega16U4__)\
