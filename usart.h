@@ -26,6 +26,10 @@
 
 #endif
 
+#ifndef __AVR_ARCH__
+
+#endif
+
 #ifndef RX_BUFFER_SIZE
 	#define RX_BUFFER_SIZE 32 // Size of the ring buffers, must be power of 2
 #endif
@@ -911,7 +915,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 
 #if defined(__AVR_AT90CAN32__)||defined(__AVR_AT90CAN64__)||defined(__AVR_AT90CAN128__)\
 ||defined(__AVR_ATmega64RFR2__)||defined(__AVR_ATmega128RFR2__)||defined(__AVR_ATmega256RFR2__)\
-||defined(__AVR_ATmega644RFR2__)||defined(__AVR_ATmega1284RFR2__)||defined(__AVR_ATmega2564RFR2__)
+||defined(__AVR_ATmega644RFR2__)||defined(__AVR_ATmega1284RFR2__)||defined(__AVR_ATmega2564RFR2__)\
+||defined(__AVR_ATmega128RFA1__)
 
 #ifndef NO_USART0
 #define USE_USART0
