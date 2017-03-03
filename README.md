@@ -61,12 +61,26 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 
 - uart_putc() function is not thread/interrupt-safe nor reentrant. It shouldn't be called from within atomic blocks or interrupt handlers since it re-enables interrupt flag on exit or even hangs in infinite loop waiting for execution of UDRE interrupt.
 
-##ISR timmings
+##ISR timmings (cycles)
 
-- TX best case - send byte from buffer: 40 cycles (39 if uart is placed in IO address space)
-- TX worst case - send byte from buffer and disable UDRIE interrupt: 44 cycles (40 if uart is placed in IO address space) 
+| ISR case | attiny2313 | atmega8 | atmega328 | atmega2560 | lgt8f88A | 
+| --- | --- | --- | --- | --- | --- |
+| **TX best** | 37 | 40 | 40 | 42 | 30 |
+| **TX worst** | 38 | 41 | 44 | 46 | 35 |
+| **RX best** | 36 | 36 | 37 | 39 | 27 |
+| **RX worst** | 40 | 42 | 43 | 45 | 32 |
+| **RX best with rts** | 41 | 41 | 44 | 46 | 32 |
+| **RX worst with rts** | 40 | 42 | 43 | 45 | 32 |
+| **BUFFER_SIZE = 256** | x | -1 | -1 | -1 | -1 |
 
-- RX best case - load byte and do nothing (buffer full): 37 cycles (36 if uart is placed in IO address space, up to 45 if soft RTS/extended buffer is used (byte is not loaded))
-- RX worst case - load byte and put it into buffer: 43 cycles (42 if uart is placed in IO address space)
+- TX best case - send byte from buffer
+- TX worst case - send byte from buffer and disable UDRIE interrupt
+- RX best case - load byte and do nothing (buffer full)
+- RX worst case - load byte and put it into buffer
 
-- Any case: +2 on >128k and some older mcu's, -1 for 256 byte buffers, -2 on ATtiny2313
+##todo
+- func sizes
+- xmega, tiny87
+- some notes about flow control
+- modbus
+- xmodem timeouts/fallback
