@@ -319,10 +319,10 @@
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
-			: /* outputs */
+			: // outputs
 			[head] "=r" (tmp_tx_last_byte),
 			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
-			: /* inputs */
+			: // inputs
 		#ifdef USART0_USE_SOFT_CTS
 			[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS0_IOPORTNAME))),
 			[cts_pin]       "M" (CTS0_PIN),
@@ -333,7 +333,7 @@
 			[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
 			[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[udre_bit]      "M"	(UDRE0_BIT)
-			: /* clobbers */
+			: // clobbers
 			"r26","r27"
 		);
 	#else
@@ -350,11 +350,11 @@
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
-			: /* outputs */
+			: // outputs
 			[head] "=r" (tmp_tx_last_byte)
-			: /* inputs */
+			: // inputs
 			[mask] "M" (TX0_BUFFER_MASK)
-			: /* clobbers */
+			: // clobbers
 			"r27"
 		);
 	#endif
@@ -372,11 +372,11 @@
 		#endif
 			"st		X, %[dat] \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_tx_last_byte), // will be used later, do not let the compiler to do anything weird
 			[dat]   "+r" (data) // not modified, so reduce register moves if inlined
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 	
@@ -405,11 +405,11 @@
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
 					"sts   %M[control_reg], r25 \n\t"
 				#endif
-					: /* outputs */
-					: /* inputs */
+					: // outputs
+					: // inputs
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 					[udrie_bit]   "M" (UDRIE0_BIT)
-					: /* clobbers */
+					: // clobbers
 					"r25"
 				);
 			#endif
@@ -515,11 +515,11 @@
 		#endif
 			"st		X, %[dat] \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_tx_last_byte), // will be used later, do not let the compiler to do anything weird
 			[dat]   "+r" (data) // not modified, so reduce register moves if inlined
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)
 			"r27",
 		#endif
@@ -569,10 +569,10 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (string)
-			: /* clobbers*/
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -603,11 +603,11 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			[counter] "r" (BytesToWrite),
 			"z" (string)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -640,10 +640,10 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (string)
-			: /*clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -930,10 +930,10 @@
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
-			: /* outputs */
+			: // outputs
 			[head] "=r" (tmp_tx_last_byte),
 			[dat]  "+r" (data)
-			: /* inputs */
+			: // inputs
 		#ifdef USART1_USE_SOFT_CTS
 			[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS1_IOPORTNAME))),
 			[cts_pin]       "M" (CTS1_PIN),
@@ -944,7 +944,7 @@
 			[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
 			[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
 			[udre_bit]      "M"	(UDRE1_BIT)
-			: /* clobbers */
+			: // clobbers
 			"r26","r27"
 		);
 	#else
@@ -961,11 +961,11 @@
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
-			: /* outputs */
+			: // outputs
 			[head] "=r" (tmp_tx_last_byte)
-			: /* inputs */
+			: // inputs
 			[mask] "M" (TX1_BUFFER_MASK)
-			: /* clobbers */
+			: // clobbers
 			"r27"
 		);
 	#endif
@@ -977,11 +977,11 @@
 			"sbci	r27, hi8(-(tx1_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_tx_last_byte),
 			[dat]   "+r" (data)
-			: /* inputs*/
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -1004,11 +1004,11 @@
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
 					"sts   %M[control_reg], r25 \n\t"
-					: /* outputs */
-					: /* inputs */
+					: // outputs
+					: // inputs
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
 					[udrie_bit]   "M" (UDRIE1_BIT)
-					: /* clobbers */
+					: // clobbers
 					"r25"
 				);
 			#endif
@@ -1055,11 +1055,11 @@
 			"sbci	r27, hi8(-(tx1_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_tx_last_byte),
 			[dat]   "+r" (data) 
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -1093,10 +1093,10 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (string)
-			: /* clobbers*/
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -1114,11 +1114,11 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			[counter] "r" (BytesToWrite),
 			"z" (string)
-			: /* clobbers*/
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -1136,10 +1136,10 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (string)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -1337,10 +1337,10 @@
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
-			: /* outputs */
+			: // outputs
 			[head] "=r" (tmp_tx_last_byte),
 			[dat]  "+r" (data)
-			: /* inputs */
+			: // inputs
 		#ifdef USART2_USE_SOFT_CTS
 			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS2_IOPORTNAME))),
 			[cts_pin]       "M"    (CTS2_PIN),
@@ -1351,7 +1351,7 @@
 			[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
 			[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR2_REGISTER)),
 			[udre_bit]      "M"	(UDRE2_BIT)
-			: /* clobbers */
+			: // clobbers
 			"r26","r27"
 		);
 	#else
@@ -1368,11 +1368,11 @@
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
-			: /* outputs */
+			: // outputs
 			[head] "=r" (tmp_tx_last_byte)
-			: /* inputs */
+			: // inputs
 			[mask] "M" (TX2_BUFFER_MASK)
-			: /* clobbers */
+			: // clobbers
 			"r27"
 		);
 	#endif
@@ -1384,11 +1384,11 @@
 			"sbci	r27, hi8(-(tx2_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			[index] "+r" (tmp_tx_last_byte),
 			[dat]   "+r" (data)
-			: /* clobbers */
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -1408,11 +1408,11 @@
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
 					"sts   %M[control_reg], r25 \n\t"
-					: /* outputs */
-					: /* inputs */
+					: // outputs
+					: // inputs
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 					[udrie_bit]   "M" (UDRIE2_BIT)
-					: /* clobbers */
+					: // clobbers
 					"r25"
 				);
 			}
@@ -1458,11 +1458,11 @@
 			"sbci	r27, hi8(-(tx2_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_tx_last_byte),
 			[dat]   "+r" (data)
-			: /* inputs*/
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -1496,10 +1496,10 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (string)
-			: /* clobbers*/
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -1517,11 +1517,11 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			[counter] "r" (BytesToWrite),
 			"z" (string)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -1539,10 +1539,10 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (string)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -1740,10 +1740,10 @@
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
-			: /* outputs */
+			: // outputs
 			[head] "=r" (tmp_tx_last_byte),
 			[dat]  "+r" (data)
-			: /* inputs */
+			: // inputs
 		#ifdef USART3_USE_SOFT_CTS
 			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS3_IOPORTNAME))),
 			[cts_pin]       "M"    (CTS3_PIN),
@@ -1754,7 +1754,7 @@
 			[UDR_reg]	    "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
 			[UDR_reg_IO]    "M" (_SFR_IO_ADDR(UDR3_REGISTER)),
 			[udre_bit]      "M"	(UDRE3_BIT)
-			: /* clobbers */
+			: // clobbers
 			"r26","r27"
 		);
 	#else
@@ -1771,11 +1771,11 @@
 				"cp		r27, %[head] \n\t"
 				"breq	waitforspace_%= \n\t"
 				
-				: /* outputs */
+				: // outputs
 				[head] "=r" (tmp_tx_last_byte)
-				: /* inputs */
+				: // inputs
 				[mask] "M" (TX3_BUFFER_MASK)
-				: /* clobbers */
+				: // clobbers
 				"r27"
 			);
 	#endif
@@ -1787,11 +1787,11 @@
 			"sbci	r27, hi8(-(tx3_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			[index] "+r" (tmp_tx_last_byte),
 			[dat]   "+r" (data)
-			: /* clobbers */
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -1811,11 +1811,11 @@
 					"lds   r25, %M[control_reg] \n\t"
 					"ori  r25, (1<<%M[udrie_bit]) \n\t"
 					"sts   %M[control_reg], r25 \n\t"
-					: /* outputs */
-					: /* inputs */
+					: // outputs
+					: // inputs
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 					[udrie_bit]   "M" (UDRIE3_BIT)
-					: /* clobbers */
+					: // clobbers
 					"r25"
 				);
 			}
@@ -1861,11 +1861,11 @@
 			"sbci	r27, hi8(-(tx3_buffer)) \n\t"
 			"st		X, %[dat] \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_tx_last_byte),
 			[dat]   "+r" (data)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -1899,10 +1899,10 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (string)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -1920,11 +1920,11 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			[counter] "r" (BytesToWrite),
 			"z" (string)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -1942,10 +1942,10 @@
 			"rjmp	load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (string)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_putc()
 		);
@@ -2173,11 +2173,11 @@
 		#endif
 			"ld 	%[temp], X \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_rx_first_byte),
 			[temp]  "=r" (tmp)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)
 			"r27",
 		#endif
@@ -2261,11 +2261,11 @@
 		"store_NULL_%=:"
 			"st 	Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -2342,11 +2342,11 @@
 		"store_NULL_%=:"
 			"st		Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24"
 		);
 	}
@@ -2444,11 +2444,11 @@
 		"store_NULL_%=:"
 			"st		Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -2576,11 +2576,11 @@
 		#endif
 			"ld 	%[temp], X \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_rx_first_byte),
 			[temp]  "=r" (tmp)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)	
 			"r27",
 		#endif
@@ -2672,11 +2672,11 @@
 			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_rx_first_byte),
 			[temp] "=r" (tmp)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 	
@@ -2723,11 +2723,11 @@
 		"store_NULL_%=:"
 			"st 	Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -2769,11 +2769,11 @@
 		"store_NULL_%=:"
 			"st		Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -2826,11 +2826,11 @@
 		"store_NULL_%=:"
 			"st		Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -2886,11 +2886,11 @@
 			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_rx_first_byte),
 			[temp]  "=r" (tmp)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -2962,11 +2962,11 @@
 			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_rx_first_byte),
 			[temp]  "=r" (tmp)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 	
@@ -3013,11 +3013,11 @@
 		"store_NULL_%=:"
 			"st 	Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -3059,11 +3059,11 @@
 		"store_NULL_%=:"
 			"st		Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -3116,11 +3116,11 @@
 		"store_NULL_%=:"
 			"st		Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -3176,11 +3176,11 @@
 			"sbci	r27, hi8(-(rx2_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_rx_first_byte),
 			[temp] "=r" (tmp)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -3252,11 +3252,11 @@
 			"sbci	r27, hi8(-(rx3_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_rx_first_byte),
 			[temp]  "=r" (tmp)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 	
@@ -3303,11 +3303,11 @@
 		"store_NULL_%=:"
 			"st 	Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -3349,11 +3349,11 @@
 		"store_NULL_%=:"
 			"st		Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -3406,11 +3406,11 @@
 		"store_NULL_%=:"
 			"st		Z, __zero_reg__ \n\t"
 		
-			: /* outputs */
-			: /* inputs */
+			: // outputs
+			: // inputs
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
-			: /* clobbers */
+			: // clobbers
 			"r24",
 			"r25","r26","r27" // uart_getc()
 		);
@@ -3466,11 +3466,11 @@
 			"sbci	r27, hi8(-(rx3_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
-			: /* outputs */
+			: // outputs
 			[index] "+r" (tmp_rx_first_byte),
 			[temp] "=r" (tmp)
-			: /* inputs */
-			: /* clobbers */
+			: // inputs
+			: // clobbers
 			"r26","r27"
 		);
 		
@@ -3768,111 +3768,111 @@
 
 	ISR(UDRE0_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 4 ISR entry */
+		asm volatile("\n\t"
 
-			"push	r16 \n\t"                         /* 2 */
-			"in		r16, __SREG__ \n\t"               /* 1 */
+			"push	r16 \n\t"
+			"in		r16, __SREG__ \n\t"
 
-			"push	r30 \n\t"                         /* 2 */
-			"push	r31 \n\t"                         /* 2 */
+			"push	r30 \n\t"
+			"push	r31 \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
-				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
+				"in		r31, %M[control_reg_IO] \n\t"
+				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
+				"out	%M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"        /* 2 */
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
-				"sts	%M[control_reg], r31 \n\t"         /* 2 */
+				"lds	r31, %M[control_reg] \n\t"
+				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
+				"sts	%M[control_reg], r31 \n\t"
 			#endif
 			
-			"sei \n\t"                               /* 1 */
+			"sei \n\t"
 		#endif
 		
 			TX0_EVERYCAL_EVENT
 		
-			"lds	r30, (tx0_first_byte) \n\t"       /* 2 */
-			"lds	r31, (tx0_last_byte) \n\t"        /* 2 */
+			"lds	r30, (tx0_first_byte) \n\t"
+			"lds	r31, (tx0_last_byte) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
-			"cp		r30, r31 \n\t"                    /* 1 */
-			"breq	USART0_TX_EXIT \n\t"              /* 1/2 */
+			"cp		r30, r31 \n\t"
+			"breq	USART0_TX_EXIT \n\t"
 		#endif
 		
-			"inc	r30 \n\t"                   /* 1 */
+			"inc	r30 \n\t"
 	
 		#if (TX0_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"                /* 1 */
+			"andi	r30, %M[mask]\n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cpse	r30, r31 \n\t"                    /* 1/2 */
-			"rjmp	USART0_TX_CONTINUE \n\t"          /* 2 */
+			"cpse	r30, r31 \n\t"
+			"rjmp	USART0_TX_CONTINUE \n\t"
 			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"             /* 1 */
-				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
+				"in		r31, %M[control_reg_IO] \n\t"
+				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
+				"out	%M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"        /* 2 */
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"    /* 1 */
-				"sts	%M[control_reg], r31 \n\t"         /* 2 */
+				"lds	r31, %M[control_reg] \n\t"
+				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
+				"sts	%M[control_reg], r31 \n\t"
 			#endif
 			
 		"USART0_TX_CONTINUE: "
 		#endif
 			
-			"sts	(tx0_first_byte), r30 \n\t"       /* 2 */
+			"sts	(tx0_first_byte), r30 \n\t"
 	
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
-			"ldi	r31, 0x00 \n\t"                   /* 1 */
+			"ldi	r31, 0x00 \n\t"
 		#endif
-			"subi	r30, lo8(-(tx0_buffer)) \n\t"     /* 1 */
+			"subi	r30, lo8(-(tx0_buffer)) \n\t"
 		
 		#ifndef USART_USE_TINY_MEMORY_MODEL
-			"sbci	r31, hi8(-(tx0_buffer)) \n\t"     /* 1 */
+			"sbci	r31, hi8(-(tx0_buffer)) \n\t"
 		#endif
-			"ld		r30, Z \n\t"                      /* 2 */
+			"ld		r30, Z \n\t"
 		
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"out	%M[UDR_reg_IO], r30 \n\t"         /* 1 */
+			"out	%M[UDR_reg_IO], r30 \n\t"
 		#else
-			"sts	%M[UDR_reg], r30 \n\t"            /* 2 */
+			"sts	%M[UDR_reg], r30 \n\t"
 		#endif
 			
 			TX0_TRANSMIT_EVENT
 			
 		#ifdef USART_UNSAFE_TX_INTERRUPT
-			"cli \n\t"                               /* 1 */
+			"cli \n\t"
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"sbi	%M[control_reg_IO], %M[udrie_bit] \n\t"    /* 2 */
+				"sbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)	
-				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-				"ori	r31, (1<<%M[udrie_bit]) \n\t"             /* 1 */
-				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
+				"in		r31, %M[control_reg_IO] \n\t"
+				"ori	r31, (1<<%M[udrie_bit]) \n\t"
+				"out	%M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"        /* 2 */
-				"ori	r31, (1<<%M[udrie_bit]) \n\t"    /* 1 */
-				"sts	%M[control_reg], r31 \n\t"         /* 2 */
+				"lds	r31, %M[control_reg] \n\t"
+				"ori	r31, (1<<%M[udrie_bit]) \n\t"
+				"sts	%M[control_reg], r31 \n\t"
 			#endif
 		#endif
 			
 		"USART0_TX_EXIT: "
-			"pop	r31 \n\t"                         /* 2 */
-			"pop	r30 \n\t"                         /* 2 */
+			"pop	r31 \n\t"
+			"pop	r30 \n\t"
 		
-			"out	__SREG__ , r16 \n\t"              /* 1 */
-			"pop	r16 \n\t"                         /* 2 */
+			"out	__SREG__ , r16 \n\t"
+			"pop	r16 \n\t"
 
-			"reti \n\t"                              /* 4 ISR return */
-			: /* output operands */
+			"reti \n\t"
+			: // output operands
 		
-			: /* input operands */
+			: // input operands
 			TX0_INPUT_OPERAND_LIST
 			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]        "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
@@ -3881,7 +3881,7 @@
 			[udrie_bit]      "M" (UDRIE0_BIT),
 			[mask]           "M" (TX0_BUFFER_MASK)
 		
-			/* no clobbers */
+			// no clobbers
 		);
 	}	
 	
@@ -3906,76 +3906,76 @@
 
 	ISR(RX0_INTERRUPT, ISR_NAKED)
 	{
-		asm volatile("\n\t"                      /* 4 ISR entry */
+		asm volatile("\n\t"
 
-			"push	r16 \n\t"                         /* 2 */
-			"in		r16, __SREG__ \n\t"               /* 1 */
+			"push	r16 \n\t"
+			"in		r16, __SREG__ \n\t"
 		
-			"push	r25 \n\t"                         /* 2 */
+			"push	r25 \n\t"
 			
 		#ifdef USART0_PUSH_BEFORE_RX
-			"push	r30 \n\t"                         /* 2 */
-			"push	r31 \n\t"                         /* 2 */
+			"push	r30 \n\t"
+			"push	r31 \n\t"
 		#endif
 			
 		#ifndef USART0_EXTEND_RX_BUFFER
 			RX0_FRAMING_EVENT
 			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
+				"in		r25, %M[UDR_reg_IO] \n\t"
 			#else
-				"lds	r25, %M[UDR_reg] \n\t"            /* 2 */
+				"lds	r25, %M[UDR_reg] \n\t"
 			#endif
 		#endif
 			
 		#ifndef USART0_PUSH_BEFORE_RX
-			"push	r30 \n\t"                         /* 2 */
-			"push	r31 \n\t"                         /* 2 */
+			"push	r30 \n\t"
+			"push	r31 \n\t"
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
+				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"             /* 1 */
-				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
+				"in		r31, %M[control_reg_IO] \n\t"
+				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"out	%M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"        /* 2 */
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"    /* 1 */
-				"sts	%M[control_reg], r31 \n\t"         /* 2 */
+				"lds	r31, %M[control_reg] \n\t"
+				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"sts	%M[control_reg], r31 \n\t"
 			#endif
 			
-			"sei \n\t"                               /* 1 */
+			"sei \n\t"
 		#endif
 	
 			RX0_EVERYCALL_EVENT
 	
-			"lds	r30, (rx0_last_byte) \n\t"        /* 2 */
-			"lds	r31, (rx0_first_byte) \n\t"       /* 2 */
+			"lds	r30, (rx0_last_byte) \n\t"
+			"lds	r31, (rx0_first_byte) \n\t"
 		
-			"inc	r30 \n\t"                   /* 1 */
+			"inc	r30 \n\t"
 		
 		#if (RX0_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"                /* 1 */
+			"andi	r30, %M[mask]\n\t"
 		#endif
 		
-			"cp		r31, r30 \n\t"                    /* 1 */
+			"cp		r31, r30 \n\t"
 		#if defined(USART0_USE_SOFT_RTS)||(defined(USART0_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
-			"breq	USART0_DISABLE_RXCIE \n\t"           /* 1/2 */
+			"breq	USART0_DISABLE_RXCIE \n\t"
 		#elif defined(USART0_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
-			"breq	USART0_RX_EXIT_SKIP \n\t"           /* 1/2 */
+			"breq	USART0_RX_EXIT_SKIP \n\t"
 		#else
-			"breq	USART0_RX_EXIT \n\t"           /* 1/2 */
+			"breq	USART0_RX_EXIT \n\t"
 		#endif
 		
 		#ifdef USART0_EXTEND_RX_BUFFER
 			RX0_FRAMING_EVENT
 			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"in		r25, %M[UDR_reg_IO] \n\t"          /* 1 */
+				"in		r25, %M[UDR_reg_IO] \n\t"
 			#else
-				"lds	r25, %M[UDR_reg] \n\t"            /* 2 */
+				"lds	r25, %M[UDR_reg] \n\t"
 			#endif
 		#endif
 		
@@ -3984,102 +3984,102 @@
 		#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
 
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"in 	r31, %M[UCSRA_reg_IO] \n\t"      /* 1 */
+				"in 	r31, %M[UCSRA_reg_IO] \n\t"
 			#else
-				"lds	r31, %M[UCSRA_reg] \n\t"         /* 2 */
+				"lds	r31, %M[UCSRA_reg] \n\t"
 			#endif
 
-				"sbrs	r31, %M[mpcm_bit] \n\t"          /* 1 */
-				"rjmp	USART0_RX_CONTINUE \n\t"      /* 2 */
-				"cpi	r25, %M[mpcm_address] \n\t"      /* 1 */
+				"sbrs	r31, %M[mpcm_bit] \n\t"
+				"rjmp	USART0_RX_CONTINUE \n\t"
+				"cpi	r25, %M[mpcm_address] \n\t"
 			#ifdef MPCM0_GCALL_ADDRESS
-				"breq	p_%= \n\t"                       /* 1/2 */
-				"cpi	r25, %M[mpcm_gcall_address] \n\t"      /* 1 */
+				"breq	p_%= \n\t"
+				"cpi	r25, %M[mpcm_gcall_address] \n\t"
 			#endif
-				"brne	USART0_RX_EXIT \n\t"          /* 1/2 */
+				"brne	USART0_RX_EXIT \n\t"
 			"p_%=: "
-				"andi	r31, ~(1<<%M[mpcm_bit]) \n\t"    /* 1 */
+				"andi	r31, ~(1<<%M[mpcm_bit]) \n\t"
 
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"out	%M[UCSRA_reg_IO], r31 \n\t"      /* 2 */
+				"out	%M[UCSRA_reg_IO], r31 \n\t"
 			#else
-				"sts	%M[UCSRA_reg], r31 \n\t"         /* 2 */
+				"sts	%M[UCSRA_reg], r31 \n\t"
 			#endif
 
 		"USART0_RX_CONTINUE: "
 		#endif
 			
-			"sts	(rx0_last_byte), r30 \n\t"        /* 2 */
+			"sts	(rx0_last_byte), r30 \n\t"
 		
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)	// on ATtiny2313 upper byte in pointer pair is ignored
-			"ldi	r31, 0x00 \n\t"                   /* 1 */
+			"ldi	r31, 0x00 \n\t"
 		#endif
-			"subi	r30, lo8(-(rx0_buffer))\n\t"      /* 1 */
+			"subi	r30, lo8(-(rx0_buffer))\n\t"
 		
 		#ifndef USART_USE_TINY_MEMORY_MODEL
-			"sbci	r31, hi8(-(rx0_buffer))\n\t"      /* 1 */
+			"sbci	r31, hi8(-(rx0_buffer))\n\t"
 		#endif	
-			"st		Z, r25 \n\t"                      /* 2 */
+			"st		Z, r25 \n\t"
 		
 			RX0_LATE_RECEIVE_EVENT
 			
 		"USART0_RX_EXIT: "
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"cli \n\t"                               /* 1 */
+			"cli \n\t"
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"sbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
+				"sbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-				"ori	r31, (1<<%M[rxcie_bit]) \n\t"             /* 1 */
-				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
+				"in		r31, %M[control_reg_IO] \n\t"
+				"ori	r31, (1<<%M[rxcie_bit]) \n\t"
+				"out	%M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"        /* 2 */
-				"ori	r31, (1<<%M[rxcie_bit]) \n\t"    /* 1 */
-				"sts	%M[control_reg], r31 \n\t"         /* 2 */
+				"lds	r31, %M[control_reg] \n\t"
+				"ori	r31, (1<<%M[rxcie_bit]) \n\t"
+				"sts	%M[control_reg], r31 \n\t"
 			#endif
 			
 		"USART0_RX_EXIT_SKIP: "
 		#endif
-			"pop	r31 \n\t"                         /* 2 */
-			"pop	r30 \n\t"                         /* 2 */
-			"pop	r25 \n\t"                         /* 2 */
+			"pop	r31 \n\t"
+			"pop	r30 \n\t"
+			"pop	r25 \n\t"
 		
-			"out	__SREG__, r16 \n\t"               /* 1 */
-			"pop	r16 \n\t"                          /* 2 */
+			"out	__SREG__, r16 \n\t"
+			"pop	r16 \n\t"
 
-			"reti \n\t"                              /* 4 ISR return */
+			"reti \n\t"
 		
 		#if defined(USART0_USE_SOFT_RTS)||(defined(USART0_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
 		"USART0_DISABLE_RXCIE: "
 		
 		#ifdef USART0_USE_SOFT_RTS
-			"sbi	%M[rts_port], %M[rts_pin] \n\t"  /* 2 */
+			"sbi	%M[rts_port], %M[rts_pin] \n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"    /* 2 */
+				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"                  /* 1 */
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"             /* 1 */
-				"out	%M[control_reg_IO], r31\n\t"                  /* 1 */
+				"in		r31, %M[control_reg_IO] \n\t"
+				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"out	%M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"        /* 2 */
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"    /* 1 */
-				"sts	%M[control_reg], r31 \n\t"         /* 2 */
+				"lds	r31, %M[control_reg] \n\t"
+				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"sts	%M[control_reg], r31 \n\t"
 			#endif
 		#endif
 			
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"rjmp	USART0_RX_EXIT_SKIP \n\t"          /* 2 */
+			"rjmp	USART0_RX_EXIT_SKIP \n\t"
 		#else
-			"rjmp	USART0_RX_EXIT \n\t"          /* 2 */
+			"rjmp	USART0_RX_EXIT \n\t"
 		#endif
 			
 		#endif
-			: /* output operands */
+			: // output operands
 		
-			: /* input operands */
+			: // input operands
 			RX0_INPUT_OPERAND_LIST
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
@@ -4099,7 +4099,7 @@
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 			[rxcie_bit]          "M" (RXCIE0_BIT)
 		
-			/* no clobbers */
+			// no clobbers
 		);
 		
 	}
@@ -4196,9 +4196,9 @@
 			"pop	r16 \n\t"
 
 			"reti \n\t"
-			: /* output operands */
+			: // output operands
 		
-			: /* input operands */
+			: // input operands
 			TX1_INPUT_OPERAND_LIST
 			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
 			[UDR_reg]        "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
@@ -4207,7 +4207,7 @@
 			[udrie_bit]      "M" (UDRIE1_BIT),
 			[mask]           "M" (TX1_BUFFER_MASK)
 		
-			/* no clobbers */
+			// no clobbers
 		);
 		
 	}
@@ -4382,15 +4382,15 @@
 		#endif
 			
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"rjmp	USART1_RX_EXIT_SKIP \n\t"          /* 2 */
+			"rjmp	USART1_RX_EXIT_SKIP \n\t"
 		#else
-			"rjmp	USART1_RX_EXIT \n\t"          /* 2 */
+			"rjmp	USART1_RX_EXIT \n\t"
 		#endif
 			
 		#endif
-			: /* output operands */
+			: // output operands
 		
-			: /* input operands */
+			: // input operands
 			RX1_INPUT_OPERAND_LIST
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
@@ -4410,7 +4410,7 @@
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
 			[rxcie_bit]          "M" (RXCIE1_BIT)
 		
-			/* no clobbers */
+			// no clobbers
 		);
 		
 	}
@@ -4492,16 +4492,16 @@
 			"pop	r16 \n\t"
 
 			"reti \n\t"
-			: /* output operands */
+			: // output operands
 		
-			: /* input operands */
+			: // input operands
 			TX2_INPUT_OPERAND_LIST
 			[UDR_reg]     "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
 			[control_reg] "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[udrie_bit]   "M" (UDRIE2_BIT),
 			[mask]        "M" (TX2_BUFFER_MASK)
 		
-			/* no clobbers */
+			// no clobbers
 		);
 		
 	}
@@ -4645,15 +4645,15 @@
 		#endif
 			
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"rjmp	USART2_RX_EXIT_SKIP \n\t"          /* 2 */
+			"rjmp	USART2_RX_EXIT_SKIP \n\t"
 		#else
-			"rjmp	USART2_RX_EXIT \n\t"          /* 2 */
+			"rjmp	USART2_RX_EXIT \n\t"
 		#endif
 		
 		#endif
-			: /* output operands */
+			: // output operands
 		
-			: /* input operands */
+			: // input operands
 			RX2_INPUT_OPERAND_LIST
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
 			[mask]               "M" (RX2_BUFFER_MASK),
@@ -4670,7 +4670,7 @@
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[rxcie_bit]          "M" (RXCIE2_BIT)
 		
-			/* no clobbers */
+			// no clobbers
 		);
 		
 	}
@@ -4752,16 +4752,16 @@
 			"pop	r16 \n\t"
 
 			"reti \n\t"
-			: /* output operands */
+			: // output operands
 		
-			: /* input operands */
+			: // input operands
 			TX3_INPUT_OPERAND_LIST
 			[UDR_reg]     "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
 			[control_reg] "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[udrie_bit]   "M" (UDRIE3_BIT),
 			[mask]        "M" (TX3_BUFFER_MASK)
 		
-			/* no clobbers */
+			// no clobbers
 		);
 		
 	}
@@ -4905,15 +4905,15 @@
 		#endif
 			
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"rjmp	USART3_RX_EXIT_SKIP \n\t"          /* 2 */
+			"rjmp	USART3_RX_EXIT_SKIP \n\t"
 		#else
-			"rjmp	USART3_RX_EXIT \n\t"          /* 2 */
+			"rjmp	USART3_RX_EXIT \n\t"
 		#endif
 		
 		#endif
-			: /* output operands */
+			: // output operands
 		
-			: /* input operands */
+			: // input operands
 			RX3_INPUT_OPERAND_LIST
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
 			[mask]               "M" (RX3_BUFFER_MASK),
@@ -4930,7 +4930,7 @@
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[rxcie_bit]          "M" (RXCIE3_BIT)
 		
-			/* no clobbers */
+			// no clobbers
 		);
 		
 	}
