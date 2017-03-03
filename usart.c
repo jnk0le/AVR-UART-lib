@@ -140,7 +140,7 @@
 	{
 		UCSR2B_REGISTER = 0; //flush all buffers
 	
-	#ifdef 
+	#ifdef USART2_RS485_MODE
 		___PORT(RS485_CONTROL2_IOPORTNAME) &= ~(1<<RS485_CONTROL2_PIN); //set low
 		___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN);
 	#endif
@@ -1385,9 +1385,9 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			: // inputs
 			[index] "+r" (tmp_tx_last_byte),
 			[dat]   "+r" (data)
+			: // inputs
 			: // clobbers
 			"r26","r27"
 		);
@@ -1788,9 +1788,9 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			: // inputs
 			[index] "+r" (tmp_tx_last_byte),
 			[dat]   "+r" (data)
+			: // inputs
 			: // clobbers
 			"r26","r27"
 		);
