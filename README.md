@@ -77,6 +77,8 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 - TX worst case - send byte from buffer and disable UDRIE interrupt
 - RX best case - load byte and do nothing (buffer full)
 - RX worst case - load byte and put it into buffer
+- RX best case with rts - lower RTS line and disable RXCIE interrupt
+- RX worst case with rts - load byte and put it into buffer if there is available space
 
 ##todo
 - func sizes
