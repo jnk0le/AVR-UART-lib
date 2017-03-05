@@ -73,6 +73,7 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 | **RX worst with rts** | 40 | 42 | 43 | 45 | 32 |
 | **BUFFER_SIZE = 256** | x | -1 | -1 | -1 | -1 |
 
+
 - TX best case - send byte from buffer
 - TX worst case - send byte from buffer and disable UDRIE interrupt
 - RX best case - load byte and do nothing (buffer full)
@@ -82,7 +83,8 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 
 ##todo
 - func sizes
-- xmega, tiny87
+- xmega, tiny817
 - some notes about flow control
 - modbus
 - xmodem timeouts/fallback
+- cts naked handler timmings
