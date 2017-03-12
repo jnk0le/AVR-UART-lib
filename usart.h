@@ -2320,11 +2320,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	}
 	
 	#ifndef NO_USART_TX
-		void uart_putchar(char data, FILE *stream);
+		int uart_putchar(char data, FILE *stream);
 	#endif
 
 	#ifndef NO_USART_RX
-		char uart_getchar(FILE *stream);
+		int uart_getchar(FILE *stream);
 	#endif
 	
 	#ifdef USE_USART0
@@ -2382,11 +2382,11 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #else // single USART mcu
 
 	#ifndef NO_TX0_INTERRUPT
-		void uart_putchar(char data, FILE *stream);
+		int uart_putchar(char data, FILE *stream);
 	#endif
 
 	#ifndef NO_RX0_INTERRUPT
-		char uart_getchar(FILE *stream);
+		int uart_getchar(FILE *stream);
 	#endif
 	
 	#if defined(NO_RX0_INTERRUPT)

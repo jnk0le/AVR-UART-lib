@@ -87,3 +87,4 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 - modbus
 - xmodem timeouts/fallback
 - cts naked handler timmings
+- 100% flush

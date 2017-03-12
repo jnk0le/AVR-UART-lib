@@ -2130,7 +2130,7 @@
 	#ifdef USART0_USE_SOFT_RTS
 		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
 			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
-			___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
 	#endif
 		
 	#ifdef RX0_GETC_ECHO
@@ -3534,7 +3534,7 @@
 
 	#ifndef NO_USART_TX
 		
-		void uart_putchar(char data, FILE *stream)
+		int uart_putchar(char data, FILE *stream)
 		{
 			switch((uint16_t) stream -> udata)
 			{
@@ -3570,7 +3570,7 @@
 
 	#ifndef NO_USART_RX
 		
-		char uart_getchar(FILE *stream)
+		int uart_getchar(FILE *stream)
 		{
 			int16_t tmp;
 			
@@ -3676,17 +3676,18 @@
 
 	#ifndef NO_TX0_INTERRUPT
 		
-		void uart_putchar(char data, FILE *stream)
+		int uart_putchar(char data, FILE *stream)
 		{
 			if (data == '\n') uart0_putc('\r');
 		
 			uart_putc(data);
+			return 0;
 		}
 	#endif // NO_TX0_INTERRUPT
 
 	#ifndef NO_RX0_INTERRUPT
 		
-		char uart_getchar(FILE *stream)
+		int uart_getchar(FILE *stream)
 		{
 			int16_t tmp;
 			
