@@ -18,7 +18,7 @@
 #define BAUD_CALC_FAST(x) ((F_CPU)/(BAUD*16UL)-1) // for faster real time calculations ?
 #define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBBR value for double speed
 
-#ifndef __OPTIMIZE__
+#ifndef __OPTIMIZE__ // && prematured?
 	#warning "Compiler optimizations disabled; functions from usart.h might not work as designed"
 #endif
 	
@@ -1599,8 +1599,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #ifndef NO_USART_TX
 	
 	#ifndef NO_TX0_INTERRUPT
-		void uart0_putc(char data) __attribute__ ((naked, noinline));
-		char uart0_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		#ifdef USART_NO_ABI_BREAKING_PREMATURES
+			void uart0_putc(char data);
+			inline char uart0_putc_(char data) __attribute__ ((always_inline));
+			inline char uart0_putc_(char data) { uart0_putc(data); return data; }
+		#else
+			void uart0_putc(char data) __attribute__ ((naked, noinline));
+			char uart0_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		#endif
 		
 		uint8_t uart0_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1674,8 +1680,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif // NO_TX0_INTERRUPT
 	
 	#ifndef NO_TX1_INTERRUPT
-		void uart1_putc(char data) __attribute__ ((naked, noinline));
-		char uart1_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		#ifdef USART_NO_ABI_BREAKING_PREMATURES
+			void uart1_putc(char data);
+			inline char uart1_putc_(char data) __attribute__ ((always_inline));
+			inline char uart1_putc_(char data) { uart1_putc(data); return data; }
+		#else
+			void uart1_putc(char data) __attribute__ ((naked, noinline));
+			char uart1_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		#endif
 		
 		uint8_t uart1_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1724,8 +1736,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif // NO_TX1_INTERRUPT
 	
 	#ifndef NO_TX2_INTERRUPT
-		void uart2_putc(char data) __attribute__ ((naked, noinline));
-		char uart2_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		#ifdef USART_NO_ABI_BREAKING_PREMATURES
+			void uart2_putc(char data);
+			inline char uart2_putc_(char data) __attribute__ ((always_inline));
+			inline char uart2_putc_(char data) { uart2_putc(data); return data; }
+		#else
+			void uart2_putc(char data) __attribute__ ((naked, noinline));
+			char uart2_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		#endif
 		
 		uint8_t uart2_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -1774,8 +1792,14 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#endif // NO_TX2_INTERRUPT
 	
 	#ifndef NO_TX3_INTERRUPT
-		void uart3_putc(char data) __attribute__ ((naked, noinline));
-		char uart3_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		#ifdef USART_NO_ABI_BREAKING_PREMATURES
+			void uart3_putc(char data);
+			inline char uart3_putc_(char data) __attribute__ ((always_inline));
+			inline char uart3_putc_(char data) { uart3_putc(data); return data; }
+		#else
+			void uart3_putc(char data) __attribute__ ((naked, noinline));
+			char uart3_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+		#endif
 		
 		uint8_t uart3_putc_noblock(char data); // returns BUFFER_FULL (false) if buffer is full and character cannot be sent at the moment
 	
@@ -2000,6 +2024,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #if defined(USART0_USE_SOFT_CTS)&&!defined(NO_TX0_INTERRUPT) //&&defined(USE_USART0)
 	extern volatile uint8_t tx0_first_byte, tx0_last_byte;
 
+	static inline void cts0_isr_handler(void) __attribute__((always_inline));
 	static inline void cts0_isr_handler(void)
 	{
 	#if defined(USART0_IN_IO_ADDRESS_SPACE)
@@ -2101,6 +2126,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #if defined(USART1_USE_SOFT_CTS)&&!defined(NO_TX1_INTERRUPT)
 	extern volatile uint8_t tx1_first_byte, tx1_last_byte;
 
+	static inline void cts1_isr_handler(void) __attribute__((always_inline));
 	static inline void cts1_isr_handler(void)
 	{
 	#if defined(USART1_IN_IO_ADDRESS_SPACE)
@@ -2188,6 +2214,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #if defined(USART2_USE_SOFT_CTS)&&!defined(NO_TX2_INTERRUPT)
 	extern volatile uint8_t tx2_first_byte, tx2_last_byte;
 
+	static inline void cts2_isr_handler(void) __attribute__((always_inline));
 	static inline void cts2_isr_handler(void)
 	{
 		uint8_t tmp = UCSR2B_REGISTER;
@@ -2247,6 +2274,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #if defined(USART3_USE_SOFT_CTS)&&!defined(NO_TX3_INTERRUPT)
 	extern volatile uint8_t tx3_first_byte, tx3_last_byte;
 
+	static inline void cts3_isr_handler(void) __attribute__((always_inline));
 	static inline void cts3_isr_handler(void)
 	{
 		uint8_t tmp = UCSR3B_REGISTER;

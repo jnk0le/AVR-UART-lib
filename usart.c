@@ -61,6 +61,36 @@
 	extern char u_tmp_buff[];
 #endif
 
+#ifdef USE_USART0
+/*
+	void uart_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
+	{
+	#ifdef USART0_RS485_MODE
+		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
+	#endif
+		
+		UBRR0L_REGISTER = (uint8_t) ubbr_value;
+		UBRR0H_REGISTER = (ubbr_value>>8);
+		
+	#ifdef USART0_U2X_SPEED
+		#ifdef USART0_MPCM_MODE
+			UCSR0A_REGISTER = (1<<U2X0_BIT)|(1<<MPCM0_BIT);
+		#else
+			UCSR0A_REGISTER = (1<<U2X0_BIT); // enable double speed
+		#endif
+	#elif defined(USART0_MPCM_MODE)
+		UCSR0A_REGISTER |= (1<<MPCM0_BIT);
+	#endif
+		
+		UCSR0B_REGISTER = USART0_CONFIG_B;
+		// 8n1 is set by default, setting UCSRC is not needed
+		
+	#ifdef USART0_USE_SOFT_RTS
+		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+	#endif
+	}
+*/
+
 //******************************************************************
 //Function  : To reinitialize USART interface (runtime speed changing).
 //Arguments : Calculated UBBR value to initialize equal speed.
@@ -69,7 +99,6 @@
 //          : All data inside UDR shift register will be lost.
 //          : U2X bit is cleared if USARTn_U2X_SPEED is not defined.
 //******************************************************************
-#ifdef USE_USART0
 	void uart0_reinit(uint16_t ubbr_value)
 	{
 		UCSR0B_REGISTER = 0; //flush all buffers
@@ -209,12 +238,12 @@
 //Arguments : Character/byte to send.
 //Return    : none
 //******************************************************************
-/*
-	void uart_putc(char data)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart0_putc(char data)
 	{
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
 		if (data == '\n')
-		uart0_putc('\r');
+			uart0_putc('\r');
 	#endif
 		
 	#ifdef USART0_PUTC_FAST_INSERTIONS
@@ -245,7 +274,6 @@
 		tx0_buffer[tmp_tx_last_byte] = data;
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-		//cli();
 		{
 			tx0_last_byte = tmp_tx_last_byte;
 			
@@ -260,12 +288,8 @@
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
 			}
 		}
-		
-		//reti();
-		
-		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_putc(char data)
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
@@ -417,20 +441,19 @@
 		}
 	
 		reti();
-	
 		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
 	}
 	
 	char uart0_putc_(char data) __attribute__ ((alias ("uart0_putc"))); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
-	
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 //******************************************************************
 //Function  : Send single character/byte.
 //Arguments : Character/byte to send.
 //Return    : Status value: 0 = BUFFER_FULL, 1 = COMPLETED.
 //Note      : If character cannot be sent due to full transmit buffer, function will abort transmitting character
 //******************************************************************
-/*
-	uint8_t uart_putc_noblock(char data)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	uint8_t uart0_putc_noblock(char data)
 	{
 	#ifdef USART0_PUTC_FAST_INSERTIONS
 		register uint8_t tmp_tx_last_byte = tx0_last_byte;
@@ -475,7 +498,7 @@
 		}
 		return COMPLETED;
 	}
-*/
+#else //!USART_NO_ABI_BREAKING_PREMATURES
 	uint8_t uart0_putc_noblock(char data)
 	{
 	#ifdef USART0_PUTC_FAST_INSERTIONS
@@ -544,19 +567,20 @@
 		}
 		return COMPLETED;
 	}
+#endif
 
 //******************************************************************
 //Function  : Send string array.
 //Arguments : Pointer to string array terminated by NULL.
 //Return    : none
 //******************************************************************
-/*
-	void uart_putstr(char *string)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart0_putstr(char *string)
 	{
-		while(*string)
-			uart0_putc(*string++);
+		char c;
+		while ((c = *string++)) uart0_putc(c);
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_putstr(char *string)
 	{
 		asm volatile("\n\t"
@@ -577,6 +601,7 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 //******************************************************************
 //Function  : Send string not terminated by NULL or part of the string array.
@@ -584,13 +609,13 @@
 //          : 2. Number of characters/bytes to send.
 //Return    :    none
 //******************************************************************
-/*
-	void uart_putstrl(char *string, uint8_t BytesToWrite)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart0_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		while(BytesToWrite--)
 			uart0_putc(*string++);
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
@@ -612,21 +637,21 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
-
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 //******************************************************************
 //Function  : Send string from flash memory.
 //Arguments : Pointer to string placed in flash memory.
 //Return    : none
 //******************************************************************
-/*
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_puts_p(const char *string) // const __flash ??
 	{
 	#ifndef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
 		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart0_putc(c);
+		while ( (c = pgm_read_byte(string++)) ) uart0_putc(c); 
 	#endif
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_puts_p(const char *string)
 	{
 	#if !defined(__AVR_ATtiny102__)||!defined(__AVR_ATtiny104__)
@@ -649,7 +674,7 @@
 		);
 	#endif
 	}
-
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 //******************************************************************
 //Function  : Send integer formated into ASCI string (base 10).
 //Arguments : int16_t data value.
@@ -848,7 +873,7 @@
 	#ifdef USART0_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL0_IOPORTNAME) & (1<<RS485_CONTROL0_PIN));
 	#else	
-		while(tx0_first_byte != tx0_last_byte); // just flush the buffer 
+		while(tx0_first_byte != tx0_last_byte); // just flush the ring buffer
 	#endif
 	}
 	
@@ -880,6 +905,59 @@
 #endif // NO_TX0_INTERRUPT
 
 #ifndef NO_TX1_INTERRUPT
+
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart1_putc(char data)
+	{
+	#ifdef PUTC_CONVERT_LF_TO_CRLF
+		if (data == '\n')
+			uart1_putc('\r');
+	#endif
+		
+	#ifdef USART1_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx1_last_byte;
+		register uint8_t tmp_tx_first_byte = tx1_first_byte;
+		
+	#ifdef USART1_USE_SOFT_CTS
+		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
+		{
+			UDR1_REGISTER = data;
+			return;
+		}
+		
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
+		
+		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		{
+			tmp_tx_first_byte = tx1_first_byte; // for faster pass through, results in a little bigger code
+		}
+	#else
+		register uint8_t tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+		
+		while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+	#endif
+		
+		tx1_buffer[tmp_tx_last_byte] = data;
+		
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		{
+			tx1_last_byte = tmp_tx_last_byte;
+			
+		#ifdef USART1_RS485_MODE
+			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
+		#endif
+			
+		#ifdef USART1_USE_SOFT_CTS
+			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+		#endif
+			{
+				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
+			}
+		}
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_putc(char data)
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
@@ -1021,7 +1099,55 @@
 	}
 	
 	char uart1_putc_(char data) __attribute__ ((alias ("uart1_putc"))); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	uint8_t uart1_putc_noblock(char data)
+	{
+	#ifdef USART1_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx1_last_byte;
+		register uint8_t tmp_tx_first_byte = tx1_first_byte;
+	
+	#ifdef USART1_USE_SOFT_CTS
+		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
+		{
+			UDR1_REGISTER = data;
+			return COMPLETED;
+		}
+	
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
+	
+		if(tmp_tx_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#else
+		register uint8_t tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+	
+		if(tx1_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#endif
+	
+		tx1_buffer[tmp_tx_last_byte] = data;
+	
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		{
+			tx1_last_byte = tmp_tx_last_byte;
+		
+		#ifdef USART1_RS485_MODE
+			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
+		#endif
+		
+		#ifdef USART1_USE_SOFT_CTS
+			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+		#endif
+			{
+				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
+			}
+		}
+		return COMPLETED;
+	}
+#else //!USART_NO_ABI_BREAKING_PREMATURES
 	uint8_t uart1_putc_noblock(char data)
 	{
 	#ifdef USART1_PUTC_FAST_INSERTIONS
@@ -1080,7 +1206,15 @@
 		}
 		return COMPLETED;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart1_putstr(char *string)
+	{
+		char c;
+		while ((c = *string++)) uart1_putc(c);
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_putstr(char *string)
 	{
 		asm volatile("\n\t"
@@ -1101,7 +1235,15 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart1_putstrl(char *string, uint8_t BytesToWrite)
+	{
+		while(BytesToWrite--)
+			uart1_putc(*string++);
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
@@ -1123,7 +1265,15 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart1_puts_p(const char *string) // const __flash ??
+	{
+		register char c;
+		while ( (c = pgm_read_byte(string++)) ) uart1_putc(c); 
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_puts_p(const char *string)
 	{
 		asm volatile("\n\t"
@@ -1144,6 +1294,7 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	void uart1_putint(int16_t data)
 	{
@@ -1278,7 +1429,7 @@
 	#ifdef USART1_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL1_IOPORTNAME) & (1<<RS485_CONTROL1_PIN));
 	#else	
-		while(tx1_first_byte != tx1_last_byte); // just flush the buffer 
+		while(tx1_first_byte != tx1_last_byte); // just flush the ring buffer 
 	#endif
 	}
 
@@ -1295,6 +1446,59 @@
 #endif // NO_TX1_INTERRUPT
 
 #ifndef NO_TX2_INTERRUPT
+
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart2_putc(char data)
+	{
+	#ifdef PUTC_CONVERT_LF_TO_CRLF
+		if (data == '\n')
+			uart2_putc('\r');
+	#endif
+		
+	#ifdef USART2_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx2_last_byte;
+		register uint8_t tmp_tx_first_byte = tx2_first_byte;
+		
+	#ifdef USART2_USE_SOFT_CTS
+		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
+		{
+			UDR2_REGISTER = data;
+			return;
+		}
+		
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
+		
+		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		{
+			tmp_tx_first_byte = tx2_first_byte; // for faster pass through, results in a little bigger code
+		}
+	#else
+		register uint8_t tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
+		
+		while(tx2_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+	#endif
+		
+		tx2_buffer[tmp_tx_last_byte] = data;
+		
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		{
+			tx2_last_byte = tmp_tx_last_byte;
+			
+		#ifdef USART2_RS485_MODE
+			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); //set high
+		#endif
+			
+		#ifdef USART2_USE_SOFT_CTS
+			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+		#endif
+			{
+				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
+			}
+		}
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_putc(char data)
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
@@ -1419,12 +1623,59 @@
 		}
 	
 		reti();
-		
 		asm volatile("\n\t"::"r" (data):); // data was passed in r24 and will be returned in the same register, make sure it is not affected by the compiler 
 	}
 	
 	char uart2_putc_(char data) __attribute__ ((alias ("uart2_putc"))); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	uint8_t uart2_putc_noblock(char data)
+	{
+	#ifdef USART2_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx2_last_byte;
+		register uint8_t tmp_tx_first_byte = tx2_first_byte;
+	
+	#ifdef USART2_USE_SOFT_CTS
+		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
+		{
+			UDR2_REGISTER = data;
+			return COMPLETED;
+		}
+	
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
+	
+		if(tmp_tx_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#else
+		register uint8_t tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
+	
+		if(tx2_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#endif
+	
+		tx2_buffer[tmp_tx_last_byte] = data;
+	
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		{
+			tx2_last_byte = tmp_tx_last_byte;
+		
+		#ifdef USART2_RS485_MODE
+			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); //set high
+		#endif
+		
+		#ifdef USART2_USE_SOFT_CTS
+			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+		#endif
+			{
+				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
+			}
+		}
+		return COMPLETED;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	uint8_t uart2_putc_noblock(char data)
 	{
 	#ifdef USART2_PUTC_FAST_INSERTIONS
@@ -1483,7 +1734,15 @@
 		}
 		return COMPLETED;
 	}
-
+#endif // USART_NO_ABI_BREAKING_PREMATURES
+	
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart2_putstr(char *string)
+	{
+		char c;
+		while ((c = *string++)) uart2_putc(c);
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_putstr(char *string)
 	{
 		asm volatile("\n\t"
@@ -1504,7 +1763,15 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart2_putstrl(char *string, uint8_t BytesToWrite)
+	{
+		while(BytesToWrite--)
+			uart2_putc(*string++);
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
@@ -1526,7 +1793,15 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart2_puts_p(const char *string) // const __flash ??
+	{
+		register char c;
+		while ( (c = pgm_read_byte(string++)) ) uart2_putc(c);
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_puts_p(const char *string)
 	{
 		asm volatile("\n\t"
@@ -1547,6 +1822,7 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	void uart2_putint(int16_t data)
 	{
@@ -1681,7 +1957,7 @@
 	#ifdef USART2_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL2_IOPORTNAME) & (1<<RS485_CONTROL2_PIN));
 	#else	
-		while(tx2_first_byte != tx2_last_byte); // just flush the buffer 
+		while(tx2_first_byte != tx2_last_byte); // just flush the ring buffer 
 	#endif
 	}
 
@@ -1698,6 +1974,59 @@
 #endif // NO_TX2_INTERRUPT
 
 #ifndef NO_TX3_INTERRUPT
+
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart3_putc(char data)
+	{
+	#ifdef PUTC_CONVERT_LF_TO_CRLF
+		if (data == '\n')
+			uart3_putc('\r');
+	#endif
+		
+	#ifdef USART3_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx3_last_byte;
+		register uint8_t tmp_tx_first_byte = tx3_first_byte;
+		
+	#ifdef USART3_USE_SOFT_CTS
+		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
+		{
+			UDR3_REGISTER = data;
+			return;
+		}
+		
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
+		
+		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		{
+			tmp_tx_first_byte = tx3_first_byte; // for faster pass through, results in a little bigger code
+		}
+	#else
+		register uint8_t tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
+		
+		while(tx3_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+	#endif
+		
+		tx3_buffer[tmp_tx_last_byte] = data;
+		
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		{
+			tx3_last_byte = tmp_tx_last_byte;
+			
+		#ifdef USART3_RS485_MODE
+			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); //set high
+		#endif
+			
+		#ifdef USART3_USE_SOFT_CTS
+			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+		#endif
+			{
+				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
+			}
+		}
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_putc(char data)
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
@@ -1827,7 +2156,55 @@
 	}
 	
 	char uart3_putc_(char data) __attribute__ ((alias ("uart3_putc"))); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	uint8_t uart3_putc_noblock(char data)
+	{
+	#ifdef USART3_PUTC_FAST_INSERTIONS
+		register uint8_t tmp_tx_last_byte = tx3_last_byte;
+		register uint8_t tmp_tx_first_byte = tx3_first_byte;
+	
+	#ifdef USART3_USE_SOFT_CTS
+		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+	#endif
+		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
+		{
+			UDR3_REGISTER = data;
+			return COMPLETED;
+		}
+	
+		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
+	
+		if(tmp_tx_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#else
+		register uint8_t tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
+	
+		if(tx3_first_byte == tmp_tx_last_byte)
+			return BUFFER_FULL;
+	#endif
+	
+		tx3_buffer[tmp_tx_last_byte] = data;
+	
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+		{
+			tx3_last_byte = tmp_tx_last_byte;
+		
+		#ifdef USART3_RS485_MODE
+			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); //set high
+		#endif
+		
+		#ifdef USART3_USE_SOFT_CTS
+			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+		#endif
+			{
+				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
+			}
+		}
+		return COMPLETED;
+	}
+#else //!USART_NO_ABI_BREAKING_PREMATURES
 	uint8_t uart3_putc_noblock(char data)
 	{
 	#ifdef USART3_PUTC_FAST_INSERTIONS
@@ -1886,7 +2263,15 @@
 		}
 		return COMPLETED;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart3_putstr(char *string)
+	{
+		char c;
+		while ((c = *string++)) uart3_putc(c);
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_putstr(char *string)
 	{
 		asm volatile("\n\t"
@@ -1907,7 +2292,15 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart3_putstrl(char *string, uint8_t BytesToWrite)
+	{
+		while(BytesToWrite--)
+			uart3_putc(*string++);
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
@@ -1929,7 +2322,15 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart3_puts_p(const char *string) // const __flash ??
+	{
+		register char c;
+		while ( (c = pgm_read_byte(string++)) ) uart3_putc(c); 
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_puts_p(const char *string)
 	{
 		asm volatile("\n\t"
@@ -1950,6 +2351,7 @@
 			"r25","r26","r27" // uart_putc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	void uart3_putint(int16_t data)
 	{
@@ -2084,7 +2486,7 @@
 	#ifdef USART3_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL3_IOPORTNAME) & (1<<RS485_CONTROL3_PIN));
 	#else	
-		while(tx3_first_byte != tx3_last_byte); // just flush the buffer 
+		while(tx3_first_byte != tx3_last_byte); // just flush the ring buffer 
 	#endif
 	}
 
@@ -2110,13 +2512,14 @@
 //Arguments : none
 //Return    : Received character or NULL if buffer is empty.
 //******************************************************************
-/*
-	char uart_getc(void)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	char uart0_getc(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx0_last_byte) return 0;
+		if(tmp_rx_first_byte == rx0_last_byte) 
+			return 0;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
 		tmp = rx0_buffer[tmp_rx_first_byte];
@@ -2149,7 +2552,7 @@
 		
 		return tmp;
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart0_getc(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
@@ -2212,6 +2615,7 @@
 		
 		return tmp;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 //******************************************************************
 //Function  : Reads string from receiver buffer.
@@ -2235,8 +2639,8 @@
 //          : or at the end of the string if it's shorter than bufferlimit-1
 //			: terminators CR LF will not be cut
 //******************************************************************
-/*
-	void uart_gets(char *buffer, uint8_t bufferlimit)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart0_gets(char *buffer, uint8_t bufferlimit)
 	{
 		while(--bufferlimit)
 		{
@@ -2246,7 +2650,7 @@
 		}
 		*buffer = 0;
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_gets(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2270,6 +2674,7 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 //******************************************************************
 //Function  : Reads one line from the receiver buffer. (waits for EOL terminator)
@@ -2281,8 +2686,8 @@
 //          : CR and LF terminators will be cut. 
 //          : Function will return if bufferlimit is reached without waiting for newline terminator
 //******************************************************************
-/*
-	void uart_getln(char *buffer, uint8_t bufferlimit)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart0_getln(char *buffer, uint8_t bufferlimit)
 	{
 		while(--bufferlimit)
 		{
@@ -2305,7 +2710,7 @@
 		}
 		*buffer = 0;
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_getln(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2350,6 +2755,7 @@
 			"r24"
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 //******************************************************************
 //Function  : Reads burst of characters until first whitespace (waits for EOL terminator or first whitespace)
@@ -2362,8 +2768,8 @@
 //          : Function will return if bufferlimit is reached without waiting for newline terminator
 //          : Function will cut all whitespaces before first nonspace character
 //******************************************************************
-/*
-	void uart_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart0_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		do{
 			*buffer = uart0_getc();
@@ -2396,7 +2802,7 @@
 		}
 		*buffer = 0;
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2453,6 +2859,7 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 //******************************************************************
 //Function  : To skip all incoming whitespace characters until first nonspace character.
@@ -2527,8 +2934,8 @@
 //          : If receiver buffer is empty, return value is negative 
 //          : so only sign bit have to be checked (x < 0 // x >= 0)
 //******************************************************************
-/*
-	int16_t uart_getData(void)
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	int16_t uart0_getData(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
 		uint8_t tmp;
@@ -2552,7 +2959,7 @@
 		
 		return tmp;
 	}
-*/
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart0_getData(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx0_first_byte;
@@ -2601,6 +3008,7 @@
 		
 		return tmp;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 //******************************************************************
 //Function  : To receive single byte in binary transmission.
@@ -2655,6 +3063,48 @@
 #endif // NO_RX0_INTERRUPT
 
 #ifndef NO_RX1_INTERRUPT
+
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	char uart1_getc(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx1_first_byte;
+		char tmp;
+		
+		if(tmp_rx_first_byte == rx1_last_byte) 
+			return 0;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
+		tmp = rx1_buffer[tmp_rx_first_byte];
+		
+		rx1_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART1_EXTEND_RX_BUFFER
+		UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
+	#endif
+		
+	#ifdef USART1_USE_SOFT_RTS
+		if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
+				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+	#endif
+		
+	#ifdef RX1_GETC_ECHO
+		#ifdef RX_NEWLINE_MODE_N
+			if(tmp == '\n')
+				tmp = uart1_putc_('\r');
+		#endif
+		
+		tmp = uart1_putc_(tmp);
+		
+		#ifdef RX_NEWLINE_MODE_R
+			if(tmp == '\r')
+				tmp = uart1_putc_('\n');
+		#endif
+	#endif // RX1_GETC_ECHO
+		
+		return tmp;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart1_getc(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx1_first_byte;
@@ -2708,7 +3158,20 @@
 		
 		return tmp;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart1_gets(char *buffer, uint8_t bufferlimit)
+	{
+		while(--bufferlimit)
+		{
+			*buffer = uart1_getc();
+			if(*buffer++ == 0)
+				break;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_gets(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2732,7 +3195,33 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 	
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart1_getln(char *buffer, uint8_t bufferlimit)
+	{
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart1_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart1_getc()) );
+			#endif
+				break;
+			}
+			buffer++;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_getln(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2778,7 +3267,43 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart1_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
+	{
+		do{
+			*buffer = uart1_getc();
+		}while(*buffer <= 32);
+		
+		buffer++;
+		bufferlimit--;
+		
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart1_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else //RX_NEWLINE_MODE_R
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart1_getc()) );
+			#endif
+				break;
+			}
+			else if(*buffer <= 32)
+				break; // string reading is done, we will exit
+
+			buffer++;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -2835,6 +3360,7 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	int16_t uart1_getint(void)
 	{
@@ -2869,6 +3395,32 @@
 		return atof(u_tmp_buff);
 	}
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	int16_t uart1_getData(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx1_first_byte;
+		uint8_t tmp;
+		
+		if(tmp_rx_first_byte == rx1_last_byte) 
+			return -1;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
+		tmp = rx1_buffer[tmp_rx_first_byte];
+		rx1_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART1_EXTEND_RX_BUFFER
+		UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
+	#endif
+	
+	#ifdef USART1_USE_SOFT_RTS
+		if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT)))
+				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+	#endif
+		
+		return tmp;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart1_getData(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx1_first_byte;
@@ -2908,6 +3460,7 @@
 		
 		return tmp;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	uint8_t uart1_LoadData(uint8_t *data)
 	{
@@ -2945,6 +3498,48 @@
 #endif // NO_RX1_INTERRUPT
 
 #ifndef NO_RX2_INTERRUPT
+	
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	char uart2_getc(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx2_first_byte;
+		char tmp;
+		
+		if(tmp_rx_first_byte == rx2_last_byte) 
+			return 0;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
+		tmp = rx2_buffer[tmp_rx_first_byte];
+		
+		rx2_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART2_EXTEND_RX_BUFFER
+		UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
+	#endif
+		
+	#ifdef USART2_USE_SOFT_RTS
+		if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
+				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+	#endif
+		
+	#ifdef RX2_GETC_ECHO
+		#ifdef RX_NEWLINE_MODE_N
+			if(tmp == '\n')
+				tmp = uart2_putc_('\r');
+		#endif
+		
+		tmp = uart2_putc_(tmp);
+		
+		#ifdef RX_NEWLINE_MODE_R
+			if(tmp == '\r')
+				tmp = uart2_putc_('\n');
+		#endif
+	#endif // RX2_GETC_ECHO
+		
+		return tmp;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart2_getc(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx2_first_byte;
@@ -2998,7 +3593,20 @@
 		
 		return tmp;
 	}
+#endif
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart2_gets(char *buffer, uint8_t bufferlimit)
+	{
+		while(--bufferlimit)
+		{
+			*buffer = uart2_getc();
+			if(*buffer++ == 0)
+				break;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_gets(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -3022,7 +3630,33 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 	
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart2_getln(char *buffer, uint8_t bufferlimit)
+	{
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart2_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart2_getc()) );
+			#endif
+				break;
+			}
+			buffer++;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_getln(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -3068,7 +3702,43 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart2_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
+	{
+		do{
+			*buffer = uart2_getc();
+		}while(*buffer <= 32);
+		
+		buffer++;
+		bufferlimit--;
+		
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart2_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else //RX_NEWLINE_MODE_R
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart2_getc()) );
+			#endif
+				break;
+			}
+			else if(*buffer <= 32)
+				break; // string reading is done, we will exit
+
+			buffer++;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -3125,6 +3795,7 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	int16_t uart2_getint(void)
 	{
@@ -3158,6 +3829,33 @@
 		
 		return atof(u_tmp_buff);
 	}
+
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	int16_t uart2_getData(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx2_first_byte;
+		uint8_t tmp;
+		
+		if(tmp_rx_first_byte == rx2_last_byte) 
+			return -1;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
+		tmp = rx2_buffer[tmp_rx_first_byte];
+		rx2_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART2_EXTEND_RX_BUFFER
+		UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
+	#endif
+	
+	#ifdef USART2_USE_SOFT_RTS
+		if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT)))
+				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+	#endif
+		
+		return tmp;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 
 	int16_t uart2_getData(void)
 	{
@@ -3198,6 +3896,7 @@
 		
 		return tmp;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	uint8_t uart2_LoadData(uint8_t *data)
 	{
@@ -3235,6 +3934,48 @@
 #endif // NO_RX2_INTERRUPT
 
 #ifndef NO_RX3_INTERRUPT
+
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	char uart3_getc(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx3_first_byte;
+		char tmp;
+		
+		if(tmp_rx_first_byte == rx3_last_byte) 
+			return 0;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
+		tmp = rx3_buffer[tmp_rx_first_byte];
+		
+		rx3_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART3_EXTEND_RX_BUFFER
+		UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
+	#endif
+		
+	#ifdef USART3_USE_SOFT_RTS
+		if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
+				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+	#endif
+		
+	#ifdef RX3_GETC_ECHO
+		#ifdef RX_NEWLINE_MODE_N
+			if(tmp == '\n')
+				tmp = uart3_putc_('\r');
+		#endif
+		
+		tmp = uart3_putc_(tmp);
+		
+		#ifdef RX_NEWLINE_MODE_R
+			if(tmp == '\r')
+				tmp = uart3_putc_('\n');
+		#endif
+	#endif // RX3_GETC_ECHO
+		
+		return tmp;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart3_getc(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx3_first_byte;
@@ -3288,7 +4029,20 @@
 		
 		return tmp;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart3_gets(char *buffer, uint8_t bufferlimit)
+	{
+		while(--bufferlimit)
+		{
+			*buffer = uart3_getc();
+			if(*buffer++ == 0)
+				break;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_gets(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -3312,7 +4066,33 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
-	
+#endif // USART_NO_ABI_BREAKING_PREMATURES
+
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart3_getln(char *buffer, uint8_t bufferlimit)
+	{
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart3_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart3_getc()) );
+			#endif
+				break;
+			}
+			buffer++;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_getln(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -3358,7 +4138,43 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	void uart3_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
+	{
+		do{
+			*buffer = uart3_getc();
+		}while(*buffer <= 32);
+		
+		buffer++;
+		bufferlimit--;
+		
+		while(--bufferlimit)
+		{
+			do{
+				*buffer = uart3_getc();
+			}while(*buffer == 0);
+			
+		#ifdef RX_NEWLINE_MODE_N
+			if(*buffer == '\n')
+		#else //RX_NEWLINE_MODE_R
+			if(*buffer == '\r')
+		#endif
+			{
+			#ifdef RX_NEWLINE_MODE_RN
+				while( !(uart3_getc()) );
+			#endif
+				break;
+			}
+			else if(*buffer <= 32)
+				break; // string reading is done, we will exit
+
+			buffer++;
+		}
+		*buffer = 0;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit)
 	{
 		asm volatile("\n\t"
@@ -3415,6 +4231,7 @@
 			"r25","r26","r27" // uart_getc()
 		);
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	int16_t uart3_getint(void)
 	{
@@ -3449,6 +4266,32 @@
 		return atof(u_tmp_buff);
 	}
 
+#ifdef USART_NO_ABI_BREAKING_PREMATURES
+	int16_t uart3_getData(void)
+	{
+		register uint8_t tmp_rx_first_byte = rx3_first_byte;
+		uint8_t tmp;
+		
+		if(tmp_rx_first_byte == rx3_last_byte) 
+			return -1;
+		
+		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
+		tmp = rx3_buffer[tmp_rx_first_byte];
+		rx3_first_byte = tmp_rx_first_byte;
+		
+	#ifdef USART3_EXTEND_RX_BUFFER
+		UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
+	#endif
+	
+	#ifdef USART3_USE_SOFT_RTS
+		if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT)))
+				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+	#endif
+		
+		return tmp;
+	}
+#else // !USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart3_getData(void)
 	{
 		register uint8_t tmp_rx_first_byte = rx3_first_byte;
@@ -3488,6 +4331,7 @@
 		
 		return tmp;
 	}
+#endif // USART_NO_ABI_BREAKING_PREMATURES
 
 	uint8_t uart3_LoadData(uint8_t *data)
 	{
