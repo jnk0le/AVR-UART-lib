@@ -4408,6 +4408,7 @@
 					uart3_putc(data); break;
 			#endif
 			}
+			return 0;
 		}
 		
 	#endif // NO_USART_TX
@@ -4467,12 +4468,12 @@
 	#ifdef USE_USART0
 	
 		#if defined(NO_RX0_INTERRUPT)
-			FILE uart0_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 0);
+			FILE uart0_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, (void*)0);
 	
 		#elif defined(NO_TX0_INTERRUPT)
-			FILE uart0_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 0);
+			FILE uart0_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, (void*)0);
 		#else
-			FILE uart0_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 0);
+			FILE uart0_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, (void*)0);
 		#endif
 	
 	#endif // USE_USART0
@@ -4480,12 +4481,12 @@
 	#ifdef USE_USART1
 	
 		#if defined(NO_RX1_INTERRUPT)
-			FILE uart1_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 1);
+			FILE uart1_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, (void*)1);
 	
 		#elif defined(NO_TX1_INTERRUPT)
-			FILE uart1_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 1);
+			FILE uart1_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, (void*)1);
 		#else
-			FILE uart1_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 1);
+			FILE uart1_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, (void*)1);
 		#endif
 	
 	#endif // USE_USART1
@@ -4493,12 +4494,12 @@
 	#ifdef USE_USART2
 	
 		#if defined(NO_RX2_INTERRUPT)
-			FILE uart2_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 2);
+			FILE uart2_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, (void*)2);
 	
 		#elif defined(NO_TX2_INTERRUPT)
-			FILE uart2_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 2);
+			FILE uart2_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, (void*)2);
 		#else
-			FILE uart2_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 2);
+			FILE uart2_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, (void*)2);
 		#endif
 	
 	#endif // USE_USART2
@@ -4506,12 +4507,12 @@
 	#ifdef USE_USART3
 	
 		#if defined(NO_RX3_INTERRUPT)
-			FILE uart3_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, 3);
+			FILE uart3_out = FDEV_SETUP_STREAM_U(uart_putchar, NULL, _FDEV_SETUP_WRITE, (void*)3);
 	
 		#elif defined(NO_TX3_INTERRUPT)
-			FILE uart3_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, 3);
+			FILE uart3_in = FDEV_SETUP_STREAM_U(NULL, uart_getchar, _FDEV_SETUP_READ, (void*)3);
 		#else
-			FILE uart3_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, 3);
+			FILE uart3_io = FDEV_SETUP_STREAM_U(uart_putchar, uart_getchar, _FDEV_SETUP_RW, (void*)3);
 		#endif
 	
 	#endif // USE_USART3
