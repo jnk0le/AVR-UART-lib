@@ -2,7 +2,7 @@
 An interrupt-driven USART (RS232) library for AVR microcontrollers, with support for multiple hardware UARTs, using ring
 buffers for receive/transmit. Designed especially for real-time or high throughput applications, with narrow resource limits.
 
-##Features
+## Features
 - easy to use
 - intuitive frame format settings
 - selectable support for up to 4 USART's
@@ -30,7 +30,7 @@ Meanwhile Arduino generates 2KB of code.
 
 For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio)
 
-##Notes
+## Notes
 - Lot of terminals sends only CR character as a newline terminator, instead of CRLF or even unix style LF
 (BTW PuTTY doesn't allow to change this) but in return requires CRLF terminator to show not broken text.
 This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
@@ -61,7 +61,7 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 
 - uart_putc() function is not thread/interrupt-safe nor reentrant. It shouldn't be called from within atomic blocks or interrupt handlers since it re-enables interrupt flag on exit or even hangs in infinite loop waiting for execution of UDRE interrupt.
 
-##ISR timmings (cycles)
+## ISR timmings (cycles)
 
 | ISR case | attiny2313 | atmega8 | atmega328 | atmega2560 | lgt8f88A | 
 | --- | --- | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 - RX best case with rts - rise RTS line and disable RXCIE interrupt
 - RX worst case with rts - load byte and put it into buffer if there is available space
 
-##todo
+## todo
 - __flash
 - func sizes
 - xmega, tiny817
