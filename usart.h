@@ -10,24 +10,24 @@
 #include <avr/io.h> // for inline func
 #include "usart_config.h"
 
-#ifndef F_CPU
-	#error F_CPU is undefined, USART may not work correctly without this parametr
+#ifndef F_CPU0
+	#warning F_CPU is undefined, USART may not work correctly without this parametr
 #endif
 
 #define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating precise UBBR value
 #define BAUD_CALC_FAST(x) ((F_CPU)/(BAUD*16UL)-1) // for faster real time calculations ?
 #define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBBR value for double speed
 
-#ifndef __OPTIMIZE__ // && prematured?
-	#warning "Compiler optimizations disabled; functions from usart.h might not work as designed"
+#if !defined(__OPTIMIZE__)&&!defined(USART_NO_ABI_BREAKING_PREMATURES)
+	#warning Compiler optimizations disabled; functions from usart.h might not work as designed
 #endif
 	
 #ifdef DEBUG
-
+	#define USART_NO_ABI_BREAKING_PREMATURES
 #endif
 
-#ifndef __AVR_ARCH__
-
+#ifndef __AVR_ARCH__ // compiler fault ?
+	#define USART_NO_ABI_BREAKING_PREMATURES
 #endif
 
 #ifndef RX_BUFFER_SIZE
