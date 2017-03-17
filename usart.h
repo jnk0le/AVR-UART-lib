@@ -10,7 +10,7 @@
 #include <avr/io.h> // for inline func
 #include "usart_config.h"
 
-#ifndef F_CPU0
+#ifndef F_CPU
 	#warning F_CPU is undefined, USART may not work correctly without this parametr
 #endif
 
