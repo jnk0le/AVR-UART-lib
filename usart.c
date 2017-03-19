@@ -295,8 +295,19 @@
 		register uint8_t tmp_tx_last_byte asm("r25");
 		
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
-		if (data == '\n')
-			uart0_putc('\r');
+		asm volatile("\n\t"
+			"cpi	%[dat], '\n' \n\t"
+			"brne	skip_recursive_%=\n\t"
+			"push	%[dat] \n\t"
+			"ldi	%[dat], '\r' \n\t"
+			"rcall	uart0_putc \n\t"
+			"pop	%[dat] \n\t"
+		"skip_recursive_%=:"
+			: // outputs
+			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
+			: // inputs
+			: // clobbers
+		);
 	#endif
 		
 	#ifdef USART0_PUTC_FAST_INSERTIONS
@@ -446,6 +457,7 @@
 	
 	char uart0_putc_(char data) __attribute__ ((alias ("uart0_putc"))); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
 #endif // USART_NO_ABI_BREAKING_PREMATURES
+
 //******************************************************************
 //Function  : Send single character/byte.
 //Arguments : Character/byte to send.
@@ -638,6 +650,7 @@
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
+
 //******************************************************************
 //Function  : Send string from flash memory.
 //Arguments : Pointer to string placed in flash memory.
@@ -675,6 +688,7 @@
 	#endif
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
+
 //******************************************************************
 //Function  : Send integer formated into ASCI string (base 10).
 //Arguments : int16_t data value.
@@ -963,8 +977,19 @@
 		register uint8_t tmp_tx_last_byte asm("r25");
 		
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
-		if (data == '\n')
-			uart1_putc('\r');
+		asm volatile("\n\t"
+			"cpi	%[dat], '\n' \n\t"
+			"brne	skip_recursive_%=\n\t"
+			"push	%[dat] \n\t"
+			"ldi	%[dat], '\r' \n\t"
+			"rcall	uart1_putc \n\t"
+			"pop	%[dat] \n\t"
+		"skip_recursive_%=:"
+			: // outputs
+			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
+			: // inputs
+			: // clobbers
+		);
 	#endif
 		
 	#ifdef USART1_PUTC_FAST_INSERTIONS
@@ -1504,8 +1529,19 @@
 		register uint8_t tmp_tx_last_byte asm("r25");
 		
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
-		if (data == '\n')
-			uart2_putc('\r');
+		asm volatile("\n\t"
+			"cpi	%[dat], '\n' \n\t"
+			"brne	skip_recursive_%=\n\t"
+			"push	%[dat] \n\t"
+			"ldi	%[dat], '\r' \n\t"
+			"rcall	uart2_putc \n\t"
+			"pop	%[dat] \n\t"
+		"skip_recursive_%=:"
+			: // outputs
+			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
+			: // inputs
+			: // clobbers
+		);
 	#endif
 		
 	#ifdef USART2_PUTC_FAST_INSERTIONS
@@ -2032,8 +2068,19 @@
 		register uint8_t tmp_tx_last_byte asm("r25");
 		
 	#ifdef PUTC_CONVERT_LF_TO_CRLF
-		if (data == '\n')
-			uart3_putc('\r');
+		asm volatile("\n\t"
+			"cpi	%[dat], '\n' \n\t"
+			"brne	skip_recursive_%=\n\t"
+			"push	%[dat] \n\t"
+			"ldi	%[dat], '\r' \n\t"
+			"rcall	uart3_putc \n\t"
+			"pop	%[dat] \n\t"
+		"skip_recursive_%=:"
+			: // outputs
+			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
+			: // inputs
+			: // clobbers
+		);
 	#endif
 		
 	#ifdef USART3_PUTC_FAST_INSERTIONS
