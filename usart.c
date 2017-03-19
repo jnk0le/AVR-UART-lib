@@ -241,7 +241,7 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_putc(char data)
 	{
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
+	#ifdef PUTC0_CONVERT_LF_TO_CRLF
 		if (data == '\n')
 			uart0_putc('\r');
 	#endif
@@ -294,7 +294,7 @@
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
 		
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
+	#ifdef PUTC0_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
 			"cpi	%[dat], '\n' \n\t"
 			"brne	skip_recursive_%=\n\t"
@@ -923,7 +923,7 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_putc(char data)
 	{
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
+	#ifdef PUTC1_CONVERT_LF_TO_CRLF
 		if (data == '\n')
 			uart1_putc('\r');
 	#endif
@@ -976,7 +976,7 @@
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
 		
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
+	#ifdef PUTC1_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
 			"cpi	%[dat], '\n' \n\t"
 			"brne	skip_recursive_%=\n\t"
@@ -1475,7 +1475,7 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_putc(char data)
 	{
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
+	#ifdef PUTC2_CONVERT_LF_TO_CRLF
 		if (data == '\n')
 			uart2_putc('\r');
 	#endif
@@ -1528,7 +1528,7 @@
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
 		
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
+	#ifdef PUTC2_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
 			"cpi	%[dat], '\n' \n\t"
 			"brne	skip_recursive_%=\n\t"
@@ -2014,7 +2014,7 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_putc(char data)
 	{
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
+	#ifdef PUTC3_CONVERT_LF_TO_CRLF
 		if (data == '\n')
 			uart3_putc('\r');
 	#endif
@@ -2067,7 +2067,7 @@
 	{
 		register uint8_t tmp_tx_last_byte asm("r25");
 		
-	#ifdef PUTC_CONVERT_LF_TO_CRLF
+	#ifdef PUTC3_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
 			"cpi	%[dat], '\n' \n\t"
 			"brne	skip_recursive_%=\n\t"
