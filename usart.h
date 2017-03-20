@@ -1627,7 +1627,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-		void uart0_puts_p(const char *string); // send string from flash memory
+		void uart0_puts_p(const __flash char *string); // send string from flash memory
 			#define uart0_puts_P(__strP) uart0_puts_p(PSTR(__strP))
 			// macro to automatically put a string constant into flash
 	
@@ -1708,7 +1708,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-		void uart1_puts_p(const char *string); // send string from flash memory
+		void uart1_puts_p(const __flash char *string); // send string from flash memory
 			#define uart1_puts_P(__s)    uart1_puts_p(PSTR(__s))
 			// macro to automatically put a string constant into flash
 	
@@ -1764,7 +1764,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-		void uart2_puts_p(const char *string); // send string from flash memory
+		void uart2_puts_p(const __flash char *string); // send string from flash memory
 			#define uart2_puts_P(__s)    uart2_puts_p(PSTR(__s))
 			// macro to automatically put a string constant into flash
 	
@@ -1820,7 +1820,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
 
-		void uart3_puts_p(const char *string); // send string from flash memory
+		void uart3_puts_p(const __flash char *string); // send string from flash memory
 			#define uart3_puts_P(__s)    uart3_puts_p(PSTR(__s))
 			// macro to automatically put a string constant into flash
 	

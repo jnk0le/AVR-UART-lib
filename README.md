@@ -81,7 +81,6 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 - RX worst case with rts - load byte and put it into buffer if there is available space
 
 ## todo
-- __flash
 - func sizes
 - xmega, tiny817
 - some notes about flow control

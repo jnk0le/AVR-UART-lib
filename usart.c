@@ -657,15 +657,15 @@
 //Return    : none
 //******************************************************************
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
-	void uart0_puts_p(const char *string) // const __flash ??
+	void uart0_puts_p(const __flash char *string)
 	{
 	#ifndef USART0_NOT_ACCESIBLE_FROM_CBI // tiny 102/104
 		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart0_putc(c); 
+		while ( (c = *string++) ) uart0_putc(c); 
 	#endif
 	}
 #else // !USART_NO_ABI_BREAKING_PREMATURES
-	void uart0_puts_p(const char *string)
+	void uart0_puts_p(const __flash char *string)
 	{
 	#if !defined(__AVR_ATtiny102__)||!defined(__AVR_ATtiny104__)
 		asm volatile("\n\t"
@@ -1293,13 +1293,13 @@
 #endif // USART_NO_ABI_BREAKING_PREMATURES
 
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
-	void uart1_puts_p(const char *string) // const __flash ??
+	void uart1_puts_p(const __flash char *string)
 	{
 		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart1_putc(c); 
+		while ( (c = *string++) ) uart1_putc(c); 
 	}
 #else // !USART_NO_ABI_BREAKING_PREMATURES
-	void uart1_puts_p(const char *string)
+	void uart1_puts_p(const __flash char *string)
 	{
 		asm volatile("\n\t"
 		
@@ -1832,13 +1832,13 @@
 #endif // USART_NO_ABI_BREAKING_PREMATURES
 
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
-	void uart2_puts_p(const char *string) // const __flash ??
+	void uart2_puts_p(const __flash char *string)
 	{
 		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart2_putc(c);
+		while ( (c = *string++) ) uart2_putc(c);
 	}
 #else // !USART_NO_ABI_BREAKING_PREMATURES
-	void uart2_puts_p(const char *string)
+	void uart2_puts_p(const __flash char *string)
 	{
 		asm volatile("\n\t"
 		
@@ -2372,13 +2372,13 @@
 #endif // USART_NO_ABI_BREAKING_PREMATURES
 
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
-	void uart3_puts_p(const char *string) // const __flash ??
+	void uart3_puts_p(const __flash char *string)
 	{
 		register char c;
-		while ( (c = pgm_read_byte(string++)) ) uart3_putc(c); 
+		while ( (c = *string++) ) uart3_putc(c); 
 	}
 #else // !USART_NO_ABI_BREAKING_PREMATURES
-	void uart3_puts_p(const char *string)
+	void uart3_puts_p(const __flash char *string)
 	{
 		asm volatile("\n\t"
 			
