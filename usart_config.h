@@ -8,7 +8,7 @@
  ************************************************************************************/
 
 // DO NOT DEFINE BUFFERS SIZES OR ANY SHARED MACROS IN 'main.c' CODE
-// instead of this, define it in "Project Properties -> AVR C Compiler -> Symbols" or try to use -D gcc flag (eg. -DF_CPU=8000000)
+// instead of this, define it in makefile or "Project Properties -> AVR C Compiler -> Symbols" or try to use -D gcc flag (eg. -DF_CPU=8000000)
 
 //#define NO_USART_RX // disable all receiver code and dependencies
 //#define NO_USART_TX // disable all transmitter code and dependencies

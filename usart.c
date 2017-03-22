@@ -2586,14 +2586,14 @@
 	#ifdef RX0_GETC_ECHO
 		#ifdef RX_NEWLINE_MODE_N
 			if(tmp == '\n')
-				tmp = uart0_putc_('\r');
+				uart0_putc('\r');
 		#endif
 		
 		tmp = uart0_putc_(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
 			if(tmp == '\r')
-				tmp = uart0_putc_('\n');
+				uart0_putc('\n');
 		#endif
 	#endif // RX0_GETC_ECHO
 		
@@ -2602,8 +2602,10 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart0_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		register uint8_t tmp_rx_first_byte asm("r25");
 		char tmp;
+		
+		tmp_rx_first_byte = rx0_first_byte;
 		
 		if(tmp_rx_first_byte == rx0_last_byte) 
 			return 0;
@@ -2649,14 +2651,14 @@
 	#ifdef RX0_GETC_ECHO
 		#ifdef RX_NEWLINE_MODE_N
 			if(tmp == '\n')
-				tmp = uart0_putc_('\r');
+				uart0_putc('\r');
 		#endif
 		
 		tmp = uart0_putc_(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
-			if(tmp == '\r') 
-				tmp = uart0_putc_('\n');
+			if(tmp == '\r')
+				uart0_putc('\n');
 		#endif
 	#endif // RX0_GETC_ECHO
 		
@@ -2665,7 +2667,7 @@
 #endif // USART_NO_ABI_BREAKING_PREMATURES
 
 //******************************************************************
-//Function  : Reads string from receiver buffer.
+//Function  : Reads actual string from receiver buffer.
 //Arguments : Pointer to array to fill with received string.
 //Return    : none
 //Note      : Received string will be terminated by NULL.
@@ -2833,7 +2835,7 @@
 			
 		#ifdef RX_NEWLINE_MODE_N
 			if(*buffer == '\n')
-		#else //RX_NEWLINE_MODE_R
+		#else 
 			if(*buffer == '\r')
 		#endif
 			{
@@ -3138,14 +3140,14 @@
 	#ifdef RX1_GETC_ECHO
 		#ifdef RX_NEWLINE_MODE_N
 			if(tmp == '\n')
-				tmp = uart1_putc_('\r');
+				uart1_putc('\r');
 		#endif
 		
 		tmp = uart1_putc_(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
 			if(tmp == '\r')
-				tmp = uart1_putc_('\n');
+				uart1_putc('\n');
 		#endif
 	#endif // RX1_GETC_ECHO
 		
@@ -3154,8 +3156,10 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart1_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx1_first_byte;
+		register uint8_t tmp_rx_first_byte asm("r25");
 		char tmp;
+		
+		tmp_rx_first_byte = rx1_first_byte;
 		
 		if(tmp_rx_first_byte == rx1_last_byte) 
 			return 0;
@@ -3192,14 +3196,14 @@
 	#ifdef RX1_GETC_ECHO
 		#ifdef RX_NEWLINE_MODE_N
 			if(tmp == '\n')
-				tmp = uart1_putc_('\r');
+				uart1_putc('\r');
 		#endif
 		
 		tmp = uart1_putc_(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
 			if(tmp == '\r') 
-				tmp = uart1_putc_('\n');
+				uart1_putc('\n');
 		#endif
 	#endif // RX1_GETC_ECHO
 		
@@ -3552,7 +3556,7 @@
 		register uint8_t tmp_rx_first_byte = rx2_first_byte;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx2_last_byte) 
+		if(tmp_rx_first_byte == rx2_last_byte)
 			return 0;
 		
 		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
@@ -3573,14 +3577,14 @@
 	#ifdef RX2_GETC_ECHO
 		#ifdef RX_NEWLINE_MODE_N
 			if(tmp == '\n')
-				tmp = uart2_putc_('\r');
+				uart2_putc('\r');
 		#endif
 		
 		tmp = uart2_putc_(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
 			if(tmp == '\r')
-				tmp = uart2_putc_('\n');
+				uart2_putc('\n');
 		#endif
 	#endif // RX2_GETC_ECHO
 		
@@ -3589,8 +3593,10 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart2_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx2_first_byte;
+		register uint8_t tmp_rx_first_byte asm("r25");
 		char tmp;
+		
+		tmp_rx_first_byte = rx2_first_byte;
 		
 		if(tmp_rx_first_byte == rx2_last_byte) 
 			return 0;
@@ -3627,14 +3633,14 @@
 	#ifdef RX2_GETC_ECHO
 		#ifdef RX_NEWLINE_MODE_N
 			if(tmp == '\n')
-				tmp = uart2_putc_('\r');
+				uart2_putc('\r');
 		#endif
 		
 		tmp = uart2_putc_(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
 			if(tmp == '\r') 
-				tmp = uart2_putc_('\n');
+				uart2_putc('\n');
 		#endif
 	#endif // RX2_GETC_ECHO
 		
@@ -4009,14 +4015,14 @@
 	#ifdef RX3_GETC_ECHO
 		#ifdef RX_NEWLINE_MODE_N
 			if(tmp == '\n')
-				tmp = uart3_putc_('\r');
+				uart3_putc('\r');
 		#endif
 		
 		tmp = uart3_putc_(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
 			if(tmp == '\r')
-				tmp = uart3_putc_('\n');
+				uart3_putc('\n');
 		#endif
 	#endif // RX3_GETC_ECHO
 		
@@ -4025,8 +4031,10 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart3_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx3_first_byte;
+		register uint8_t tmp_rx_first_byte asm("r25");
 		char tmp;
+		
+		tmp_rx_first_byte = rx3_first_byte;
 		
 		if(tmp_rx_first_byte == rx3_last_byte) 
 			return 0;
@@ -4063,14 +4071,14 @@
 	#ifdef RX3_GETC_ECHO
 		#ifdef RX_NEWLINE_MODE_N
 			if(tmp == '\n')
-				tmp = uart3_putc_('\r');
+				uart3_putc('\r');
 		#endif
 		
 		tmp = uart3_putc_(tmp);
 		
 		#ifdef RX_NEWLINE_MODE_R
 			if(tmp == '\r') 
-				tmp = uart3_putc_('\n');
+				uart3_putc('\n');
 		#endif
 	#endif // RX3_GETC_ECHO
 		
