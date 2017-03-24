@@ -16,7 +16,7 @@ void main(void)
 	uart1_init(BAUD_CALC(115200));
 	
 	stdout = &uart0_io; // attach uart stream to stdout & stdin
-	stdin = &uart0_io; // uart0_in if no TX and uart0_out if no RX (depends on config macros)
+	stdin = &uart0_io; // uart0_in and uart0_out are only available if NO_USART_RX or NO_USART_TX is defined
 	
 	sei(); // enable interrupts, library wouldn't work without this
 	

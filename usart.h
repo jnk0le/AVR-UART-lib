@@ -2371,6 +2371,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			extern FILE uart0_in;
 		#else
 			extern FILE uart0_io;
+			extern FILE uart0_in;
+			extern FILE uart0_out;
 		#endif
 		
 	#endif // USE_USART0
@@ -2384,6 +2386,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			extern FILE uart1_in;
 		#else
 			extern FILE uart1_io;
+			extern FILE uart1_in;
+			extern FILE uart1_out;
 		#endif
 		
 	#endif // USE_USART1
@@ -2397,6 +2401,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			extern FILE uart2_in;
 		#else
 			extern FILE uart2_io;
+			extern FILE uart2_in;
+			extern FILE uart2_out;
 		#endif
 		
 	#endif // USE_USART2
@@ -2410,6 +2416,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			extern FILE uart3_in;
 		#else
 			extern FILE uart3_io;
+			extern FILE uart3_in;
+			extern FILE uart3_out;
 		#endif
 		
 	#endif // USE_USART3
@@ -2431,6 +2439,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		extern FILE uart0_in;
 	#else
 		extern FILE uart0_io;
+		extern FILE uart0_in;
+		extern FILE uart0_out;
 	#endif
 	
 #endif // single/multi USART
