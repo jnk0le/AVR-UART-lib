@@ -4686,9 +4686,17 @@
 #endif
 
 #if defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)&&defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE)
-	#define USART_Z_SREG_SAVE_COMMA ,
-#else
-	#define USART_Z_SREG_SAVE_COMMA
+	#define USART_REG_SAVE_LIST \
+		[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME), \
+		[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		
+#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE)
+	#define USART_REG_SAVE_LIST \
+		[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+	
+#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)
+	#define USART_REG_SAVE_LIST \
+		[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
 #endif
 
 #ifndef NO_TX0_INTERRUPT
@@ -4824,13 +4832,8 @@
 		
 			"reti \n\t"
 			: // output operands
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-			USART_Z_SREG_SAVE_COMMA // least crude
-		#endif
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		#endif
+			USART_REG_SAVE_LIST
+			
 			: // input operands
 			TX0_INPUT_OPERAND_LIST
 			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
@@ -5073,13 +5076,8 @@
 		#endif
 		#endif
 			: // output operands
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-			USART_Z_SREG_SAVE_COMMA // least crude
-		#endif
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		#endif
+			USART_REG_SAVE_LIST
+			
 			: // input operands
 			RX0_INPUT_OPERAND_LIST
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
@@ -5214,13 +5212,8 @@
 
 			"reti \n\t"
 			: // output operands
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-			USART_Z_SREG_SAVE_COMMA // least crude
-		#endif
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		#endif
+			USART_REG_SAVE_LIST
+			
 			: // input operands
 			TX1_INPUT_OPERAND_LIST
 			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
@@ -5433,13 +5426,8 @@
 		#endif
 		#endif
 			: // output operands
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-			USART_Z_SREG_SAVE_COMMA // least crude
-		#endif
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		#endif
+			USART_REG_SAVE_LIST
+			
 			: // input operands
 			RX1_INPUT_OPERAND_LIST
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
@@ -5559,13 +5547,8 @@
 
 			"reti \n\t"
 			: // output operands
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-			USART_Z_SREG_SAVE_COMMA // least crude
-		#endif
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		#endif
+			USART_REG_SAVE_LIST
+			
 			: // input operands
 			TX2_INPUT_OPERAND_LIST
 			[UDR_reg]     "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
@@ -5745,13 +5728,8 @@
 		#endif
 		#endif
 			: // output operands
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-			USART_Z_SREG_SAVE_COMMA // least crude
-		#endif
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		#endif
+			USART_REG_SAVE_LIST
+			
 			: // input operands
 			RX2_INPUT_OPERAND_LIST
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
@@ -5868,13 +5846,8 @@
 
 			"reti \n\t"
 			: // output operands
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-			USART_Z_SREG_SAVE_COMMA // least crude
-		#endif
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		#endif
+			USART_REG_SAVE_LIST
+			
 			: // input operands
 			TX3_INPUT_OPERAND_LIST
 			[UDR_reg]     "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
@@ -6054,13 +6027,8 @@
 		#endif
 		#endif
 			: // output operands
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-			USART_Z_SREG_SAVE_COMMA // least crude
-		#endif
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		#endif
+			USART_REG_SAVE_LIST
+			
 			: // input operands
 			RX3_INPUT_OPERAND_LIST
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
