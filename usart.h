@@ -2032,7 +2032,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
  *                    soft flow control interrupt handlers                          *
  ************************************************************************************/
 
-#if defined(USART0_USE_SOFT_CTS)&&!defined(NO_TX0_INTERRUPT) //&&defined(USE_USART0)
+#if defined(USART0_USE_SOFT_CTS)&&!defined(NO_TX0_INTERRUPT)
 	extern volatile uint8_t tx0_first_byte, tx0_last_byte;
 
 	static inline void cts0_isr_handler(void) __attribute__((always_inline));
@@ -2098,7 +2098,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"lds	r24, (tx0_last_byte) \n\t"
 			"lds	r25, (tx0_first_byte) \n\t"
 			"cp 	r25, r24 \n\t"
-			"pop	r25 \n\t" // branch after pooping
+			"pop	r25 \n\t" // branch after popping
 			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 		
 		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
@@ -2196,7 +2196,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"lds	r24, (tx1_last_byte) \n\t"
 			"lds	r25, (tx1_first_byte) \n\t"
 			"cp 	r25, r24 \n\t"
-			"pop	r25 \n\t" // branch after pooping
+			"pop	r25 \n\t"
 			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
 			"lds	r24, %M[UCSRB_reg] \n\t"
@@ -2257,7 +2257,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"lds	r24, (tx2_last_byte) \n\t"
 			"lds	r25, (tx2_first_byte) \n\t"
 			"cp 	r25, r24 \n\t"
-			"pop	r25 \n\t" // branch after pooping
+			"pop	r25 \n\t"
 			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
 			"lds	r24, %M[UCSRB_reg] \n\t"
@@ -2317,7 +2317,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"lds	r24, (tx3_last_byte) \n\t"
 			"lds	r25, (tx3_first_byte) \n\t"
 			"cp 	r25, r24 \n\t"
-			"pop	r25 \n\t" // branch after pooping
+			"pop	r25 \n\t"
 			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
 			"lds	r24, %M[UCSRB_reg] \n\t"

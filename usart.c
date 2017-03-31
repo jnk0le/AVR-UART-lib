@@ -4697,6 +4697,8 @@
 #elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)
 	#define USART_REG_SAVE_LIST \
 		[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+#else
+	#define USART_REG_SAVE_LIST
 #endif
 
 #ifndef NO_TX0_INTERRUPT
