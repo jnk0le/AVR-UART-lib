@@ -72,6 +72,8 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 | **RX best with rts** | 41 | 41 | 44 | 46 | 32 |
 | **RX worst with rts** | 40 | 42 | 43 | 45 | 32 |
 | **BUFFER_SIZE = 256** | x | -1 | -1 | -1 | -1 |
+| **G_SREG_SAVE** | -4 | -4 | -4 | -4 | -2 |
+| **G_Z_SAVE** | -6 | -6 | -6 | -6 | -2 |
 
 - TX best case - send byte from buffer
 - TX worst case - send byte from buffer and disable UDRIE interrupt
@@ -89,3 +91,4 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 - xmodem timeouts/fallback
 - cts naked handler timmings
 - 100% flush
+- fix readme

@@ -4675,17 +4675,46 @@
 	}
 */
 
+#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+	#define USART_SREG_SAVE_REG_NAME usart_sreg_save // ???
+	register uint8_t USART_SREG_SAVE_REG_NAME asm(USART_SREG_SAVE_REG_NUM); // have to be defined separately in every compilation unit
+#endif
+
+#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+	#define USART_Z_SAVE_REG_NAME usart_z_save // ???
+	register uint8_t USART_Z_SAVE_REG_NAME asm(USART_Z_SAVE_REG_NUM); // have to be defined separately in every compilation unit
+#endif
+
+#if defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)&&defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE)
+	#define USART_Z_SREG_SAVE_COMMA ,
+#else
+	#define USART_Z_SREG_SAVE_COMMA
+#endif
+
 #ifndef NO_TX0_INTERRUPT
 
 	ISR(UDRE0_INTERRUPT, ISR_NAKED)
 	{
 		asm volatile("\n\t"
-
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"push	r16 \n\t"
 			"in		r16, __SREG__ \n\t"
-
+		#else
+			"in		%[sreg_save], __SREG__ \n\t"
+		#endif
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r30 \n\t"
 			"push	r31 \n\t"
+		#else
+			#ifdef __AVR_HAVE_MOVW__
+				"movw	%[z_save], r30 \n\t"
+			#else // in this case only 4 cycles are prematured out
+				"mov	%A[z_save], r30\n\t"
+				"mov	%B[z_save], r31\n\t"
+			#endif
+		#endif
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
@@ -4774,15 +4803,34 @@
 		#endif
 			
 		"USART0_TX_EXIT: "
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r31 \n\t"
 			"pop	r30 \n\t"
+		#else
+			#ifdef __AVR_HAVE_MOVW__
+				"movw	r30, %[z_save] \n\t"
+			#else
+				"mov	r31, %B[z_save] \n\t"
+				"mov	r30, %A[z_save] \n\t"
+			#endif
+		#endif
 		
-			"out	__SREG__ , r16 \n\t"
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
-
+		#else
+			"out	__SREG__, %[sreg_save] \n\t"
+		#endif
+		
 			"reti \n\t"
 			: // output operands
-		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+			USART_Z_SREG_SAVE_COMMA // least crude
+		#endif
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		#endif
 			: // input operands
 			TX0_INPUT_OPERAND_LIST
 			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
@@ -4819,14 +4867,27 @@
 	{
 		asm volatile("\n\t"
 
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"push	r16 \n\t"
 			"in		r16, __SREG__ \n\t"
+		#else
+			"in		%[sreg_save], __SREG__ \n\t"
+		#endif
 		
 			"push	r25 \n\t"
 			
 		#ifdef USART0_PUSH_BEFORE_RX
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+				"push	r30 \n\t"
+				"push	r31 \n\t"
+			#else
+				#ifdef __AVR_HAVE_MOVW__
+					"movw	%[z_save], r30 \n\t"
+				#else // in this case only 4 cycles are prematured out
+					"mov	%A[z_save], r30\n\t"
+					"mov	%B[z_save], r31\n\t"
+				#endif
+			#endif
 		#endif
 			
 		#ifndef USART0_EXTEND_RX_BUFFER
@@ -4840,8 +4901,17 @@
 		#endif
 			
 		#ifndef USART0_PUSH_BEFORE_RX
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+				"push	r30 \n\t"
+				"push	r31 \n\t"
+			#else
+				#ifdef __AVR_HAVE_MOVW__
+					"movw	%[z_save], r30 \n\t"
+				#else // in this case only 4 cycles are prematured out
+					"mov	%A[z_save], r30\n\t"
+					"mov	%B[z_save], r31\n\t"
+				#endif
+			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -4951,12 +5021,27 @@
 			
 		"USART0_RX_EXIT_SKIP: "
 		#endif
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r31 \n\t"
 			"pop	r30 \n\t"
+		#else
+			#ifdef __AVR_HAVE_MOVW__
+				"movw	r30, %[z_save] \n\t"
+			#else
+				"mov	r31, %B[z_save] \n\t"
+				"mov	r30, %A[z_save] \n\t"
+			#endif
+		#endif
+		
 			"pop	r25 \n\t"
 		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#else
+			"out	__SREG__, %[sreg_save] \n\t"
+		#endif
 
 			"reti \n\t"
 		
@@ -4986,10 +5071,15 @@
 		#else
 			"rjmp	USART0_RX_EXIT \n\t"
 		#endif
-			
 		#endif
 			: // output operands
-		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+			USART_Z_SREG_SAVE_COMMA // least crude
+		#endif
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		#endif
 			: // input operands
 			RX0_INPUT_OPERAND_LIST
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
@@ -5023,11 +5113,19 @@
 	{
 		asm volatile("\n\t"
 		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"push	r16 \n\t"
 			"in		r16, __SREG__ \n\t"
+		#else
+			"in		%[sreg_save], __SREG__ \n\t"
+		#endif
 
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r30 \n\t"
 			"push	r31 \n\t"
+		#else
+			"movw	%[z_save], r30 \n\t"
+		#endif
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
@@ -5100,15 +5198,29 @@
 		#endif
 		
 		"USART1_TX_EXIT: "
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r31 \n\t"
 			"pop	r30 \n\t"
+		#else
+			"movw	r30, %[z_save] \n\t"
+		#endif
 		
-			"out	__SREG__ , r16 \n\t"
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#else
+			"out	__SREG__, %[sreg_save] \n\t"
+		#endif
 
 			"reti \n\t"
 			: // output operands
-		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+			USART_Z_SREG_SAVE_COMMA // least crude
+		#endif
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		#endif
 			: // input operands
 			TX1_INPUT_OPERAND_LIST
 			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
@@ -5146,14 +5258,22 @@
 	{
 		asm volatile("\n\t"
 	
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"push	r16 \n\t"
 			"in		r16, __SREG__ \n\t"
+		#else
+			"in		%[sreg_save], __SREG__ \n\t"
+		#endif
 	
 			"push	r25 \n\t"
 		
 		#ifdef USART1_PUSH_BEFORE_RX
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+				"push	r30 \n\t"
+				"push	r31 \n\t"
+			#else
+				"movw	%[z_save], r30 \n\t"
+			#endif
 		#endif
 		
 		#ifndef USART1_EXTEND_RX_BUFFER
@@ -5167,8 +5287,12 @@
 		#endif
 			
 		#ifndef USART1_PUSH_BEFORE_RX
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+				"push	r30 \n\t"
+				"push	r31 \n\t"
+			#else
+				"movw	%[z_save], r30 \n\t"
+			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -5266,12 +5390,22 @@
 			
 		"USART1_RX_EXIT_SKIP: "
 		#endif
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r31 \n\t"
 			"pop	r30 \n\t"
+		#else
+			"movw	r30, %[z_save] \n\t"
+		#endif
+		
 			"pop	r25 \n\t"
 
-			"out	__SREG__ , r16 \n\t"
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#else
+			"out	__SREG__, %[sreg_save] \n\t"
+		#endif
 
 			"reti \n\t"
 		
@@ -5297,10 +5431,15 @@
 		#else
 			"rjmp	USART1_RX_EXIT \n\t"
 		#endif
-			
 		#endif
 			: // output operands
-		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+			USART_Z_SREG_SAVE_COMMA // least crude
+		#endif
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		#endif
 			: // input operands
 			RX1_INPUT_OPERAND_LIST
 			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
@@ -5334,11 +5473,19 @@
 	{
 		asm volatile("\n\t"
 	
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"push	r16 \n\t"
 			"in		r16, __SREG__ \n\t"
+		#else
+			"in		%[sreg_save], __SREG__ \n\t"
+		#endif
 	
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r30 \n\t"
 			"push	r31 \n\t"
+		#else
+			"movw	%[z_save], r30 \n\t"
+		#endif
 	
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"lds	r31, %M[control_reg] \n\t"
@@ -5396,15 +5543,29 @@
 		#endif
 
 		"USART2_TX_EXIT: "
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r31 \n\t"
 			"pop	r30 \n\t"
+		#else
+			"movw	r30, %[z_save] \n\t"
+		#endif
 			
-			"out	__SREG__ , r16 \n\t"
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#else
+			"out	__SREG__, %[sreg_save] \n\t"
+		#endif
 
 			"reti \n\t"
 			: // output operands
-		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+			USART_Z_SREG_SAVE_COMMA // least crude
+		#endif
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		#endif
 			: // input operands
 			TX2_INPUT_OPERAND_LIST
 			[UDR_reg]     "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
@@ -5440,14 +5601,22 @@
 	{
 		asm volatile("\n\t"
 		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"push	r16 \n\t"
 			"in		r16, __SREG__ \n\t"
+		#else
+			"in		%[sreg_save], __SREG__ \n\t"
+		#endif
 
 			"push	r25 \n\t"
 			
 		#ifdef USART2_PUSH_BEFORE_RX
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+				"push	r30 \n\t"
+				"push	r31 \n\t"
+			#else
+				"movw	%[z_save], r30 \n\t"
+			#endif
 		#endif	
 			
 		#ifndef USART2_EXTEND_RX_BUFFER
@@ -5456,8 +5625,12 @@
 		#endif
 			
 		#ifndef USART2_PUSH_BEFORE_RX
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+				"push	r30 \n\t"
+				"push	r31 \n\t"
+			#else
+				"movw	%[z_save], r30 \n\t"
+			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -5533,12 +5706,22 @@
 		
 		"USART2_RX_EXIT_SKIP: "
 		#endif
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r31 \n\t"
 			"pop	r30 \n\t"
+		#else
+			"movw	r30, %[z_save] \n\t"
+		#endif
+			
 			"pop	r25 \n\t"
 	
-			"out	__SREG__ , r16 \n\t"
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#else
+			"out	__SREG__, %[sreg_save] \n\t"
+		#endif
 
 			"reti \n\t"
 		
@@ -5560,10 +5743,15 @@
 		#else
 			"rjmp	USART2_RX_EXIT \n\t"
 		#endif
-		
 		#endif
 			: // output operands
-		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+			USART_Z_SREG_SAVE_COMMA // least crude
+		#endif
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		#endif
 			: // input operands
 			RX2_INPUT_OPERAND_LIST
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR2_REGISTER)),
@@ -5594,11 +5782,19 @@
 	{
 		asm volatile("\n\t"
 	
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"push	r16 \n\t"
 			"in		r16, __SREG__ \n\t"
+		#else
+			"in		%[sreg_save], __SREG__ \n\t"
+		#endif
 	
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r30 \n\t"
 			"push	r31 \n\t"
+		#else
+			"movw	%[z_save], r30 \n\t"
+		#endif
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"lds	r31, %M[control_reg] \n\t"
@@ -5656,15 +5852,29 @@
 		#endif
 			
 		"USART3_TX_EXIT: "
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r31 \n\t"
 			"pop	r30 \n\t"
+		#else
+			"movw	r30, %[z_save] \n\t"
+		#endif
 			
-			"out	__SREG__ , r16 \n\t"
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#else
+			"out	__SREG__, %[sreg_save] \n\t"
+		#endif
 
 			"reti \n\t"
 			: // output operands
-		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+			USART_Z_SREG_SAVE_COMMA // least crude
+		#endif
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		#endif
 			: // input operands
 			TX3_INPUT_OPERAND_LIST
 			[UDR_reg]     "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),
@@ -5700,14 +5910,22 @@
 	{
 		asm volatile("\n\t"
 		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
 			"push	r16 \n\t"
 			"in		r16, __SREG__ \n\t"
+		#else
+			"in		%[sreg_save], __SREG__ \n\t"
+		#endif
 	
 			"push	r25 \n\t"
 		
 		#ifdef USART3_PUSH_BEFORE_RX
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+				"push	r30 \n\t"
+				"push	r31 \n\t"
+			#else
+				"movw	%[z_save], r30 \n\t"
+			#endif
 		#endif
 				
 		#ifndef USART3_EXTEND_RX_BUFFER
@@ -5716,8 +5934,12 @@
 		#endif
 			
 		#ifndef USART3_PUSH_BEFORE_RX
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+				"push	r30 \n\t"
+				"push	r31 \n\t"
+			#else
+				"movw	%[z_save], r30 \n\t"
+			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
@@ -5791,14 +6013,24 @@
 			"ori	r31, (1<<%M[rxcie_bit]) \n\t"
 			"sts	%M[control_reg], r31 \n\t"
 			
-		"USART3_DISABLE_RXCIE: "
+		"USART3_RX_EXIT_SKIP: "
 		#endif
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r31 \n\t"
 			"pop	r30 \n\t"
+		#else
+			"movw	r30, %[z_save] \n\t"
+		#endif
+		
 			"pop	r25 \n\t"
 	
-			"out	__SREG__ , r16 \n\t"
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#else
+			"out	__SREG__, %[sreg_save] \n\t"
+		#endif
 
 			"reti \n\t"
 		
@@ -5820,10 +6052,15 @@
 		#else
 			"rjmp	USART3_RX_EXIT \n\t"
 		#endif
-		
 		#endif
 			: // output operands
-		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+			USART_Z_SREG_SAVE_COMMA // least crude
+		#endif
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		#endif
 			: // input operands
 			RX3_INPUT_OPERAND_LIST
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR3_REGISTER)),

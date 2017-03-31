@@ -267,11 +267,15 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 #endif
 
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_RX_INTERRUPT)
-	#warning "usb may not work with RX ISR's"
+	#warning "usb may not work with uart's RX ISR"
 #endif
 
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_TX_INTERRUPT)
-	#warning "usb may not work with TX ISR's"
+	#warning "usb may not work with uart's TX ISR"
+#endif
+
+#if (defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)||defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE))&&(defined(USART_UNSAFE_TX_INTERRUPT)||defined(USART_UNSAFE_RX_INTERRUPT))
+	#warning "using globally reserved save registers with interruptable interrupts might create special conditions"
 #endif
 
 #if defined(__AVR_ATtiny102__)||defined(__AVR_ATtiny104__)||defined(__AVR_ATtiny2313__)||defined(__AVR_ATtiny2313A__)

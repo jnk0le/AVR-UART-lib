@@ -7,8 +7,8 @@
  *  This library is distributed under MIT license terms                             *
  ************************************************************************************/
 
-// DO NOT DEFINE BUFFERS SIZES OR ANY SHARED MACROS IN 'main.c' CODE
-// instead of this, define it in makefile or "Project Properties -> AVR C Compiler -> Symbols" or try to use -D gcc flag (eg. -DF_CPU=8000000)
+// DO NOT DEFINE F_CPU, BUFFERS SIZES OR ANY OTHER SHARED MACROS IN 'main.c' CODE
+// instead of this, define it in makefile (-D flag) or "Project Properties -> AVR C Compiler -> Symbols"
 
 //#define NO_USART_RX // disable all receiver code and dependencies
 //#define NO_USART_TX // disable all transmitter code and dependencies
@@ -39,6 +39,14 @@
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
 #define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero // FOR USE WITH CONSTANTS ONLY
 //#define USART_USE_INLINE_EVENTS // include optional file "usart_events.h" with inline asm code to be executed inside of interrupts (eg. implementing timeouts or something weird)
+
+//#define USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE // prematures out 4 cycles from every isr run // requires one globally reserved lower register
+//#define USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE    // prematures out 6 cycles from every isr run // requires pair of globally reserved lower registers
+// use globally reserved register for temporary storage in interrupts, should be combined with other interrupts for best results. 
+// special care have to be taken when doing so, since those registers can still be used by other compilation units (fixable in gcc by -ffixed-n flag, where n is a suppressed register),
+// precompiled libraries (vprintf, vscanf, qsort, strtod, strtol, strtoul), or even assembly hardcoded libraries (fft, aes).
+	#define USART_SREG_SAVE_REG_NUM "r4"
+	#define USART_Z_SAVE_REG_NUM "r2" // register pair
 
 //#define RX_BUFFER_SIZE 128 // Size of the ring buffers, must be power of 2 // default 32
 //#define TX_BUFFER_SIZE 64 // Size of the ring buffers, must be power of 2 // default 32
