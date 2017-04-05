@@ -4675,32 +4675,6 @@
 	}
 */
 
-#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-	#define USART_SREG_SAVE_REG_NAME usart_sreg_save // ???
-	register uint8_t USART_SREG_SAVE_REG_NAME asm(USART_SREG_SAVE_REG_NUM); // have to be defined separately in every compilation unit
-#endif
-
-#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-	#define USART_Z_SAVE_REG_NAME usart_z_save // ???
-	register uint8_t USART_Z_SAVE_REG_NAME asm(USART_Z_SAVE_REG_NUM); // have to be defined separately in every compilation unit
-#endif
-
-#if defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)&&defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE)
-	#define USART_REG_SAVE_LIST \
-		[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME), \
-		[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-		
-#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE)
-	#define USART_REG_SAVE_LIST \
-		[z_save] "+r" (USART_Z_SAVE_REG_NAME)
-	
-#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)
-	#define USART_REG_SAVE_LIST \
-		[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
-#else
-	#define USART_REG_SAVE_LIST
-#endif
-
 #ifndef NO_TX0_INTERRUPT
 
 	ISR(UDRE0_INTERRUPT, ISR_NAKED)

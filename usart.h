@@ -266,6 +266,30 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	#define RX_NEWLINE_MODE_RN // 2
 #endif
 
+#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+	register uint8_t USART_SREG_SAVE_REG_NAME asm(USART_SREG_SAVE_REG_NUM); // have to be defined separately in every compilation unit
+#endif
+
+#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+	register uint8_t USART_Z_SAVE_REG_NAME asm(USART_Z_SAVE_REG_NUM); // have to be defined separately in every compilation unit
+#endif
+
+#if defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)&&defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE)
+	#define USART_REG_SAVE_LIST \
+		[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME), \
+		[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+		
+#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE)
+	#define USART_REG_SAVE_LIST \
+		[z_save] "+r" (USART_Z_SAVE_REG_NAME)
+	
+#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)
+	#define USART_REG_SAVE_LIST \
+		[sreg_save] "+r" (USART_SREG_SAVE_REG_NAME)
+#else
+	#define USART_REG_SAVE_LIST
+#endif
+
 #if defined(__usbdrv_h_included__)&&!defined(USART_UNSAFE_RX_INTERRUPT)
 	#warning "usb may not work with uart's RX ISR"
 #endif
@@ -2070,20 +2094,48 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"cbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			"sbic	%M[cts_port], %M[cts_pin] \n\t"
 			"reti \n\t"
+			
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE // just use both regs ?
+			"movw	%[z_save], r24 \n\t"
+		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE) // just use this reg ??
+			"mov	%[sreg_save], r24 \n\t" 
+			"push	r25 \n\t"
+		#else
 			"push	r24 \n\t"
 			"push	r25 \n\t"
+		#endif
+		
 			"lds	r25, (tx0_first_byte) \n\t"
 			"lds	r24, (tx0_last_byte) \n\t"
 			"cpse	r25, r24 \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			"movw	r24, %[z_save] \n\t"
+		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE) 
+			"pop	r25 \n\t"
+			"mov	r24, %[sreg_save] \n\t"
+		#else
 			"pop	r25 \n\t"
 			"pop	r24 \n\t"
+		#endif
 			"reti \n\t"
+			
+		#else // USART not in IO
+			
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"in		%[sreg_save], __SREG__ \n\t"
 		#else
 			"push	r16 \n\t"
 			"in		r16,__SREG__ \n\t"
+		#endif
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			"movw	%[z_save], r24 \n\t" // mov/mov ??
+		#else
 			"push	r24 \n\t"
-			
+		#endif
+		
 		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
 			"in 	r24, %M[UCSRB_reg_IO] \n\t"
 		#else
@@ -2093,12 +2145,17 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
 			"sbic	%M[cts_port], %M[cts_pin]\n\t"
 			"rjmp	cts_apply_%= \n\t"
-			
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r25 \n\t"
+		#endif
 			"lds	r24, (tx0_last_byte) \n\t"
 			"lds	r25, (tx0_first_byte) \n\t"
 			"cp 	r25, r24 \n\t"
-			"pop	r25 \n\t" // branch after popping
+			
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			"pop	r25 \n\t" // branch after poping
+		#endif
 			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 		
 		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
@@ -2116,13 +2173,23 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 		
 		"cts_exit_%=:"
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE	
+			"movw	r24, %[z_save] \n\t"
+		#else
 			"pop	r24 \n\t"
+		#endif
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, %[sreg_save] \n\t"
+		#else
 			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
-
+		#endif
+		
 			"reti \n\t"
 		#endif
 			: /* output operands */
+			USART_REG_SAVE_LIST
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
@@ -2174,43 +2241,88 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"cbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			"sbic	%M[cts_port], %M[cts_pin] \n\t"
 			"reti \n\t"
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE // just use both regs ?
+			"movw	%[z_save], r24 \n\t"
+		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE) // just use this reg ??
+			"mov	%[sreg_save], r24 \n\t" 
+			"push	r25 \n\t"
+		#else
 			"push	r24 \n\t"
 			"push	r25 \n\t"
+		#endif
+		
 			"lds	r25, (tx1_first_byte) \n\t"
 			"lds	r24, (tx1_last_byte) \n\t"
 			"cpse	r25, r24 \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			"movw	r24, %[z_save] \n\t"
+		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE) 
+			"pop	r25 \n\t"
+			"mov	r24, %[sreg_save] \n\t"
+		#else
 			"pop	r25 \n\t"
 			"pop	r24 \n\t"
+		#endif
 			"reti \n\t"
+		
+		#else // USART not in IO
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"in		%[sreg_save], __SREG__ \n\t"
 		#else
 			"push	r16 \n\t"
 			"in		r16,__SREG__ \n\t"
+		#endif
+			
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			"movw	%[z_save], r24 \n\t"
+		#else
 			"push	r24 \n\t"
+		#endif
+			
 			"lds	r24, %M[UCSRB_reg] \n\t"
 			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
 			"sbic	%M[cts_port], %M[cts_pin]\n\t"
 			"rjmp	cts_apply_%= \n\t"
 			
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r25 \n\t"
+		#endif
 			"lds	r24, (tx1_last_byte) \n\t"
 			"lds	r25, (tx1_first_byte) \n\t"
 			"cp 	r25, r24 \n\t"
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r25 \n\t"
+		#endif
 			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
 			"lds	r24, %M[UCSRB_reg] \n\t"
 			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
 		"cts_apply_%=:"	
 			"sts	%M[UCSRB_reg], r24 \n\t"
+		
 		"cts_exit_%=:"
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE	
+			"movw	r24, %[z_save] \n\t"
+		#else
 			"pop	r24 \n\t"
+		#endif
+			
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, %[sreg_save] \n\t"
+		#else
 			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#endif
 
 			"reti \n\t"
 		#endif
 			: /* output operands */
+			USART_REG_SAVE_LIST
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
 			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
@@ -2245,32 +2357,59 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	static inline void naked_cts2_isr_handler(void)
 	{
 		asm volatile("\n\t"
+			
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"in		%[sreg_save], __SREG__ \n\t"
+		#else
 			"push	r16 \n\t"
 			"in		r16,__SREG__ \n\t"
+		#endif
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			"movw	%[z_save], r24 \n\t"
+		#else
 			"push	r24 \n\t"
+		#endif
+		
 			"lds	r24, %M[UCSRB_reg] \n\t"
 			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
 			"sbic	%M[cts_port], %M[cts_pin]\n\t"
 			"rjmp	cts_apply_%= \n\t"
 			
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r25 \n\t"
+		#endif
 			"lds	r24, (tx2_last_byte) \n\t"
 			"lds	r25, (tx2_first_byte) \n\t"
 			"cp 	r25, r24 \n\t"
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r25 \n\t"
+		#endif
 			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
 			"lds	r24, %M[UCSRB_reg] \n\t"
 			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
 		"cts_apply_%=:"	
 			"sts	%M[UCSRB_reg], r24 \n\t"
+		
 		"cts_exit_%=:"
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE	
+			"movw	r24, %[z_save] \n\t"
+		#else
 			"pop	r24 \n\t"
+		#endif
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, %[sreg_save] \n\t"
+		#else
 			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#endif
 
 			"reti \n\t"
 			: /* output operands */
+			USART_REG_SAVE_LIST
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR2B_REGISTER)),
@@ -2305,32 +2444,60 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 	static inline void naked_cts3_isr_handler(void)
 	{
 		asm volatile("\n\t"
+			
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"in		%[sreg_save], __SREG__ \n\t"
+		#else
 			"push	r16 \n\t"
 			"in		r16,__SREG__ \n\t"
+		#endif
+		
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			"movw	%[z_save], r24 \n\t"
+		#else
 			"push	r24 \n\t"
+		#endif
+		
 			"lds	r24, %M[UCSRB_reg] \n\t"
 			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
 			"sbic	%M[cts_port], %M[cts_pin]\n\t"
 			"rjmp	cts_apply_%= \n\t"
 			
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r25 \n\t"
+		#endif
 			"lds	r24, (tx3_last_byte) \n\t"
 			"lds	r25, (tx3_first_byte) \n\t"
 			"cp 	r25, r24 \n\t"
+		
+		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"pop	r25 \n\t"
+		#endif
 			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
 			"lds	r24, %M[UCSRB_reg] \n\t"
 			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
 		"cts_apply_%=:"	
 			"sts	%M[UCSRB_reg], r24 \n\t"
+		
 		"cts_exit_%=:"
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE	
+			"movw	r24, %[z_save] \n\t"
+		#else
 			"pop	r24 \n\t"
+		#endif
+		
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
+			"out	__SREG__, %[sreg_save] \n\t"
+		#else
 			"out	__SREG__, r16 \n\t"
 			"pop	r16 \n\t"
+		#endif
 
 			"reti \n\t"
 			: /* output operands */
+			USART_REG_SAVE_LIST
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR3B_REGISTER)),
