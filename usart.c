@@ -4695,8 +4695,8 @@
 			#ifdef __AVR_HAVE_MOVW__
 				"movw	%[z_save], r30 \n\t"
 			#else // in this case only 4 cycles are prematured out
-				"mov	%A[z_save], r30\n\t"
-				"mov	%B[z_save], r31\n\t"
+				"mov	%A[z_save], r30 \n\t"
+				"mov	%B[z_save], r31 \n\t"
 			#endif
 		#endif
 		

@@ -2095,30 +2095,36 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"sbic	%M[cts_port], %M[cts_pin] \n\t"
 			"reti \n\t"
 			
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE // just use both regs ?
-			"movw	%[z_save], r24 \n\t"
-		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE) // just use this reg ??
-			"mov	%[sreg_save], r24 \n\t" 
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			
+			"lds	%B[z_save], (tx0_first_byte) \n\t"
+			"lds	%A[z_save], (tx0_last_byte) \n\t"
+			"cpse	%B[z_save], %A[z_save] \n\t"
+			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			
+		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)
+			
 			"push	r25 \n\t"
+			
+			"lds	r25, (tx0_first_byte) \n\t"
+			"lds	%[sreg_save], (tx0_last_byte) \n\t"
+			"cpse	r25, %[sreg_save] \n\t"
+			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			
+			"pop	r25 \n\t"
 		#else
 			"push	r24 \n\t"
 			"push	r25 \n\t"
-		#endif
 		
 			"lds	r25, (tx0_first_byte) \n\t"
 			"lds	r24, (tx0_last_byte) \n\t"
 			"cpse	r25, r24 \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 		
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"movw	r24, %[z_save] \n\t"
-		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE) 
-			"pop	r25 \n\t"
-			"mov	r24, %[sreg_save] \n\t"
-		#else
 			"pop	r25 \n\t"
 			"pop	r24 \n\t"
 		#endif
+
 			"reti \n\t"
 			
 		#else // USART not in IO
@@ -2130,8 +2136,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"in		r16,__SREG__ \n\t"
 		#endif
 		
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"movw	%[z_save], r24 \n\t" // mov/mov ??
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAV
+			#ifdef __AVR_HAVE_MOVW__
+				"movw	%[z_save], r24 \n\t"
+			#else // in this case only 4 cycles are prematured out
+				"mov	%A[z_save], r25 \n\t"
+				"mov	%B[z_save], r26 \n\t"
+			#endif
 		#else
 			"push	r24 \n\t"
 		#endif
@@ -2173,8 +2184,13 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		#endif
 		
 		"cts_exit_%=:"
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE	
-			"movw	r24, %[z_save] \n\t"
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			#ifdef __AVR_HAVE_MOVW__
+				"movw	r24, %[z_save] \n\t"
+			#else // in this case only 4 cycles are prematured out
+				"mov	r25, %B[z_save] \n\t"
+				"mov	r24, %A[z_save] \n\t"
+			#endif
 		#else
 			"pop	r24 \n\t"
 		#endif
@@ -2212,9 +2228,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		{
 			UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT);
 		}
-		else
+		else if (tx1_first_byte != tx1_last_byte)
 		{
-			if (tx1_first_byte != tx1_last_byte)
 			UCSR1B_REGISTER |= (1<<UDRIE1_BIT);
 		}
 	#else
@@ -2223,9 +2238,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		{
 			tmp &= ~(1<<UDRIE1_BIT);
 		}
-		else
+		else if (tx1_first_byte != tx1_last_byte)
 		{
-			if (tx1_first_byte != tx1_last_byte)
 			tmp |= (1<<UDRIE1_BIT);
 		}
 		UCSR1B_REGISTER = tmp;
@@ -2242,30 +2256,36 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"sbic	%M[cts_port], %M[cts_pin] \n\t"
 			"reti \n\t"
 		
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE // just use both regs ?
-			"movw	%[z_save], r24 \n\t"
-		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE) // just use this reg ??
-			"mov	%[sreg_save], r24 \n\t" 
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
+			
+			"lds	%B[z_save], (tx1_first_byte) \n\t"
+			"lds	%A[z_save], (tx1_last_byte) \n\t"
+			"cpse	%B[z_save], %A[z_save] \n\t"
+			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			
+		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)
+			
 			"push	r25 \n\t"
+			
+			"lds	r25, (tx1_first_byte) \n\t"
+			"lds	%[sreg_save], (tx1_last_byte) \n\t"
+			"cpse	r25, %[sreg_save] \n\t"
+			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			
+			"pop	r25 \n\t"
 		#else
 			"push	r24 \n\t"
 			"push	r25 \n\t"
-		#endif
 		
 			"lds	r25, (tx1_first_byte) \n\t"
 			"lds	r24, (tx1_last_byte) \n\t"
 			"cpse	r25, r24 \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 		
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"movw	r24, %[z_save] \n\t"
-		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE) 
-			"pop	r25 \n\t"
-			"mov	r24, %[sreg_save] \n\t"
-		#else
 			"pop	r25 \n\t"
 			"pop	r24 \n\t"
 		#endif
+		
 			"reti \n\t"
 		
 		#else // USART not in IO
@@ -2345,9 +2365,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		{
 			tmp &= ~(1<<UDRIE2_BIT);
 		}
-		else
+		else if (tx2_first_byte != tx2_last_byte)
 		{
-			if (tx2_first_byte != tx2_last_byte)
 			tmp |= (1<<UDRIE2_BIT);
 		}
 		UCSR2B_REGISTER = tmp;
@@ -2432,9 +2451,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		{
 			tmp &= ~(1<<UDRIE3_BIT);
 		}
-		else
+		else if (tx3_first_byte != tx3_last_byte)
 		{
-			if (tx3_first_byte != tx3_last_byte)
 			tmp |= (1<<UDRIE3_BIT);
 		}
 		UCSR3B_REGISTER = tmp;
@@ -2451,7 +2469,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"push	r16 \n\t"
 			"in		r16,__SREG__ \n\t"
 		#endif
-		
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"movw	%[z_save], r24 \n\t"
