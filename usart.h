@@ -2136,7 +2136,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			"in		r16,__SREG__ \n\t"
 		#endif
 		
-		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAV
+		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			#ifdef __AVR_HAVE_MOVW__
 				"movw	%[z_save], r24 \n\t"
 			#else // in this case only 4 cycles are prematured out
