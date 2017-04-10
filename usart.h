@@ -2431,7 +2431,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			USART_REG_SAVE_LIST
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
-			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR2B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE2_BIT),
 			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS2_IOPORTNAME))),
 			[cts_pin]        "M" (CTS2_PIN)
@@ -2517,7 +2516,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			USART_REG_SAVE_LIST
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
-			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR3B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE3_BIT),
 			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS3_IOPORTNAME))),
 			[cts_pin]        "M" (CTS3_PIN)
