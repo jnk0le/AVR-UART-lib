@@ -38,7 +38,6 @@
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
 #define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero // FOR USE WITH CONSTANTS ONLY
-//#define USART_USE_INLINE_EVENTS // include optional file "usart_events.h" with inline asm code to be executed inside of interrupts (eg. implementing timeouts or something weird)
 
 //#define USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE // prematures out 4 cycles from every isr run // requires one globally reserved lower register
 //#define USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE    // prematures out 6 cycles from every isr run // requires pair of globally reserved lower registers
