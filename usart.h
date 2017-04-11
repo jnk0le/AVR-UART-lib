@@ -2140,8 +2140,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			#ifdef __AVR_HAVE_MOVW__
 				"movw	%[z_save], r24 \n\t"
 			#else // in this case only 4 cycles are prematured out
-				"mov	%A[z_save], r25 \n\t"
-				"mov	%B[z_save], r26 \n\t"
+				"mov	%A[z_save], r24 \n\t"
+				"mov	%B[z_save], r25 \n\t"
 			#endif
 		#else
 			"push	r24 \n\t"
