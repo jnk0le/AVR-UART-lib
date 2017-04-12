@@ -44,12 +44,12 @@
 // use globally reserved register for temporary storage in interrupts, should be combined with other interrupts for best results. 
 // special care have to be taken when doing so, since those registers can still be used by other compilation units (fixable in gcc by -ffixed-n flag, where n is a suppressed register),
 // precompiled libraries (vprintf, vscanf, qsort, strtod, strtol, strtoul), or even assembly hardcoded libraries (fft, aes).
-// only registers r2-r7 might be used with acceptable penalty for rest of the code, since other registers might be used by gcc for eg. argument passing.
+// only registers r2-r7 may be used with acceptable penalty for rest of the code, since other registers might be used by gcc for eg. argument passing.
 
-	#define USART_SREG_SAVE_REG_NAME usart_sreg_save // ???
+	#define USART_SREG_SAVE_REG_NAME G_sreg_save // ??? // have to be redeclared under the same name if the same registers are reused in other instances (libs)
 	#define USART_SREG_SAVE_REG_NUM "r4"
 	
-	#define USART_Z_SAVE_REG_NAME usart_z_save // ???
+	#define USART_Z_SAVE_REG_NAME G_z_save // ??? // have to be redeclared under the same name if the same registers are reused in other instances (libs)
 	#define USART_Z_SAVE_REG_NUM "r2" // register pair
 
 //#define RX_BUFFER_SIZE 128 // Size of the ring buffers, must be power of 2 // default 32
