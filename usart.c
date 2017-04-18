@@ -4812,9 +4812,9 @@
 			
 			: // input operands
 			TX0_INPUT_OPERAND_LIST
-			[UDR_reg_IO]     "I" (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]        "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
-			[control_reg_IO] "I" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
+			[control_reg_IO] "M" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
 			[control_reg]    "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 			[udrie_bit]      "M" (UDRIE0_BIT),
 			[mask]           "M" (TX0_BUFFER_MASK)
@@ -5056,7 +5056,7 @@
 			
 			: // input operands
 			RX0_INPUT_OPERAND_LIST
-			[UDR_reg_IO]         "I" (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR0_REGISTER)),
 			[mask]               "M" (RX0_BUFFER_MASK),
 			[mpcm_address]       "M" (MPCM0_ADDRESS),
@@ -5065,12 +5065,12 @@
 		#endif
 			[mpcm_bit]           "M" (MPCM0_BIT),
 		#ifdef USART0_USE_SOFT_RTS
-			[rts_port]           "I" (_SFR_IO_ADDR(___PORT(RTS0_IOPORTNAME))),
-			[rts_pin]            "I" (RTS0_PIN),
+			[rts_port]           "M" (_SFR_IO_ADDR(___PORT(RTS0_IOPORTNAME))),
+			[rts_pin]            "M" (RTS0_PIN),
 		#endif
 			[UCSRA_reg]          "n" (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
-			[UCSRA_reg_IO]       "I" (_SFR_IO_ADDR(UCSR0A_REGISTER)),
-			[control_reg_IO]     "I" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
+			[UCSRA_reg_IO]       "M" (_SFR_IO_ADDR(UCSR0A_REGISTER)),
+			[control_reg_IO]     "M" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 			[rxcie_bit]          "M" (RXCIE0_BIT)
 		
@@ -5192,9 +5192,9 @@
 			
 			: // input operands
 			TX1_INPUT_OPERAND_LIST
-			[UDR_reg_IO]     "I" (_SFR_IO_ADDR(UDR1_REGISTER)),
+			[UDR_reg_IO]     "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
 			[UDR_reg]        "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
-			[control_reg_IO] "I" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
+			[control_reg_IO] "M" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
 			[control_reg]    "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
 			[udrie_bit]      "M" (UDRIE1_BIT),
 			[mask]           "M" (TX1_BUFFER_MASK)
@@ -5406,7 +5406,7 @@
 			
 			: // input operands
 			RX1_INPUT_OPERAND_LIST
-			[UDR_reg_IO]         "I" (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
 			[mask]               "M" (RX1_BUFFER_MASK),
 			[mpcm_address]       "M" (MPCM1_ADDRESS),
@@ -5415,12 +5415,12 @@
 		#endif
 			[mpcm_bit]           "M" (MPCM1_BIT),
 		#ifdef USART1_USE_SOFT_RTS
-			[rts_port]           "I" (_SFR_IO_ADDR(___PORT(RTS1_IOPORTNAME))),
-			[rts_pin]            "I" (RTS1_PIN),
+			[rts_port]           "M" (_SFR_IO_ADDR(___PORT(RTS1_IOPORTNAME))),
+			[rts_pin]            "M" (RTS1_PIN),
 		#endif
 			[UCSRA_reg]          "n" (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
-			[UCSRA_reg_IO]       "I" (_SFR_IO_ADDR(UCSR1A_REGISTER)),
-			[control_reg_IO]     "I" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
+			[UCSRA_reg_IO]       "M" (_SFR_IO_ADDR(UCSR1A_REGISTER)),
+			[control_reg_IO]     "M" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
 			[rxcie_bit]          "M" (RXCIE1_BIT)
 		
@@ -5716,8 +5716,8 @@
 		#endif
 			[mpcm_bit]           "M" (MPCM2_BIT),
 		#ifdef USART2_USE_SOFT_RTS
-			[rts_port]           "I" (_SFR_IO_ADDR(___PORT(RTS2_IOPORTNAME))),
-			[rts_pin]            "I" (RTS2_PIN),
+			[rts_port]           "M" (_SFR_IO_ADDR(___PORT(RTS2_IOPORTNAME))),
+			[rts_pin]            "M" (RTS2_PIN),
 		#endif
 			[UCSRA_reg]          "n" (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
@@ -6015,8 +6015,8 @@
 		#endif
 			[mpcm_bit]           "M" (MPCM3_BIT),
 		#ifdef USART3_USE_SOFT_RTS
-			[rts_port]           "I" (_SFR_IO_ADDR(___PORT(RTS3_IOPORTNAME))),
-			[rts_pin]            "I" (RTS3_PIN),
+			[rts_port]           "M" (_SFR_IO_ADDR(___PORT(RTS3_IOPORTNAME))),
+			[rts_pin]            "M" (RTS3_PIN),
 		#endif
 			[UCSRA_reg]          "n" (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),

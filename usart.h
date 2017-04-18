@@ -2208,10 +2208,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			USART_REG_SAVE_LIST
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
-			[UCSRB_reg_IO]   "I" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
+			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE0_BIT),
-			[cts_port]       "I" (_SFR_IO_ADDR(___PIN(CTS0_IOPORTNAME))),
-			[cts_pin]        "I" (CTS0_PIN)
+			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS0_IOPORTNAME))),
+			[cts_pin]        "M" (CTS0_PIN)
 			: /* clobbers */
 		);
 	}
@@ -2345,10 +2345,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			USART_REG_SAVE_LIST
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
-			[UCSRB_reg_IO]   "I" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
+			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE1_BIT),
-			[cts_port]       "I" (_SFR_IO_ADDR(___PIN(CTS1_IOPORTNAME))),
-			[cts_pin]        "I" (CTS1_PIN)
+			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS1_IOPORTNAME))),
+			[cts_pin]        "M" (CTS1_PIN)
 			: /* clobbers */
 		);
 	}
@@ -2432,8 +2432,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE2_BIT),
-			[cts_port]       "I" (_SFR_IO_ADDR(___PIN(CTS2_IOPORTNAME))),
-			[cts_pin]        "I" (CTS2_PIN)
+			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS2_IOPORTNAME))),
+			[cts_pin]        "M" (CTS2_PIN)
 			: /* clobbers */
 		);
 	}
@@ -2517,8 +2517,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE3_BIT),
-			[cts_port]       "I" (_SFR_IO_ADDR(___PIN(CTS3_IOPORTNAME))),
-			[cts_pin]        "I" (CTS3_PIN)
+			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS3_IOPORTNAME))),
+			[cts_pin]        "M" (CTS3_PIN)
 			: /* clobbers */
 		);
 	}
