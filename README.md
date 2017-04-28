@@ -64,8 +64,8 @@ and another one if transmitter misses RTS signal (last one is stored in shift re
 | **TX worst** | 38 | 41 | 44 | 46 | 35 |
 | **RX best** | 36 | 36 | 37 | 39 | 27 |
 | **RX worst** | 40 | 42 | 43 | 45 | 32 |
-| **RX best with rts** | 41 | 41 | 44 | 46 | 32 |
-| **RX worst with rts** | 40 | 42 | 43 | 45 | 32 |
+| **RX rts full** | 41 | 41 | 44 | 46 | 32 |
+| **RX rts normal** | 40 | 42 | 43 | 45 | 32 |
 | **BUFFER_SIZE = 256** | x | -1 | -1 | -1 | -1 |
 | **G_SREG_SAVE** | -4 | -4 | -4 | -4 | -2 |
 | **G_Z_SAVE** | -6 | -6 | -6 | -6 | -2 |
@@ -74,8 +74,8 @@ and another one if transmitter misses RTS signal (last one is stored in shift re
 - TX worst case - send byte from buffer and disable UDRIE interrupt
 - RX best case - load byte and do nothing (buffer full)
 - RX worst case - load byte and put it into buffer
-- RX best case with rts - rise RTS line and disable RXCIE interrupt
-- RX worst case with rts - load byte and put it into buffer if there is available space
+- RX rts full - rise RTS line and disable RXCIE interrupt
+- RX rts normal - load byte and put it into buffer if there is available space
 
 ## todo
 - document code/functions
