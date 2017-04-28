@@ -16,20 +16,6 @@ buffers for receive/transmit. Designed especially for real-time or high throughp
 - optimized as much as possible to reduce code size and execution times
 - and much more
 
-simple minimal "hello world" (with delay) code on mega328p can give following results:
-
-	Program Memory Usage 	:	390 bytes   1,2 % Full
-	Data Memory Usage 		:	82 bytes   4,0 % Full
-
-same code on mega8 gives:
-
-	Program Memory Usage 	:	300 bytes   3,7 % Full 
-	Data Memory Usage 		:	82 bytes   8,0 % Full
-
-Meanwhile Arduino generates 2KB of code.
-
-For this result additional flag -mrelax is required in many IDE's (eg. Atmel studio)
-
 ## Notes
 - Lot of terminals sends only CR character as a newline terminator, instead of CRLF or even unix style LF
 (BTW PuTTY doesn't allow to change this) but in return requires CRLF terminator to show not broken text.
@@ -41,25 +27,34 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 
 - In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint().
 
-- Any used external IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO) 
+- Any used IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO) 
 
 - In half duplex (RS485) transmission modes, the aplication code is responsible of starting transmission only when bus is idle.
 If RE and DE are shorted together additional pullup on RX pin is required.
-Pin used as a RS485 control line have to be kept in low state during boot process via a pulldown resistor or at least not driving it high even by an internall pull-up.
+Pin used as a RS485 control line have to be kept in low state during boot process via a pulldown resistor or at least not driving it high even by an internall pull-up. (especially on multi node buses)
 
 - In MPCM mode first received byte is address by which device was called (own or general call), application is also responsible of restoring into "idle listening" state withing described bus silence time after receiving entire packet.
 
-- For software CTS, all used pins have to be configured as an input, and both edge interrupt source (INT/PCINT).
-The application code should call cts_isr_handlers from interrupts corresponding to used pins. (see example(flow control).c)
-If CTS line goes high during transmission, only one additional byte can be transmitted. (due to 2 level transmit register)
+- uart_putc() function is not thread/interrupt-safe nor reentrant. It shouldn't be called from within atomic blocks or interrupt handlers since it re-enables interrupt flag on exit or even hangs in infinite loop waiting for execution of UDRE interrupt.
 
-- For software RTS, all used pins have to be configured as input without pullup or output in low state.
-If interrupts are not missed, the receiver can accept up to 2 additional bytes, one from ongoing transmission 
-and another if transmitter misses RTS signal (last one is stored in shift register).
+## Flow control
+
+This library provides a software implementation of CTS/RTS control lines (DTR/DSR respectively) to signal whether buffer is full (not an 80' style handshaking).
+It should to be used, in order to achieve stable bidirectional >100kbps transmissions, especially when using non deterministic usb-serial converters (ft232, ch340 etc).
+The legendary "noise" that causes loosing blocks of characters (not damaging) can also be fixed by that.
+
+### Config
+- soft CTS pins have to be configured as an input, and both edge interrupt source (INT/PCINT), before entering uart_init().
+The application code should call cts_isr_handlers from interrupts corresponding to used pins. (see [example](example(flow control).c))
+If CTS line goes high during transmission (before UDRE interrupt is fired), only one additional byte will be transmitted. (due to 2 level transmit register)
+
+- soft RTS pins have to be configured as input without pullup or output in low state, before endering uart_init().
+If interrupts are not missed, the receiver can accept up to 2 additional bytes after buffer is filled, one from next or ongoing transmission 
+and another one if transmitter misses RTS signal (last one is stored in shift register).
+
+- Any used IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a flow control IO) 
 
 - For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be defined.
-
-- uart_putc() function is not thread/interrupt-safe nor reentrant. It shouldn't be called from within atomic blocks or interrupt handlers since it re-enables interrupt flag on exit or even hangs in infinite loop waiting for execution of UDRE interrupt.
 
 ## ISR timmings (cycles)
 
@@ -91,4 +86,3 @@ and another if transmitter misses RTS signal (last one is stored in shift regist
 - xmodem timeouts/fallback
 - cts naked handler timmings
 - 100% flush
-- fix readme

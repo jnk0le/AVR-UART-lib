@@ -37,14 +37,14 @@
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
-#define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero // FOR USE WITH CONSTANTS ONLY
+//#define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero// prematures out 2 bytes // FOR USE WITH CONSTANTS ONLY
 
 //#define USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE // prematures out 4 cycles from every isr run // requires one globally reserved lower register
 //#define USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE    // prematures out 6 cycles from every isr run // requires pair of globally reserved lower registers
-// use globally reserved register for temporary storage in interrupts, should be combined with other interrupts for best results. 
+// usage of globally reserved register for temporary storage in interrupts, should be combined with other interrupts for best results. 
 // special care have to be taken when doing so, since those registers can still be used by other compilation units (fixable in gcc by -ffixed-n flag, where n is a suppressed register),
 // precompiled libraries (vprintf, vscanf, qsort, strtod, strtol, strtoul), or even assembly hardcoded libraries (fft, aes).
-// only registers r2-r7 may be used with acceptable penalty for rest of the code, since other registers might be used by gcc for eg. argument passing.
+// registers r2-r7 should be used for acceptable penalty for rest of the code, since other registers might be used by gcc for eg. argument passing.
 
 	#define USART_SREG_SAVE_REG_NAME G_sreg_save // ??? // have to be redeclared under the same name if the same registers are reused in other instances (libs)
 	#define USART_SREG_SAVE_REG_NUM "r4"
