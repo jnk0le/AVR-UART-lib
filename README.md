@@ -81,7 +81,6 @@ and another one if transmitter misses RTS signal (last one is stored in shift re
 - document code/functions
 - func sizes
 - xmega, tiny817
-- some notes about flow control
 - modbus
 - xmodem timeouts/fallback
 - cts naked handler timmings
