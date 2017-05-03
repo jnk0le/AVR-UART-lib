@@ -40,7 +40,7 @@ Pin used as a RS485 control line have to be kept in low state during boot proces
 ## Flow control
 
 This library provides a software implementation of CTS/RTS control lines (DTR/DSR respectively) to signal whether buffer is full (not an 80' style handshaking).
-It should to be used, in order to achieve stable bidirectional >100kbps transmissions, especially when using non deterministic usb-serial converters (ft232, ch340 etc).
+It should be used, in order to achieve stable bidirectional >100kbps transmissions, especially when using non deterministic usb-serial converters (ft232, ch340 etc).
 The legendary "noise" that causes loosing blocks of characters (not damaging) can also be fixed by that.
 
 ### Config
