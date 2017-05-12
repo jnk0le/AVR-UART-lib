@@ -1679,10 +1679,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart0_flush(void); // flush tx buffer
 		
 		extern volatile uint8_t tx0_last_byte, tx0_first_byte;
-		inline uint8_t uart0_BytesToSend(void) // returns number of bytes waiting in the receiver buffer
-		{
-			return (tx0_last_byte - tx0_first_byte) & TX0_BUFFER_MASK;
-		}
+		inline uint8_t uart0_BytesToSend(void) { return (tx0_last_byte - tx0_first_byte) & TX0_BUFFER_MASK; }
+		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART0_MPCM_MODE
 			void uart0_mpcm_transmit_addres_Frame(uint8_t dat);
@@ -1760,10 +1758,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart1_flush(void); // flush tx buffer
 		
 		extern volatile uint8_t tx1_last_byte, tx1_first_byte;
-		inline uint8_t uart1_BytesToSend(void) // returns number of bytes waiting in the receiver buffer
-		{
-			return (tx1_last_byte - tx1_first_byte) & TX1_BUFFER_MASK;
-		}
+		inline uint8_t uart1_BytesToSend(void) { return (tx1_last_byte - tx1_first_byte) & TX1_BUFFER_MASK; }
+		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART1_MPCM_MODE
 			void uart1_mpcm_transmit_addres_Frame(uint8_t dat);
@@ -1816,10 +1812,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart2_flush(void); // flush tx buffer
 		
 		extern volatile uint8_t tx2_last_byte, tx2_first_byte;
-		inline uint8_t uart2_BytesToSend(void) // returns number of bytes waiting in the receiver buffer
-		{
-			return (tx2_last_byte - tx2_first_byte) & TX2_BUFFER_MASK;
-		}
+		inline uint8_t uart2_BytesToSend(void) { return (tx2_last_byte - tx2_first_byte) & TX2_BUFFER_MASK; }
+		// returns number of bytes waiting in the transmit buffer	
 	
 		#ifdef USART2_MPCM_MODE
 			void uart2_mpcm_transmit_addres_Frame(uint8_t dat);
@@ -1872,10 +1866,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart3_flush(void); // flush tx buffer
 		
 		extern volatile uint8_t tx3_last_byte, tx3_first_byte;
-		inline uint8_t uart3_BytesToSend(void) // returns number of bytes waiting in the receiver buffer
-		{
-			return (tx3_last_byte - tx3_first_byte) & TX3_BUFFER_MASK;
-		}
+		inline uint8_t uart3_BytesToSend(void) { return (tx3_last_byte - tx3_first_byte) & TX3_BUFFER_MASK; }
+		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART3_MPCM_MODE
 			void uart3_mpcm_transmit_addres_Frame(uint8_t dat);
@@ -1899,16 +1891,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart0_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 	
-		inline char uart0_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
-		{
-			register char c;
-			
-			do{
-				c = uart0_getc();
-			}while(c <= 32);
-			
-			return c;
-		}
+		inline char uart0_skipWhiteSpaces(void) { char c; do{ c = uart0_getc(); }while(c <= 32); return c; }
+		// returns first nonspace character found in the buffer
 		
 		int16_t uart0_getint(void);
 		int32_t uart0_getlong(void);
@@ -1919,10 +1903,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx0_last_byte, rx0_first_byte;
-		inline uint8_t uart0_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
-		{
-			return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
-		}
+		inline uint8_t uart0_AvailableBytes(void) { return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK; }
+		// returns number of bytes waiting in the receiver buffer
+		
 		uint8_t uart0_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 		
 		#define uart_getc() uart0_getc()
@@ -1949,16 +1932,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart1_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
-		inline char uart1_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
-		{
-			register char c;
-			
-			do{
-				c = uart1_getc();
-			}while(c <= 32);
-			
-			return c;
-		}
+		inline char uart1_skipWhiteSpaces(void) { char c; do{ c = uart1_getc(); }while(c <= 32); return c; }
+		// returns first nonspace character found in the buffer
 		
 		int16_t uart1_getint(void);
 		int32_t uart1_getlong(void);
@@ -1969,10 +1944,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx1_last_byte, rx1_first_byte;
-		inline uint8_t uart1_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
-		{
-			return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK;
-		}
+		inline uint8_t uart1_AvailableBytes(void) { return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK; }
+		// returns number of bytes waiting in the receiver buffer
+		
 		uint8_t uart1_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 	#endif // NO_RX0_INTERRUPT
 	
@@ -1986,16 +1960,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart2_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
-		inline char uart2_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
-		{
-			register char c;
-			
-			do{
-				c = uart2_getc();
-			}while(c <= 32);
-			
-			return c;
-		}
+		inline char uart2_skipWhiteSpaces(void) { char c; do{ c = uart2_getc(); }while(c <= 32); return c; }
+		// returns first nonspace character found in the buffer
 		
 		int16_t uart2_getint(void);
 		int32_t uart2_getlong(void);
@@ -2006,10 +1972,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx2_last_byte, rx2_first_byte;
-		inline uint8_t uart2_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
-		{
-			return (rx2_last_byte - rx2_first_byte) & RX2_BUFFER_MASK;
-		}
+		inline uint8_t uart2_AvailableBytes(void) { return (rx2_last_byte - rx2_first_byte) & RX2_BUFFER_MASK; }
+		// returns number of bytes waiting in the receiver buffer
+		
 		uint8_t uart2_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 	#endif // NO_RX0_INTERRUPT
 	
@@ -2023,16 +1988,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		void uart3_getlnToFirstWhiteSpace(char *buffer, uint8_t bufferlimit); // read one line to the first whitespace after the string
 		// cuts all whitespaces before string and one after the string
 		
-		inline char uart3_skipWhiteSpaces(void) // returns first nonspace character found in the buffer
-		{
-			register char c;
-			
-			do{
-				c = uart3_getc();
-			}while(c <= 32);
-			
-			return c;
-		}
+		inline char uart3_skipWhiteSpaces(void) { char c; do{ c = uart3_getc(); }while(c <= 32); return c; } 
+		// returns first nonspace character found in the buffer
 		
 		int16_t uart3_getint(void);
 		int32_t uart3_getlong(void);
@@ -2043,10 +2000,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx3_last_byte, rx3_first_byte;
-		inline uint8_t uart3_AvailableBytes(void) // returns number of bytes waiting in the receiver buffer
-		{
-			return (rx3_last_byte - rx3_first_byte) & RX3_BUFFER_MASK;
-		}
+		inline uint8_t uart3_AvailableBytes(void) { return (rx3_last_byte - rx3_first_byte) & RX3_BUFFER_MASK; }
+		// returns number of bytes waiting in the receiver buffer
+		
 		uint8_t uart3_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
 	#endif // NO_RX0_INTERRUPT
 
