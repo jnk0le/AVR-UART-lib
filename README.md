@@ -37,6 +37,8 @@ Pin used as a RS485 control line have to be kept in low state during boot proces
 
 - uart_putc() function is not thread/interrupt-safe nor reentrant. It shouldn't be called from within atomic blocks or interrupt handlers since it re-enables interrupt flag on exit or even hangs in infinite loop waiting for execution of UDRE interrupt.
 
+- this library is written in c99/gnu99 dialect standard.
+
 ## Flow control
 
 This library provides a software implementation of CTS/RTS control lines (DTR/DSR respectively) to signal whether buffer is full (not an 80' style handshaking).
