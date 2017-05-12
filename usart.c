@@ -101,7 +101,7 @@
 //******************************************************************
 	void uart0_reinit(uint16_t ubbr_value)
 	{
-		UCSR0B_REGISTER = 0; //flush all buffers
+		UCSR0B_REGISTER = 0; //flush all hardware buffers
 	
 	#ifdef USART0_RS485_MODE
 		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); //set low
@@ -134,7 +134,7 @@
 #ifdef USE_USART1
 	void uart1_reinit(uint16_t ubbr_value)
 	{
-		UCSR1B_REGISTER = 0; //flush all buffers
+		UCSR1B_REGISTER = 0; //flush all hardware buffers
 	
 	#ifdef USART1_RS485_MODE
 		___PORT(RS485_CONTROL1_IOPORTNAME) &= ~(1<<RS485_CONTROL1_PIN); //set low
@@ -167,7 +167,7 @@
 #ifdef USE_USART2
 	void uart2_reinit(uint16_t ubbr_value)
 	{
-		UCSR2B_REGISTER = 0; //flush all buffers
+		UCSR2B_REGISTER = 0; //flush all hardware buffers
 	
 	#ifdef USART2_RS485_MODE
 		___PORT(RS485_CONTROL2_IOPORTNAME) &= ~(1<<RS485_CONTROL2_PIN); //set low
@@ -200,7 +200,7 @@
 #ifdef USE_USART3
 	void uart3_reinit(uint16_t ubbr_value)
 	{
-		UCSR3B_REGISTER = 0; //flush all buffers
+		UCSR3B_REGISTER = 0; //flush all hardware buffers
 	
 	#ifdef USART3_RS485_MODE
 		___PORT(RS485_CONTROL3_IOPORTNAME) &= ~(1<<RS485_CONTROL3_PIN); //set low

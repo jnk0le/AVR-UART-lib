@@ -75,8 +75,7 @@
 #define TX3_BUFFER_MASK (TX3_BUFFER_SIZE - 1)
 #define RX3_BUFFER_MASK (RX3_BUFFER_SIZE - 1)
 
-enum {locked, unlocked};
-enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL=0};
+enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	
 #if defined(URSEL)||defined(URSEL0)||defined(URSEL1)||defined(URSEL2)||defined(URSEL3)
 
