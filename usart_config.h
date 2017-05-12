@@ -288,7 +288,7 @@
 #define RX3_INPUT_OPERAND_LIST
 
 // events executed inside transmit complete interrupts (last byte has been transmitted, UDR buffer is empty)
-// little different but still inline asm is required // any modified regs have to be pushed first
+// if USATRn_NO_NAKED_TXC_INTERRUPT is not defined then inline asm is required here // any modified regs have to be pushed first
 //inline void TXCn_interrupt_event(void)
 //{
 //	asm volatile("\n\t"
@@ -299,25 +299,33 @@
 //}
 // mpcm ??
 
+//#define USATR0_NO_NAKED_TXC_INTERRUPT
 //#define USART0_USE_TXC_INTERRUPT // if rs485 is not used
+
 inline void TXC0_interrupt_event(void) __attribute__((always_inline));
 inline void TXC0_interrupt_event(void)
 {
 }
 
+//#define USATR1_NO_NAKED_TXC_INTERRUPT 
 //#define USART1_USE_TXC_INTERRUPT
+
 inline void TXC1_interrupt_event(void) __attribute__((always_inline));
 inline void TXC1_interrupt_event(void)
 {
 }
 
+//#define USATR2_NO_NAKED_TXC_INTERRUPT 
 //#define USART2_USE_TXC_INTERRUPT
+
 inline void TXC2_interrupt_event(void) __attribute__((always_inline));
 inline void TXC2_interrupt_event(void)
 {
 }
 
+//#define USATR3_NO_NAKED_TXC_INTERRUPT 
 //#define USART3_USE_TXC_INTERRUPT
+
 inline void TXC3_interrupt_event(void) __attribute__((always_inline));
 inline void TXC3_interrupt_event(void)
 {

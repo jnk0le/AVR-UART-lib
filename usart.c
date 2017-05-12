@@ -4825,7 +4825,11 @@
 	
 #if defined(USART0_USE_TXC_INTERRUPT)
 	
+#ifdef USATR0_NO_NAKED_TXC_INTERRUPT
+	ISR(TXC0_INTERRUPT)
+#else
 	ISR(TXC0_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
+#endif	
 	{
 	#ifdef USART0_RS485_MODE
 		___PORT(RS485_CONTROL0_PORT) &= ~(1<<RS485_CONTROL0_PIN); // set low after completed transaction
@@ -5206,7 +5210,11 @@
 
 #if defined(USART1_USE_TXC_INTERRUPT)
 
+#ifdef USATR1_NO_NAKED_TXC_INTERRUPT
+	ISR(TXC1_INTERRUPT)
+#else
 	ISR(TXC1_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
+#endif
 	{
 	#ifdef USART1_RS485_MODE
 		___PORT(RS485_CONTROL1_IOPORTNAME) &= ~(1<<RS485_CONTROL1_PIN); // set low after completed transaction
@@ -5539,7 +5547,11 @@
 
 #if defined(USART2_USE_TXC_INTERRUPT)
 
+#ifdef USATR2_NO_NAKED_TXC_INTERRUPT
+	ISR(TXC2_INTERRUPT)
+#else
 	ISR(TXC2_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
+#endif
 	{
 	#ifdef USART2_RS485_MODE
 		___PORT(RS485_CONTROL2_IOPORTNAME) &= ~(1<<RS485_CONTROL2_PIN); // set low after completed transaction
@@ -5838,7 +5850,11 @@
 	
 #if defined(USART3_USE_TXC_INTERRUPT)
 
+#ifdef USATR3_NO_NAKED_TXC_INTERRUPT
+	ISR(TXC3_INTERRUPT)
+#else
 	ISR(TXC3_INTERRUPT, ISR_NAKED) // ISR is compiled to only one cbi instruction - no need for large prologue/epilogue
+#endif
 	{
 	#ifdef USART3_RS485_MODE
 		___PORT(RS485_CONTROL3_IOPORTNAME) &= ~(1<<RS485_CONTROL3_PIN); // set low after completed transaction
