@@ -1382,7 +1382,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		
 	#ifdef USART_SKIP_UBBRH_IF_ZERO
-		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+		if(__builtin_constant_p(ubbr_value))
+			if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
 			UBRR0H_REGISTER = (ubbr_value>>8);
 		
@@ -1458,9 +1459,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		UBRR1L_REGISTER = (uint8_t) ubbr_value;
 		
 	#ifdef USART_SKIP_UBBRH_IF_ZERO
-		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+		if(__builtin_constant_p(ubbr_value))
+			if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
-		UBRR1H_REGISTER = (ubbr_value>>8);
+			UBRR1H_REGISTER = (ubbr_value>>8);
 		
 	#ifdef USART1_U2X_SPEED
 		#ifdef USART1_MPCM_MODE
@@ -1528,7 +1530,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		UBRR2L_REGISTER = (uint8_t) ubbr_value;
 		
 	#ifdef USART_SKIP_UBBRH_IF_ZERO
-		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+		if(__builtin_constant_p(ubbr_value))
+			if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
 			UBRR2H_REGISTER = (ubbr_value>>8);
 		
@@ -1584,7 +1587,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		UBRR3L_REGISTER = (uint8_t) ubbr_value;
 		
 	#ifdef USART_SKIP_UBBRH_IF_ZERO
-		if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+		if(__builtin_constant_p(ubbr_value))
+			if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
 			UBRR3H_REGISTER = (ubbr_value>>8);
 		

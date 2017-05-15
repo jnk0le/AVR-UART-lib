@@ -37,7 +37,7 @@
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
-//#define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero// prematures out 2 bytes // FOR USE WITH CONSTANTS ONLY
+//#define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero // prematures out 2 bytes if ubbr is compile time constant
 
 //#define USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE // prematures out 4 cycles from every isr run // requires one globally reserved lower register
 //#define USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE    // prematures out 6 cycles from every isr run // requires pair of globally reserved lower registers
