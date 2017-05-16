@@ -63,7 +63,7 @@
 
 #ifdef USE_USART0
 /*
-	void uart_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
+	void uart_init(uint16_t ubbr_value)
 	{
 	#ifdef USART0_RS485_MODE
 		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
@@ -101,12 +101,18 @@
 //******************************************************************
 	void uart0_reinit(uint16_t ubbr_value)
 	{
-		UCSR0B_REGISTER = 0; //flush all hardware buffers
-	
+	#ifdef USART0_USE_SOFT_RTS
+		___PORT(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+	#endif
+		
 	#ifdef USART0_RS485_MODE
 		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); //set low
 		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
 	#endif
+		
+		UCSR0B_REGISTER = 0; //flush all hardware buffers
+		
+		//(writing TXENn to zero) will not become effective until ongoing and pending transmissions are completed
 		
 		UBRR0L_REGISTER = (uint8_t) ubbr_value;
 		UBRR0H_REGISTER = (ubbr_value>>8);
@@ -134,12 +140,18 @@
 #ifdef USE_USART1
 	void uart1_reinit(uint16_t ubbr_value)
 	{
-		UCSR1B_REGISTER = 0; //flush all hardware buffers
+	#ifdef USART1_USE_SOFT_RTS
+		___PORT(RTS1_IOPORTNAME) |= (1<<RTS1_PIN);
+	#endif
 	
 	#ifdef USART1_RS485_MODE
 		___PORT(RS485_CONTROL1_IOPORTNAME) &= ~(1<<RS485_CONTROL1_PIN); //set low
 		___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN);
 	#endif
+		
+		UCSR1B_REGISTER = 0; //flush all hardware buffers
+		
+		//(writing TXENn to zero) will not become effective until ongoing and pending transmissions are completed
 		
 		UBRR1L_REGISTER = (uint8_t) ubbr_value;
 		UBRR1H_REGISTER = (ubbr_value>>8);
@@ -167,13 +179,19 @@
 #ifdef USE_USART2
 	void uart2_reinit(uint16_t ubbr_value)
 	{
-		UCSR2B_REGISTER = 0; //flush all hardware buffers
+	#ifdef USART2_USE_SOFT_RTS
+		___PORT(RTS2_IOPORTNAME) |= (1<<RTS2_PIN);
+	#endif
 	
 	#ifdef USART2_RS485_MODE
 		___PORT(RS485_CONTROL2_IOPORTNAME) &= ~(1<<RS485_CONTROL2_PIN); //set low
 		___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN);
 	#endif
 		
+		UCSR2B_REGISTER = 0; //flush all hardware buffers
+		
+		//(writing TXENn to zero) will not become effective until ongoing and pending transmissions are completed
+
 		UBRR2L_REGISTER = (uint8_t) ubbr_value;
 		UBRR2H_REGISTER = (ubbr_value>>8);
 
@@ -200,12 +218,16 @@
 #ifdef USE_USART3
 	void uart3_reinit(uint16_t ubbr_value)
 	{
-		UCSR3B_REGISTER = 0; //flush all hardware buffers
+	#ifdef USART3_USE_SOFT_RTS
+		___PORT(RTS3_IOPORTNAME) |= (1<<RTS3_PIN);
+	#endif
 	
 	#ifdef USART3_RS485_MODE
 		___PORT(RS485_CONTROL3_IOPORTNAME) &= ~(1<<RS485_CONTROL3_PIN); //set low
 		___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN);
 	#endif
+		
+		UCSR3B_REGISTER = 0; //flush all hardware buffers
 		
 		UBRR3L_REGISTER = (uint8_t) ubbr_value;
 		UBRR3H_REGISTER = (ubbr_value>>8);

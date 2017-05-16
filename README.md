@@ -25,7 +25,7 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 	- 1 - LF
 	- 2 - CRLF (default)
 
-- In case of reinitializing uart on the fly (especially with non-constant ubbr) try to use uart_reint().
+- In order to reinitialize uart baudrate after any traffic was occuring, function uart_reinit() have to be used. (memory FIFO buffers will not be flushed)
 
 - Any used IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO) 
 
