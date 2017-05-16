@@ -1363,17 +1363,17 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif // USART3_CONFIG
 
 /************************************************************************************
- *                            Initializers                                          *
+ *                                   Initializers                                   *
  ************************************************************************************/
 	
 	// functions smaller then calling overhead (including context saves) or executed once are inline for reducing 
-	// flash memory usage (eg. if statements routines can be executed during compilation)
+	// flash memory usage (eg. if() statements routines can be executed during compilation)
 	
 #ifdef USE_USART0
 	void uart0_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
 	
 	static inline void uart0_init(uint16_t ubbr_value) __attribute__((always_inline));
-	static inline void uart0_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
+	static inline void uart0_init(uint16_t ubbr_value) // have to be called once at startup
 	{
 	#ifdef USART0_RS485_MODE
 		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
@@ -1450,7 +1450,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	void uart1_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
 	
 	static inline void uart1_init(uint16_t ubbr_value) __attribute__((always_inline));
-	static inline void uart1_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
+	static inline void uart1_init(uint16_t ubbr_value) // have to be called once at startup
 	{
 	#ifdef USART1_RS485_MODE
 		___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // default pin state is low
@@ -1521,7 +1521,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	void uart2_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
 	
 	static inline void uart2_init(uint16_t ubbr_value) __attribute__((always_inline));
-	static inline void uart2_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
+	static inline void uart2_init(uint16_t ubbr_value) // have to be called once at startup
 	{
 	#ifdef USART2_RS485_MODE
 		___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // default pin state is low
@@ -1578,7 +1578,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	void uart3_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
 	
 	static inline void uart3_init(uint16_t ubbr_value) __attribute__((always_inline));
-	static inline void uart3_init(uint16_t ubbr_value) // have to be called once at startup with parameters known during compilation
+	static inline void uart3_init(uint16_t ubbr_value) // have to be called once at startup
 	{
 	#ifdef USART3_RS485_MODE
 		___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // default pin state is low
@@ -1632,7 +1632,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif // USE_USART3
 	
 /************************************************************************************
- *                          Transmitter functions                                   *
+ *                              Transmitter functions                               *
  ************************************************************************************/
 #ifndef NO_USART_TX
 	
@@ -1880,7 +1880,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif // NO_USART_TX
 
 /************************************************************************************
- *                           Receiver functions                                     *
+ *                                Receiver functions                                *
  ************************************************************************************/
 #ifndef NO_USART_RX
 	
@@ -2012,7 +2012,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif // NO_USART_RX
 
 /************************************************************************************
- *                    soft flow control interrupt handlers                          *
+ *                       soft flow control interrupt handlers                       *
  ************************************************************************************/
 
 #if defined(USART0_USE_SOFT_CTS)&&!defined(NO_TX0_INTERRUPT)
