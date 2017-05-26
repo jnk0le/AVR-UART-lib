@@ -84,6 +84,5 @@ and another one if transmitter misses RTS signal (last one is stored in shift re
 - func sizes
 - xmega, tiny817
 - modbus
-- xmodem timeouts/fallback
 - cts naked handler timmings
 - 100% flush
