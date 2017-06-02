@@ -7,7 +7,6 @@
 #define SETUP_RETRIES_DELAY 1000 // in ms
 #define SETUP_CRC_RETRIES_TO_FALLBACK 15
 #define SETUP_CKSUM_RETRIES_TO_GIVE_UP 2
-//terminate before all retries ?
 
 #define PACKET_RETRY_DELAY 1000 // in ms // timeouts if nothing is received or packet is too short
 #define PACKET_MAX_TIMEOUT_RETRANSMITS 15 // 0-255 
@@ -40,7 +39,7 @@ struct XmodemPacket {
 	uint8_t position;
 	uint8_t last_packet; // last successfully received packet
 	uint8_t retrycount; // timeout retries (no packets or too small)
-	uint16_t starttime; // 65 sec margin
+	uint16_t starttime; // uint16_t gives 65 sec margin
 	uint8_t fallback;
 	//uint16_t crc;
 	//ProgramStatus transmission_status;
