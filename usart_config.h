@@ -44,13 +44,13 @@
 // usage of globally reserved register for temporary storage in interrupts, should be combined with other interrupts for best results. 
 // special care have to be taken when doing so, since those registers can still be used by other compilation units (fixable in gcc by -ffixed-n flag, where n is a suppressed register),
 // precompiled libraries (vprintf, vscanf, qsort, strtod, strtol, strtoul), or even assembly hardcoded libraries (fft, aes).
-// registers r2-r7 should be used for acceptable penalty for rest of the code, since other registers might be used by gcc for eg. argument passing.
+// registers r2-r7 should be used instead of the higher ones, since those are never used by gcc for eg. argument passing.
 
 	#define USART_SREG_SAVE_REG_NAME G_sreg_save // ??? // have to be redeclared under the same name if the same registers are reused in other instances (libs)
-	#define USART_SREG_SAVE_REG_NUM "r4"
+	#define USART_SREG_SAVE_REG_NUM "r4" // register pair rn:rn+1
 	
 	#define USART_Z_SAVE_REG_NAME G_z_save // ??? // have to be redeclared under the same name if the same registers are reused in other instances (libs)
-	#define USART_Z_SAVE_REG_NUM "r2" // register pair
+	#define USART_Z_SAVE_REG_NUM "r2" // register pair rn:rn+1
 
 //#define RX_BUFFER_SIZE 128 // Size of the ring buffers, must be power of 2 // default 32
 //#define TX_BUFFER_SIZE 64 // Size of the ring buffers, must be power of 2 // default 32
@@ -74,15 +74,15 @@
 //#define RX3_BUFFER_SIZE 128
 //#define TX3_BUFFER_SIZE 64
 
-//#define NO_RX0_INTERRUPT // disables interrupt handling and frees RX0 gpio port // combining with NO_USART_RX is not necessary
-//#define NO_RX1_INTERRUPT // disables interrupt handling and frees RX1 gpio port
-//#define NO_RX2_INTERRUPT // disables interrupt handling and frees RX2 gpio port
-//#define NO_RX3_INTERRUPT // disables interrupt handling and frees RX3 gpio port
+//#define NO_RX0_INTERRUPT // removes whole receive code (including ISR) and frees RX0 pin // combining with NO_USART_RX is not necessary
+//#define NO_RX1_INTERRUPT // removes whole receive code (including ISR) and frees RX1 pin
+//#define NO_RX2_INTERRUPT // removes whole receive code (including ISR) and frees RX2 pin
+//#define NO_RX3_INTERRUPT // removes whole receive code (including ISR) and frees RX3 pin
 
-//#define NO_TX0_INTERRUPT // disables interrupt handling and frees TX0 gpio port // combining with NO_USART_TX is not necessary
-//#define NO_TX1_INTERRUPT // disables interrupt handling and frees TX1 gpio port
-//#define NO_TX2_INTERRUPT // disables interrupt handling and frees TX2 gpio port
-//#define NO_TX3_INTERRUPT // disables interrupt handling and frees TX3 gpio port
+//#define NO_TX0_INTERRUPT // removes whole transmit code (including ISR) and frees TX0 pin // combining with NO_USART_TX is not necessary
+//#define NO_TX1_INTERRUPT // removes whole transmit code (including ISR) and frees TX1 pin
+//#define NO_TX2_INTERRUPT // removes whole transmit code (including ISR) and frees TX2 pin
+//#define NO_TX3_INTERRUPT // removes whole transmit code (including ISR) and frees TX3 pin
 
 //#define USART0_U2X_SPEED // enables double speed for USART0
 //#define USART1_U2X_SPEED // enables double speed for USART1
@@ -94,10 +94,10 @@
 //#define RX2_GETC_ECHO
 //#define RX3_GETC_ECHO
 
-#define PUTC0_CONVERT_LF_TO_CRLF
-#define PUTC1_CONVERT_LF_TO_CRLF
-#define PUTC2_CONVERT_LF_TO_CRLF
-#define PUTC3_CONVERT_LF_TO_CRLF
+//#define PUTC0_CONVERT_LF_TO_CRLF
+//#define PUTC1_CONVERT_LF_TO_CRLF
+//#define PUTC2_CONVERT_LF_TO_CRLF
+//#define PUTC3_CONVERT_LF_TO_CRLF
 
 //#define USART0_EXTEND_RX_BUFFER
 //#define USART1_EXTEND_RX_BUFFER
