@@ -3628,8 +3628,8 @@
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
 			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx1_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
+			"subi	r26, lo8(-(rx2_buffer)) \n\t"
+			"sbci	r27, hi8(-(rx2_buffer)) \n\t"
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
@@ -5436,7 +5436,7 @@
 			
 			: // input operands
 			RX1_INPUT_OPERAND_LIST
-			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR0_REGISTER)),
+			[UDR_reg_IO]         "M" (_SFR_IO_ADDR(UDR1_REGISTER)),
 			[UDR_reg]            "n" (_SFR_MEM_ADDR(UDR1_REGISTER)),
 			[mask]               "M" (RX1_BUFFER_MASK),
 			[mpcm_address]       "M" (MPCM1_ADDRESS),

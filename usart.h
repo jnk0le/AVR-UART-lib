@@ -1619,7 +1619,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void uart3_set_U2X(void) __attribute__((always_inline));
 	static inline void uart3_set_U2X(void) // use instead of USE_DOUBLE_SPEED 
 	{
-		UCSR3A_REGISTER |= (1<<U2X0_BIT);
+		UCSR3A_REGISTER |= (1<<U2X3_BIT);
 	} 
 
 #ifdef USART3_MPCM_MODE
