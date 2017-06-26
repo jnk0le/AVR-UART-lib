@@ -18,42 +18,42 @@
 #include "usart.h"
 
 #ifndef NO_TX0_INTERRUPT
-	volatile uint8_t tx0_first_byte, tx0_last_byte;
+	volatile uint8_t tx0_Tail, tx0_Head;
 	char tx0_buffer[TX0_BUFFER_SIZE];
 #endif
 
 #ifndef NO_RX0_INTERRUPT
-	volatile uint8_t rx0_first_byte, rx0_last_byte;
+	volatile uint8_t rx0_Tail, rx0_Head;
 	char rx0_buffer[RX0_BUFFER_SIZE];
 #endif
 
 #ifndef NO_TX1_INTERRUPT
-	volatile uint8_t tx1_first_byte, tx1_last_byte;
+	volatile uint8_t tx1_Tail, tx1_Head;
 	char tx1_buffer[TX1_BUFFER_SIZE];
 #endif
 
 #ifndef NO_RX1_INTERRUPT
-	volatile uint8_t rx1_first_byte, rx1_last_byte;
+	volatile uint8_t rx1_Tail, rx1_Head;
 	char rx1_buffer[RX1_BUFFER_SIZE];
 #endif
 
 #ifndef NO_TX2_INTERRUPT
-	volatile uint8_t tx2_first_byte, tx2_last_byte;
+	volatile uint8_t tx2_Tail, tx2_Head;
 	char tx2_buffer[TX2_BUFFER_SIZE];
 #endif
 
 #ifndef NO_RX2_INTERRUPT
-	volatile uint8_t rx2_first_byte, rx2_last_byte;
+	volatile uint8_t rx2_Tail, rx2_Head;
 	char rx2_buffer[RX2_BUFFER_SIZE];
 #endif
 
 #ifndef NO_TX3_INTERRUPT
-	volatile uint8_t tx3_first_byte, tx3_last_byte;
+	volatile uint8_t tx3_Tail, tx3_Head;
 	char tx3_buffer[TX3_BUFFER_SIZE];
 #endif
 
 #ifndef NO_RX3_INTERRUPT
-	volatile uint8_t rx3_first_byte, rx3_last_byte;
+	volatile uint8_t rx3_Tail, rx3_Head;
 	char rx3_buffer[RX3_BUFFER_SIZE];
 #endif
 
@@ -269,35 +269,35 @@
 	#endif
 		
 	#ifdef USART0_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx0_last_byte;
-		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		register uint8_t tmp_tx_Head = tx0_Head;
+		register uint8_t tmp_tx_Tail = tx0_Tail;
 		
 	#ifdef USART0_USE_SOFT_CTS
 		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR0A_REGISTER & UDRE0_BIT))
 		{
 			UDR0_REGISTER = data;
 			return;
 		}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX0_BUFFER_MASK;
 		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		while(tmp_tx_Tail == tmp_tx_Head) // wait for free space in buffer
 		{
-			tmp_tx_first_byte = tx0_first_byte; // for faster pass through, results in a little bigger code
+			tmp_tx_Tail = tx0_Tail; // for faster pass through, results in a little bigger code
 		}
 	#else
-		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx0_Head + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		while(tx0_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+		while(tx0_Tail == tmp_tx_Head); // wait for free space in buffer
 	#endif
 		
-		tx0_buffer[tmp_tx_last_byte] = data;
+		tx0_buffer[tmp_tx_Head] = data;
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx0_last_byte = tmp_tx_last_byte;
+			tx0_Head = tmp_tx_Head;
 			
 		#ifdef USART0_RS485_MODE
 			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
@@ -314,7 +314,7 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart0_putc(char data)
 	{
-		register uint8_t tmp_tx_last_byte asm("r25");
+		register uint8_t tmp_tx_Head asm("r25");
 		
 	#ifdef PUTC0_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
@@ -335,14 +335,14 @@
 	#ifdef USART0_PUTC_FAST_INSERTIONS
 		
 		asm volatile("\n\t"
-			"lds	%[head], (tx0_last_byte) \n\t"
+			"lds	%[head], (tx0_Head) \n\t"
 			
 		#ifdef USART0_USE_SOFT_CTS
 			"sbic	%M[cts_port], %M[cts_pin] \n\t"
 			"rjmp	normal_insert_%= \n\t"  
 		#endif
 				
-			"lds	r27, (tx0_first_byte) \n\t"
+			"lds	r27, (tx0_Tail) \n\t"
 			"cpse	r27, %[head] \n\t"
 			"rjmp	normal_insert_%= \n\t"
 				
@@ -372,12 +372,12 @@
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx0_first_byte) \n\t"
+			"lds	r27, (tx0_Tail) \n\t"
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
 			: // outputs
-			[head] "=r" (tmp_tx_last_byte),
+			[head] "=r" (tmp_tx_Head),
 			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
 			: // inputs
 		#ifdef USART0_USE_SOFT_CTS
@@ -395,7 +395,7 @@
 		);
 	#else
 		asm volatile("\n\t"
-			"lds	%[head], (tx0_last_byte) \n\t"
+			"lds	%[head], (tx0_Head) \n\t"
 			"inc	%[head] \n\t"
 			
 		#if (TX0_BUFFER_MASK != 0xff)
@@ -403,12 +403,12 @@
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx0_first_byte) \n\t"
+			"lds	r27, (tx0_Tail) \n\t"
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
 			: // outputs
-			[head] "=r" (tmp_tx_last_byte)
+			[head] "=r" (tmp_tx_Head)
 			: // inputs
 			[mask] "M" (TX0_BUFFER_MASK)
 			: // clobbers
@@ -430,7 +430,7 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_tx_last_byte), // will be used later, do not let the compiler to do anything weird
+			[index] "+r" (tmp_tx_Head), // will be used later, do not let the compiler to do anything weird
 			[dat]   "+r" (data) // not modified, so reduce register moves if inlined
 			: // inputs
 			: // clobbers
@@ -439,7 +439,7 @@
 	
 		cli();
 		{
-			tx0_last_byte = tmp_tx_last_byte;
+			tx0_Head = tmp_tx_Head;
 		
 		#ifdef USART0_RS485_MODE
 			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // start transmitting
@@ -490,34 +490,34 @@
 	uint8_t uart0_putc_noblock(char data)
 	{
 	#ifdef USART0_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx0_last_byte;
-		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		register uint8_t tmp_tx_Head = tx0_Head;
+		register uint8_t tmp_tx_Tail = tx0_Tail;
 	
 	#ifdef USART0_USE_SOFT_CTS
 		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR0A_REGISTER & UDRE0_BIT))
 		{
 			UDR0_REGISTER = data;
 			return COMPLETED;
 		}
 	
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX0_BUFFER_MASK;
 	
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
+		if(tmp_tx_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#else
-		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx0_Head + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 	
-		if(tx0_first_byte == tmp_tx_last_byte)
+		if(tx0_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#endif
 	
-		tx0_buffer[tmp_tx_last_byte] = data;
+		tx0_buffer[tmp_tx_Head] = data;
 	
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx0_last_byte = tmp_tx_last_byte;
+			tx0_Head = tmp_tx_Head;
 		
 		#ifdef USART0_RS485_MODE
 			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
@@ -536,26 +536,26 @@
 	uint8_t uart0_putc_noblock(char data)
 	{
 	#ifdef USART0_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx0_last_byte;
-		register uint8_t tmp_tx_first_byte = tx0_first_byte;
+		register uint8_t tmp_tx_Head = tx0_Head;
+		register uint8_t tmp_tx_Tail = tx0_Tail;
 		
 	#ifdef USART0_USE_SOFT_CTS
 		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR0A_REGISTER & UDRE0_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR0A_REGISTER & UDRE0_BIT))
 		{
 			UDR0_REGISTER = data;
 			return COMPLETED;
 		}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX0_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX0_BUFFER_MASK;
 		
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
+		if(tmp_tx_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#else
-		register uint8_t tmp_tx_last_byte = (tx0_last_byte + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx0_Head + 1) & TX0_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		if(tx0_first_byte == tmp_tx_last_byte)
+		if(tx0_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#endif
 	
@@ -573,7 +573,7 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_tx_last_byte), // will be used later, do not let the compiler to do anything weird
+			[index] "+r" (tmp_tx_Head), // will be used later, do not let the compiler to do anything weird
 			[dat]   "+r" (data) // not modified, so reduce register moves if inlined
 			: // inputs
 			: // clobbers
@@ -586,7 +586,7 @@
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx0_last_byte = tmp_tx_last_byte;
+			tx0_Head = tmp_tx_Head;
 			
 		#ifdef USART0_RS485_MODE
 			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // start transmitting
@@ -909,7 +909,7 @@
 	#ifdef USART0_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL0_IOPORTNAME) & (1<<RS485_CONTROL0_PIN));
 	#else	
-		while(tx0_first_byte != tx0_last_byte); // just flush the ring buffer
+		while(tx0_Tail != tx0_Head); // just flush the ring buffer
 	#endif
 	}
 	
@@ -920,7 +920,7 @@
 //******************************************************************
 //uint8_t uart0_BytesToSend(void)
 //	{
-//		return (tx0_last_byte - tx0_first_byte) & TX0_BUFFER_MASK;
+//		return (tx0_Head - tx0_Tail) & TX0_BUFFER_MASK;
 //	}
 
 //******************************************************************
@@ -931,10 +931,10 @@
 #ifdef USART0_MPCM_MODE
 	void uart0_mpcm_transmit_addres_Frame(uint8_t dat)
 	{
-		while(tx0_first_byte != tx0_last_byte);
+		while(tx0_Tail != tx0_Head);
 		UCSR0B_REGISTER |= (1<<TXB80_BIT);
 		uart_putc(dat);
-		while(tx0_first_byte != tx0_last_byte);
+		while(tx0_Tail != tx0_Head);
 		UCSR0B_REGISTER &= ~(1<<TXB80_BIT); // not sure if necessary
 	}
 #endif
@@ -951,35 +951,35 @@
 	#endif
 		
 	#ifdef USART1_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx1_last_byte;
-		register uint8_t tmp_tx_first_byte = tx1_first_byte;
+		register uint8_t tmp_tx_Head = tx1_Head;
+		register uint8_t tmp_tx_Tail = tx1_Tail;
 		
 	#ifdef USART1_USE_SOFT_CTS
 		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR1A_REGISTER & UDRE1_BIT))
 		{
 			UDR1_REGISTER = data;
 			return;
 		}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX1_BUFFER_MASK;
 		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		while(tmp_tx_Tail == tmp_tx_Head) // wait for free space in buffer
 		{
-			tmp_tx_first_byte = tx1_first_byte; // for faster pass through, results in a little bigger code
+			tmp_tx_Tail = tx1_Tail; // for faster pass through, results in a little bigger code
 		}
 	#else
-		register uint8_t tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx1_Head + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		while(tx1_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+		while(tx1_Tail == tmp_tx_Head); // wait for free space in buffer
 	#endif
 		
-		tx1_buffer[tmp_tx_last_byte] = data;
+		tx1_buffer[tmp_tx_Head] = data;
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx1_last_byte = tmp_tx_last_byte;
+			tx1_Head = tmp_tx_Head;
 			
 		#ifdef USART1_RS485_MODE
 			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
@@ -996,7 +996,7 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart1_putc(char data)
 	{
-		register uint8_t tmp_tx_last_byte asm("r25");
+		register uint8_t tmp_tx_Head asm("r25");
 		
 	#ifdef PUTC1_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
@@ -1017,14 +1017,14 @@
 	#ifdef USART1_PUTC_FAST_INSERTIONS
 		
 		asm volatile("\n\t"
-			"lds	%[head], (tx1_last_byte) \n\t"
+			"lds	%[head], (tx1_Head) \n\t"
 			
 		#ifdef USART1_USE_SOFT_CTS
 			"sbic	%M[cts_port], %M[cts_pin] \n\t"
 			"rjmp	normal_insert_%= \n\t"  
 		#endif
 				
-			"lds	r27, (tx1_first_byte) \n\t"
+			"lds	r27, (tx1_Tail) \n\t"
 			"cpse	r27, %[head] \n\t"
 			"rjmp	normal_insert_%= \n\t"
 				
@@ -1051,12 +1051,12 @@
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx1_first_byte) \n\t"
+			"lds	r27, (tx1_Tail) \n\t"
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
 			: // outputs
-			[head] "=r" (tmp_tx_last_byte),
+			[head] "=r" (tmp_tx_Head),
 			[dat]  "+r" (data)
 			: // inputs
 		#ifdef USART1_USE_SOFT_CTS
@@ -1074,7 +1074,7 @@
 		);
 	#else
 		asm volatile("\n\t"
-			"lds	%[head], (tx1_last_byte) \n\t"
+			"lds	%[head], (tx1_Head) \n\t"
 			"inc	%[head] \n\t"
 			
 		#if (TX1_BUFFER_MASK != 0xff)
@@ -1082,12 +1082,12 @@
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx1_first_byte) \n\t"
+			"lds	r27, (tx1_Tail) \n\t"
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
 			: // outputs
-			[head] "=r" (tmp_tx_last_byte)
+			[head] "=r" (tmp_tx_Head)
 			: // inputs
 			[mask] "M" (TX1_BUFFER_MASK)
 			: // clobbers
@@ -1103,7 +1103,7 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_tx_last_byte),
+			[index] "+r" (tmp_tx_Head),
 			[dat]   "+r" (data)
 			: // inputs
 			: // clobbers
@@ -1112,7 +1112,7 @@
 		
 		cli();
 		{
-			tx1_last_byte = tmp_tx_last_byte;
+			tx1_Head = tmp_tx_Head;
 		
 		#ifdef USART1_RS485_MODE
 			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // start transmitting
@@ -1152,34 +1152,34 @@
 	uint8_t uart1_putc_noblock(char data)
 	{
 	#ifdef USART1_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx1_last_byte;
-		register uint8_t tmp_tx_first_byte = tx1_first_byte;
+		register uint8_t tmp_tx_Head = tx1_Head;
+		register uint8_t tmp_tx_Tail = tx1_Tail;
 	
 	#ifdef USART1_USE_SOFT_CTS
 		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR1A_REGISTER & UDRE1_BIT))
 		{
 			UDR1_REGISTER = data;
 			return COMPLETED;
 		}
 	
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX1_BUFFER_MASK;
 	
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
+		if(tmp_tx_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#else
-		register uint8_t tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx1_Head + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
 	
-		if(tx1_first_byte == tmp_tx_last_byte)
+		if(tx1_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#endif
 	
-		tx1_buffer[tmp_tx_last_byte] = data;
+		tx1_buffer[tmp_tx_Head] = data;
 	
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx1_last_byte = tmp_tx_last_byte;
+			tx1_Head = tmp_tx_Head;
 		
 		#ifdef USART1_RS485_MODE
 			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
@@ -1198,26 +1198,26 @@
 	uint8_t uart1_putc_noblock(char data)
 	{
 	#ifdef USART1_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx1_last_byte;
-		register uint8_t tmp_tx_first_byte = tx1_first_byte;
+		register uint8_t tmp_tx_Head = tx1_Head;
+		register uint8_t tmp_tx_Tail = tx1_Tail;
 		
 	#ifdef USART1_USE_SOFT_CTS
 		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR1A_REGISTER & UDRE1_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR1A_REGISTER & UDRE1_BIT))
 		{
 			UDR1_REGISTER = data;
 			return COMPLETED;
 		}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX1_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX1_BUFFER_MASK;
 		
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
+		if(tmp_tx_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#else
-		register uint8_t tmp_tx_last_byte = (tx1_last_byte + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx1_Head + 1) & TX1_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		if(tx1_first_byte == tmp_tx_last_byte)
+		if(tx1_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#endif
 	
@@ -1229,7 +1229,7 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_tx_last_byte),
+			[index] "+r" (tmp_tx_Head),
 			[dat]   "+r" (data) 
 			: // inputs
 			: // clobbers
@@ -1238,7 +1238,7 @@
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx1_last_byte = tmp_tx_last_byte;
+			tx1_Head = tmp_tx_Head;
 			
 		#ifdef USART1_RS485_MODE
 			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // start transmitting
@@ -1476,17 +1476,17 @@
 	#ifdef USART1_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL1_IOPORTNAME) & (1<<RS485_CONTROL1_PIN));
 	#else	
-		while(tx1_first_byte != tx1_last_byte); // just flush the ring buffer 
+		while(tx1_Tail != tx1_Head); // just flush the ring buffer 
 	#endif
 	}
 
 #ifdef USART1_MPCM_MODE
 	void uart1_mpcm_transmit_addres_Frame(uint8_t dat)
 	{
-		while(tx1_first_byte != tx1_last_byte);
+		while(tx1_Tail != tx1_Head);
 		UCSR1B_REGISTER |= (1<<TXB81_BIT);
 		uart1_putc(dat);
-		while(tx1_first_byte != tx1_last_byte);
+		while(tx1_Tail != tx1_Head);
 		UCSR1B_REGISTER &= ~(1<<TXB81_BIT); // not sure if necessary
 	}
 #endif
@@ -1503,35 +1503,35 @@
 	#endif
 		
 	#ifdef USART2_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx2_last_byte;
-		register uint8_t tmp_tx_first_byte = tx2_first_byte;
+		register uint8_t tmp_tx_Head = tx2_Head;
+		register uint8_t tmp_tx_Tail = tx2_Tail;
 		
 	#ifdef USART2_USE_SOFT_CTS
 		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR2A_REGISTER & UDRE2_BIT))
 		{
 			UDR2_REGISTER = data;
 			return;
 		}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX2_BUFFER_MASK;
 		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		while(tmp_tx_Tail == tmp_tx_Head) // wait for free space in buffer
 		{
-			tmp_tx_first_byte = tx2_first_byte; // for faster pass through, results in a little bigger code
+			tmp_tx_Tail = tx2_Tail; // for faster pass through, results in a little bigger code
 		}
 	#else
-		register uint8_t tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx2_Head + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		while(tx2_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+		while(tx2_Tail == tmp_tx_Head); // wait for free space in buffer
 	#endif
 		
-		tx2_buffer[tmp_tx_last_byte] = data;
+		tx2_buffer[tmp_tx_Head] = data;
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx2_last_byte = tmp_tx_last_byte;
+			tx2_Head = tmp_tx_Head;
 			
 		#ifdef USART2_RS485_MODE
 			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); //set high
@@ -1548,7 +1548,7 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart2_putc(char data)
 	{
-		register uint8_t tmp_tx_last_byte asm("r25");
+		register uint8_t tmp_tx_Head asm("r25");
 		
 	#ifdef PUTC2_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
@@ -1569,14 +1569,14 @@
 	#ifdef USART2_PUTC_FAST_INSERTIONS
 			
 		asm volatile("\n\t"
-			"lds	%[head], (tx2_last_byte) \n\t"
+			"lds	%[head], (tx2_Head) \n\t"
 			
 		#ifdef USART2_USE_SOFT_CTS
 			"sbic	%M[cts_port], %M[cts_pin] \n\t"
 			"rjmp	normal_insert_%= \n\t"  
 		#endif
 				
-			"lds	r27, (tx2_first_byte) \n\t"
+			"lds	r27, (tx2_Tail) \n\t"
 			"cpse	r27, %[head] \n\t"
 			"rjmp	normal_insert_%= \n\t"
 			
@@ -1595,12 +1595,12 @@
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx2_first_byte) \n\t"
+			"lds	r27, (tx2_Tail) \n\t"
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
 			: // outputs
-			[head] "=r" (tmp_tx_last_byte),
+			[head] "=r" (tmp_tx_Head),
 			[dat]  "+r" (data)
 			: // inputs
 		#ifdef USART2_USE_SOFT_CTS
@@ -1618,7 +1618,7 @@
 		);
 	#else
 		asm volatile("\n\t"
-			"lds	%[head], (tx2_last_byte) \n\t"
+			"lds	%[head], (tx2_Head) \n\t"
 			"inc	%[head] \n\t"
 			
 		#if (TX2_BUFFER_MASK != 0xff)
@@ -1626,12 +1626,12 @@
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx2_first_byte) \n\t"
+			"lds	r27, (tx2_Tail) \n\t"
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
 			: // outputs
-			[head] "=r" (tmp_tx_last_byte)
+			[head] "=r" (tmp_tx_Head)
 			: // inputs
 			[mask] "M" (TX2_BUFFER_MASK)
 			: // clobbers
@@ -1647,7 +1647,7 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_tx_last_byte),
+			[index] "+r" (tmp_tx_Head),
 			[dat]   "+r" (data)
 			: // inputs
 			: // clobbers
@@ -1656,7 +1656,7 @@
 		
 		cli();
 		{
-			tx2_last_byte = tmp_tx_last_byte;
+			tx2_Head = tmp_tx_Head;
 		
 		#ifdef USART2_RS485_MODE
 			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // start transmitting
@@ -1691,34 +1691,34 @@
 	uint8_t uart2_putc_noblock(char data)
 	{
 	#ifdef USART2_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx2_last_byte;
-		register uint8_t tmp_tx_first_byte = tx2_first_byte;
+		register uint8_t tmp_tx_Head = tx2_Head;
+		register uint8_t tmp_tx_Tail = tx2_Tail;
 	
 	#ifdef USART2_USE_SOFT_CTS
 		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR2A_REGISTER & UDRE2_BIT))
 		{
 			UDR2_REGISTER = data;
 			return COMPLETED;
 		}
 	
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX2_BUFFER_MASK;
 	
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
+		if(tmp_tx_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#else
-		register uint8_t tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx2_Head + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
 	
-		if(tx2_first_byte == tmp_tx_last_byte)
+		if(tx2_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#endif
 	
-		tx2_buffer[tmp_tx_last_byte] = data;
+		tx2_buffer[tmp_tx_Head] = data;
 	
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx2_last_byte = tmp_tx_last_byte;
+			tx2_Head = tmp_tx_Head;
 		
 		#ifdef USART2_RS485_MODE
 			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); //set high
@@ -1737,26 +1737,26 @@
 	uint8_t uart2_putc_noblock(char data)
 	{
 	#ifdef USART2_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx2_last_byte;
-		register uint8_t tmp_tx_first_byte = tx2_first_byte;
+		register uint8_t tmp_tx_Head = tx2_Head;
+		register uint8_t tmp_tx_Tail = tx2_Tail;
 		
 	#ifdef USART2_USE_SOFT_CTS
 		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR2A_REGISTER & UDRE2_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR2A_REGISTER & UDRE2_BIT))
 		{
 			UDR2_REGISTER = data;
 			return COMPLETED;
 		}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX2_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX2_BUFFER_MASK;
 		
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
+		if(tmp_tx_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#else
-		register uint8_t tmp_tx_last_byte = (tx2_last_byte + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx2_Head + 1) & TX2_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		if(tx2_first_byte == tmp_tx_last_byte)
+		if(tx2_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#endif
 	
@@ -1768,7 +1768,7 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_tx_last_byte),
+			[index] "+r" (tmp_tx_Head),
 			[dat]   "+r" (data)
 			: // inputs
 			: // clobbers
@@ -1777,7 +1777,7 @@
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx2_last_byte = tmp_tx_last_byte;
+			tx2_Head = tmp_tx_Head;
 			
 		#ifdef USART2_RS485_MODE
 			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // start transmitting
@@ -2015,17 +2015,17 @@
 	#ifdef USART2_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL2_IOPORTNAME) & (1<<RS485_CONTROL2_PIN));
 	#else	
-		while(tx2_first_byte != tx2_last_byte); // just flush the ring buffer 
+		while(tx2_Tail != tx2_Head); // just flush the ring buffer 
 	#endif
 	}
 
 #ifdef USART2_MPCM_MODE
 	void uart2_mpcm_transmit_addres_Frame(uint8_t dat)
 	{
-		while(tx2_first_byte != tx2_last_byte);
+		while(tx2_Tail != tx2_Head);
 		UCSR2B_REGISTER |= (1<<TXB82_BIT);
 		uart2_putc(dat);
-		while(tx2_first_byte != tx2_last_byte);
+		while(tx2_Tail != tx2_Head);
 		UCSR2B_REGISTER &= ~(1<<TXB82_BIT); // not sure if necessary
 	}
 #endif
@@ -2042,35 +2042,35 @@
 	#endif
 		
 	#ifdef USART3_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx3_last_byte;
-		register uint8_t tmp_tx_first_byte = tx3_first_byte;
+		register uint8_t tmp_tx_Head = tx3_Head;
+		register uint8_t tmp_tx_Tail = tx3_Tail;
 		
 	#ifdef USART3_USE_SOFT_CTS
 		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR3A_REGISTER & UDRE3_BIT))
 		{
 			UDR3_REGISTER = data;
 			return;
 		}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX3_BUFFER_MASK;
 		
-		while(tmp_tx_first_byte == tmp_tx_last_byte) // wait for free space in buffer
+		while(tmp_tx_Tail == tmp_tx_Head) // wait for free space in buffer
 		{
-			tmp_tx_first_byte = tx3_first_byte; // for faster pass through, results in a little bigger code
+			tmp_tx_Tail = tx3_Tail; // for faster pass through, results in a little bigger code
 		}
 	#else
-		register uint8_t tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx3_Head + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		while(tx3_first_byte == tmp_tx_last_byte); // wait for free space in buffer
+		while(tx3_Tail == tmp_tx_Head); // wait for free space in buffer
 	#endif
 		
-		tx3_buffer[tmp_tx_last_byte] = data;
+		tx3_buffer[tmp_tx_Head] = data;
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx3_last_byte = tmp_tx_last_byte;
+			tx3_Head = tmp_tx_Head;
 			
 		#ifdef USART3_RS485_MODE
 			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); //set high
@@ -2087,7 +2087,7 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	void uart3_putc(char data)
 	{
-		register uint8_t tmp_tx_last_byte asm("r25");
+		register uint8_t tmp_tx_Head asm("r25");
 		
 	#ifdef PUTC3_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
@@ -2108,14 +2108,14 @@
 	#ifdef USART3_PUTC_FAST_INSERTIONS
 		
 		asm volatile("\n\t"
-			"lds	%[head], (tx3_last_byte) \n\t"
+			"lds	%[head], (tx3_Head) \n\t"
 			
 		#ifdef USART3_USE_SOFT_CTS
 			"sbic	%M[cts_port], %M[cts_pin] \n\t"
 			"rjmp	normal_insert_%= \n\t"  
 		#endif
 				
-			"lds	r27, (tx3_first_byte) \n\t"
+			"lds	r27, (tx3_Tail) \n\t"
 			"cpse	r27, %[head] \n\t"
 			"rjmp	normal_insert_%= \n\t"
 			
@@ -2134,12 +2134,12 @@
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx3_first_byte) \n\t"
+			"lds	r27, (tx3_Tail) \n\t"
 			"cp		r27, %[head] \n\t"
 			"breq	waitforspace_%= \n\t"
 				
 			: // outputs
-			[head] "=r" (tmp_tx_last_byte),
+			[head] "=r" (tmp_tx_Head),
 			[dat]  "+r" (data)
 			: // inputs
 		#ifdef USART3_USE_SOFT_CTS
@@ -2157,7 +2157,7 @@
 		);
 	#else
 			asm volatile("\n\t"
-				"lds	%[head], (tx3_last_byte) \n\t"
+				"lds	%[head], (tx3_Head) \n\t"
 				"inc	%[head] \n\t"
 			
 			#if (TX3_BUFFER_MASK != 0xff)
@@ -2165,12 +2165,12 @@
 			#endif
 				
 			"waitforspace_%=:"
-				"lds	r27, (tx3_first_byte) \n\t"
+				"lds	r27, (tx3_Tail) \n\t"
 				"cp		r27, %[head] \n\t"
 				"breq	waitforspace_%= \n\t"
 				
 				: // outputs
-				[head] "=r" (tmp_tx_last_byte)
+				[head] "=r" (tmp_tx_Head)
 				: // inputs
 				[mask] "M" (TX3_BUFFER_MASK)
 				: // clobbers
@@ -2186,7 +2186,7 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_tx_last_byte),
+			[index] "+r" (tmp_tx_Head),
 			[dat]   "+r" (data)
 			: // inputs
 			: // clobbers
@@ -2195,7 +2195,7 @@
 		
 		cli();
 		{
-			tx3_last_byte = tmp_tx_last_byte;
+			tx3_Head = tmp_tx_Head;
 		
 		#ifdef USART3_RS485_MODE
 			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // start transmitting
@@ -2231,34 +2231,34 @@
 	uint8_t uart3_putc_noblock(char data)
 	{
 	#ifdef USART3_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx3_last_byte;
-		register uint8_t tmp_tx_first_byte = tx3_first_byte;
+		register uint8_t tmp_tx_Head = tx3_Head;
+		register uint8_t tmp_tx_Tail = tx3_Tail;
 	
 	#ifdef USART3_USE_SOFT_CTS
 		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR3A_REGISTER & UDRE3_BIT))
 		{
 			UDR3_REGISTER = data;
 			return COMPLETED;
 		}
 	
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX3_BUFFER_MASK;
 	
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
+		if(tmp_tx_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#else
-		register uint8_t tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx3_Head + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
 	
-		if(tx3_first_byte == tmp_tx_last_byte)
+		if(tx3_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#endif
 	
-		tx3_buffer[tmp_tx_last_byte] = data;
+		tx3_buffer[tmp_tx_Head] = data;
 	
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx3_last_byte = tmp_tx_last_byte;
+			tx3_Head = tmp_tx_Head;
 		
 		#ifdef USART3_RS485_MODE
 			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); //set high
@@ -2277,26 +2277,26 @@
 	uint8_t uart3_putc_noblock(char data)
 	{
 	#ifdef USART3_PUTC_FAST_INSERTIONS
-		register uint8_t tmp_tx_last_byte = tx3_last_byte;
-		register uint8_t tmp_tx_first_byte = tx3_first_byte;
+		register uint8_t tmp_tx_Head = tx3_Head;
+		register uint8_t tmp_tx_Tail = tx3_Tail;
 		
 	#ifdef USART3_USE_SOFT_CTS
 		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
 	#endif
-		if(tmp_tx_first_byte == tmp_tx_last_byte && (UCSR3A_REGISTER & UDRE3_BIT))
+		if(tmp_tx_Tail == tmp_tx_Head && (UCSR3A_REGISTER & UDRE3_BIT))
 		{
 			UDR3_REGISTER = data;
 			return COMPLETED;
 		}
 		
-		tmp_tx_last_byte = (tmp_tx_last_byte + 1) & TX3_BUFFER_MASK;
+		tmp_tx_Head = (tmp_tx_Head + 1) & TX3_BUFFER_MASK;
 		
-		if(tmp_tx_first_byte == tmp_tx_last_byte)
+		if(tmp_tx_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#else
-		register uint8_t tmp_tx_last_byte = (tx3_last_byte + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
+		register uint8_t tmp_tx_Head = (tx3_Head + 1) & TX3_BUFFER_MASK; // calculate new position of TX head in buffer
 		
-		if(tx3_first_byte == tmp_tx_last_byte)
+		if(tx3_Tail == tmp_tx_Head)
 			return BUFFER_FULL;
 	#endif
 	
@@ -2308,7 +2308,7 @@
 			"st		X, %[dat] \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_tx_last_byte),
+			[index] "+r" (tmp_tx_Head),
 			[dat]   "+r" (data)
 			: // inputs
 			: // clobbers
@@ -2317,7 +2317,7 @@
 		
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 		{
-			tx3_last_byte = tmp_tx_last_byte;
+			tx3_Head = tmp_tx_Head;
 			
 		#ifdef USART3_RS485_MODE
 			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // start transmitting
@@ -2555,17 +2555,17 @@
 	#ifdef USART3_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL3_IOPORTNAME) & (1<<RS485_CONTROL3_PIN));
 	#else	
-		while(tx3_first_byte != tx3_last_byte); // just flush the ring buffer 
+		while(tx3_Tail != tx3_Head); // just flush the ring buffer 
 	#endif
 	}
 
 #ifdef USART3_MPCM_MODE
 	void uart3_mpcm_transmit_addres_Frame(uint8_t dat)
 	{
-		while(tx3_first_byte != tx3_last_byte);
+		while(tx3_Tail != tx3_Head);
 		UCSR3B_REGISTER |= (1<<TXB83_BIT);
 		uart3_putc(dat);
-		while(tx3_first_byte != tx3_last_byte);
+		while(tx3_Tail != tx3_Head);
 		UCSR3B_REGISTER &= ~(1<<TXB83_BIT); // not sure if necessary
 	}
 #endif
@@ -2584,16 +2584,16 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	char uart0_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		register uint8_t tmp_rx_Tail = rx0_Tail;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx0_last_byte) 
+		if(tmp_rx_Tail == rx0_Head) 
 			return 0;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
-		tmp = rx0_buffer[tmp_rx_first_byte];
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX0_BUFFER_MASK;
+		tmp = rx0_buffer[tmp_rx_Tail];
 		
-		rx0_first_byte = tmp_rx_first_byte;
+		rx0_Tail = tmp_rx_Tail;
 		
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
@@ -2624,15 +2624,15 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart0_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte asm("r25");
+		register uint8_t tmp_rx_Tail asm("r25");
 		char tmp;
 		
-		tmp_rx_first_byte = rx0_first_byte;
+		tmp_rx_Tail = rx0_Tail;
 		
-		if(tmp_rx_first_byte == rx0_last_byte) 
+		if(tmp_rx_Tail == rx0_Head) 
 			return 0;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX0_BUFFER_MASK;
 	
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
@@ -2648,7 +2648,7 @@
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_rx_first_byte),
+			[index] "+r" (tmp_rx_Tail),
 			[temp]  "=r" (tmp)
 			: // inputs
 			: // clobbers
@@ -2658,7 +2658,7 @@
 			"r26"
 		);
 	
-		rx0_first_byte = tmp_rx_first_byte;
+		rx0_Tail = tmp_rx_Tail;
 	
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
@@ -3008,15 +3008,15 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart0_getData(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		register uint8_t tmp_rx_Tail = rx0_Tail;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx0_last_byte) 
+		if(tmp_rx_Tail == rx0_Head) 
 			return -1;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
-		tmp = rx0_buffer[tmp_rx_first_byte];
-		rx0_first_byte = tmp_rx_first_byte;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX0_BUFFER_MASK;
+		tmp = rx0_buffer[tmp_rx_Tail];
+		rx0_Tail = tmp_rx_Tail;
 		
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
@@ -3033,13 +3033,13 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart0_getData(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		register uint8_t tmp_rx_Tail = rx0_Tail;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx0_last_byte) 
+		if(tmp_rx_Tail == rx0_Head) 
 			return -1;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX0_BUFFER_MASK;
 	
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
@@ -3055,7 +3055,7 @@
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_rx_first_byte),
+			[index] "+r" (tmp_rx_Tail),
 			[temp]  "=r" (tmp)
 			: // inputs
 			: // clobbers
@@ -3065,7 +3065,7 @@
 			"r26"
 		);
 		
-		rx0_first_byte = tmp_rx_first_byte;
+		rx0_Tail = tmp_rx_Tail;
 		
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
@@ -3090,14 +3090,14 @@
 //******************************************************************
 	uint8_t uart0_LoadData(uint8_t *data)
 	{
-		register uint8_t tmp_rx_first_byte = rx0_first_byte;
+		register uint8_t tmp_rx_Tail = rx0_Tail;
 		
-		if(tmp_rx_first_byte == rx0_last_byte) return BUFFER_EMPTY; // result = 0
+		if(tmp_rx_Tail == rx0_Head) return BUFFER_EMPTY; // result = 0
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX0_BUFFER_MASK;
-		*data = rx0_buffer[tmp_rx_first_byte];
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX0_BUFFER_MASK;
+		*data = rx0_buffer[tmp_rx_Tail];
 		
-		rx0_first_byte = tmp_rx_first_byte;
+		rx0_Tail = tmp_rx_Tail;
 		
 	#ifdef USART0_EXTEND_RX_BUFFER
 		UCSR0B_REGISTER |= (1<<RXCIE0_BIT);
@@ -3119,7 +3119,7 @@
 //******************************************************************
 //	uint8_t uart0_AvailableBytes(void)
 //	{
-//		return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK;
+//		return (rx0_Head - rx0_Tail) & RX0_BUFFER_MASK;
 //	}
 	
 //******************************************************************
@@ -3129,7 +3129,7 @@
 //******************************************************************
 	uint8_t uart0_peek(void)
 	{
-		return rx0_buffer[(rx0_first_byte+1) & RX0_BUFFER_MASK];
+		return rx0_buffer[(rx0_Tail+1) & RX0_BUFFER_MASK];
 	}
 #endif // NO_RX0_INTERRUPT
 
@@ -3138,16 +3138,16 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	char uart1_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx1_first_byte;
+		register uint8_t tmp_rx_Tail = rx1_Tail;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx1_last_byte) 
+		if(tmp_rx_Tail == rx1_Head) 
 			return 0;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
-		tmp = rx1_buffer[tmp_rx_first_byte];
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX1_BUFFER_MASK;
+		tmp = rx1_buffer[tmp_rx_Tail];
 		
-		rx1_first_byte = tmp_rx_first_byte;
+		rx1_Tail = tmp_rx_Tail;
 		
 	#ifdef USART1_EXTEND_RX_BUFFER
 		UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
@@ -3178,15 +3178,15 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart1_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte asm("r25");
+		register uint8_t tmp_rx_Tail asm("r25");
 		char tmp;
 		
-		tmp_rx_first_byte = rx1_first_byte;
+		tmp_rx_Tail = rx1_Tail;
 		
-		if(tmp_rx_first_byte == rx1_last_byte) 
+		if(tmp_rx_Tail == rx1_Head) 
 			return 0;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX1_BUFFER_MASK;
 	
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
@@ -3196,14 +3196,14 @@
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_rx_first_byte),
+			[index] "+r" (tmp_rx_Tail),
 			[temp] "=r" (tmp)
 			: // inputs
 			: // clobbers
 			"r26","r27"
 		);
 	
-		rx1_first_byte = tmp_rx_first_byte;
+		rx1_Tail = tmp_rx_Tail;
 	
 	#ifdef USART1_EXTEND_RX_BUFFER
 		UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
@@ -3471,15 +3471,15 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart1_getData(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx1_first_byte;
+		register uint8_t tmp_rx_Tail = rx1_Tail;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx1_last_byte) 
+		if(tmp_rx_Tail == rx1_Head) 
 			return -1;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
-		tmp = rx1_buffer[tmp_rx_first_byte];
-		rx1_first_byte = tmp_rx_first_byte;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX1_BUFFER_MASK;
+		tmp = rx1_buffer[tmp_rx_Tail];
+		rx1_Tail = tmp_rx_Tail;
 		
 	#ifdef USART1_EXTEND_RX_BUFFER
 		UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
@@ -3496,13 +3496,13 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart1_getData(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx1_first_byte;
+		register uint8_t tmp_rx_Tail = rx1_Tail;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx1_last_byte) 
+		if(tmp_rx_Tail == rx1_Head) 
 			return -1;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX1_BUFFER_MASK;
 	
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
@@ -3512,14 +3512,14 @@
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_rx_first_byte),
+			[index] "+r" (tmp_rx_Tail),
 			[temp]  "=r" (tmp)
 			: // inputs
 			: // clobbers
 			"r26","r27"
 		);
 		
-		rx1_first_byte = tmp_rx_first_byte;
+		rx1_Tail = tmp_rx_Tail;
 		
 	#ifdef USART1_EXTEND_RX_BUFFER
 		UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
@@ -3537,14 +3537,14 @@
 
 	uint8_t uart1_LoadData(uint8_t *data)
 	{
-		register uint8_t tmp_rx_first_byte = rx1_first_byte;
+		register uint8_t tmp_rx_Tail = rx1_Tail;
 		
-		if(tmp_rx_first_byte == rx1_last_byte) return BUFFER_EMPTY; // result = 0
+		if(tmp_rx_Tail == rx1_Head) return BUFFER_EMPTY; // result = 0
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX1_BUFFER_MASK;
-		*data = rx1_buffer[tmp_rx_first_byte];
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX1_BUFFER_MASK;
+		*data = rx1_buffer[tmp_rx_Tail];
 		
-		rx1_first_byte = tmp_rx_first_byte;
+		rx1_Tail = tmp_rx_Tail;
 		
 	#ifdef USART1_EXTEND_RX_BUFFER
 		UCSR1B_REGISTER |= (1<<RXCIE1_BIT);
@@ -3561,12 +3561,12 @@
 
 	//uint8_t uart1_AvailableBytes(void)
 	//{
-	//	return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK;
+	//	return (rx1_Head - rx1_Tail) & RX1_BUFFER_MASK;
 	//}
 	
 	uint8_t uart1_peek(void)
 	{
-		return rx1_buffer[(rx1_first_byte+1) & RX1_BUFFER_MASK];
+		return rx1_buffer[(rx1_Tail+1) & RX1_BUFFER_MASK];
 	}
 #endif // NO_RX1_INTERRUPT
 
@@ -3575,16 +3575,16 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	char uart2_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx2_first_byte;
+		register uint8_t tmp_rx_Tail = rx2_Tail;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx2_last_byte)
+		if(tmp_rx_Tail == rx2_Head)
 			return 0;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
-		tmp = rx2_buffer[tmp_rx_first_byte];
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX2_BUFFER_MASK;
+		tmp = rx2_buffer[tmp_rx_Tail];
 		
-		rx2_first_byte = tmp_rx_first_byte;
+		rx2_Tail = tmp_rx_Tail;
 		
 	#ifdef USART2_EXTEND_RX_BUFFER
 		UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
@@ -3615,15 +3615,15 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart2_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte asm("r25");
+		register uint8_t tmp_rx_Tail asm("r25");
 		char tmp;
 		
-		tmp_rx_first_byte = rx2_first_byte;
+		tmp_rx_Tail = rx2_Tail;
 		
-		if(tmp_rx_first_byte == rx2_last_byte) 
+		if(tmp_rx_Tail == rx2_Head) 
 			return 0;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX2_BUFFER_MASK;
 	
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
@@ -3633,14 +3633,14 @@
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_rx_first_byte),
+			[index] "+r" (tmp_rx_Tail),
 			[temp]  "=r" (tmp)
 			: // inputs
 			: // clobbers
 			"r26","r27"
 		);
 	
-		rx2_first_byte = tmp_rx_first_byte;
+		rx2_Tail = tmp_rx_Tail;
 	
 	#ifdef USART2_EXTEND_RX_BUFFER
 		UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
@@ -3908,15 +3908,15 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart2_getData(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx2_first_byte;
+		register uint8_t tmp_rx_Tail = rx2_Tail;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx2_last_byte) 
+		if(tmp_rx_Tail == rx2_Head) 
 			return -1;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
-		tmp = rx2_buffer[tmp_rx_first_byte];
-		rx2_first_byte = tmp_rx_first_byte;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX2_BUFFER_MASK;
+		tmp = rx2_buffer[tmp_rx_Tail];
+		rx2_Tail = tmp_rx_Tail;
 		
 	#ifdef USART2_EXTEND_RX_BUFFER
 		UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
@@ -3934,13 +3934,13 @@
 
 	int16_t uart2_getData(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx2_first_byte;
+		register uint8_t tmp_rx_Tail = rx2_Tail;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx2_last_byte)
+		if(tmp_rx_Tail == rx2_Head)
 			return -1;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX2_BUFFER_MASK;
 	
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
@@ -3950,14 +3950,14 @@
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_rx_first_byte),
+			[index] "+r" (tmp_rx_Tail),
 			[temp] "=r" (tmp)
 			: // inputs
 			: // clobbers
 			"r26","r27"
 		);
 		
-		rx2_first_byte = tmp_rx_first_byte;
+		rx2_Tail = tmp_rx_Tail;
 		
 	#ifdef USART2_EXTEND_RX_BUFFER
 		UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
@@ -3975,14 +3975,14 @@
 
 	uint8_t uart2_LoadData(uint8_t *data)
 	{
-		register uint8_t tmp_rx_first_byte = rx2_first_byte;
+		register uint8_t tmp_rx_Tail = rx2_Tail;
 		
-		if(tmp_rx_first_byte == rx2_last_byte) return BUFFER_EMPTY; // result = 0
+		if(tmp_rx_Tail == rx2_Head) return BUFFER_EMPTY; // result = 0
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX2_BUFFER_MASK;
-		*data = rx2_buffer[tmp_rx_first_byte];
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX2_BUFFER_MASK;
+		*data = rx2_buffer[tmp_rx_Tail];
 		
-		rx2_first_byte = tmp_rx_first_byte;
+		rx2_Tail = tmp_rx_Tail;
 		
 	#ifdef USART2_EXTEND_RX_BUFFER
 		UCSR2B_REGISTER |= (1<<RXCIE2_BIT);
@@ -3999,12 +3999,12 @@
 
 	//uint8_t uart2_AvailableBytes(void)
 	//{
-	//	return (rx2_last_byte - rx2_first_byte) & RX2_BUFFER_MASK;
+	//	return (rx2_Head - rx2_Tail) & RX2_BUFFER_MASK;
 	//}
 	
 	uint8_t uart2_peek(void)
 	{
-		return rx2_buffer[(rx2_first_byte+1) & RX2_BUFFER_MASK];
+		return rx2_buffer[(rx2_Tail+1) & RX2_BUFFER_MASK];
 	}
 #endif // NO_RX2_INTERRUPT
 
@@ -4013,16 +4013,16 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	char uart3_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx3_first_byte;
+		register uint8_t tmp_rx_Tail = rx3_Tail;
 		char tmp;
 		
-		if(tmp_rx_first_byte == rx3_last_byte) 
+		if(tmp_rx_Tail == rx3_Head) 
 			return 0;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
-		tmp = rx3_buffer[tmp_rx_first_byte];
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX3_BUFFER_MASK;
+		tmp = rx3_buffer[tmp_rx_Tail];
 		
-		rx3_first_byte = tmp_rx_first_byte;
+		rx3_Tail = tmp_rx_Tail;
 		
 	#ifdef USART3_EXTEND_RX_BUFFER
 		UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
@@ -4053,15 +4053,15 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	char uart3_getc(void)
 	{
-		register uint8_t tmp_rx_first_byte asm("r25");
+		register uint8_t tmp_rx_Tail asm("r25");
 		char tmp;
 		
-		tmp_rx_first_byte = rx3_first_byte;
+		tmp_rx_Tail = rx3_Tail;
 		
-		if(tmp_rx_first_byte == rx3_last_byte) 
+		if(tmp_rx_Tail == rx3_Head) 
 			return 0;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX3_BUFFER_MASK;
 	
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
@@ -4071,14 +4071,14 @@
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_rx_first_byte),
+			[index] "+r" (tmp_rx_Tail),
 			[temp]  "=r" (tmp)
 			: // inputs
 			: // clobbers
 			"r26","r27"
 		);
 	
-		rx3_first_byte = tmp_rx_first_byte;
+		rx3_Tail = tmp_rx_Tail;
 	
 	#ifdef USART3_EXTEND_RX_BUFFER
 		UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
@@ -4346,15 +4346,15 @@
 #ifdef USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart3_getData(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx3_first_byte;
+		register uint8_t tmp_rx_Tail = rx3_Tail;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx3_last_byte) 
+		if(tmp_rx_Tail == rx3_Head) 
 			return -1;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
-		tmp = rx3_buffer[tmp_rx_first_byte];
-		rx3_first_byte = tmp_rx_first_byte;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX3_BUFFER_MASK;
+		tmp = rx3_buffer[tmp_rx_Tail];
+		rx3_Tail = tmp_rx_Tail;
 		
 	#ifdef USART3_EXTEND_RX_BUFFER
 		UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
@@ -4371,13 +4371,13 @@
 #else // !USART_NO_ABI_BREAKING_PREMATURES
 	int16_t uart3_getData(void)
 	{
-		register uint8_t tmp_rx_first_byte = rx3_first_byte;
+		register uint8_t tmp_rx_Tail = rx3_Tail;
 		uint8_t tmp;
 		
-		if(tmp_rx_first_byte == rx3_last_byte) 
+		if(tmp_rx_Tail == rx3_Head) 
 			return -1;
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX3_BUFFER_MASK;
 	
 		asm volatile("\n\t"
 			"mov	r26, %[index] \n\t"
@@ -4387,14 +4387,14 @@
 			"ld 	%[temp], X \n\t"
 			
 			: // outputs
-			[index] "+r" (tmp_rx_first_byte),
+			[index] "+r" (tmp_rx_Tail),
 			[temp] "=r" (tmp)
 			: // inputs
 			: // clobbers
 			"r26","r27"
 		);
 		
-		rx3_first_byte = tmp_rx_first_byte;
+		rx3_Tail = tmp_rx_Tail;
 		
 	#ifdef USART3_EXTEND_RX_BUFFER
 		UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
@@ -4412,14 +4412,14 @@
 
 	uint8_t uart3_LoadData(uint8_t *data)
 	{
-		register uint8_t tmp_rx_first_byte = rx3_first_byte;
+		register uint8_t tmp_rx_Tail = rx3_Tail;
 		
-		if(tmp_rx_first_byte == rx3_last_byte) return BUFFER_EMPTY; // result = 0
+		if(tmp_rx_Tail == rx3_Head) return BUFFER_EMPTY; // result = 0
 		
-		tmp_rx_first_byte = (tmp_rx_first_byte+1) & RX3_BUFFER_MASK;
-		*data = rx3_buffer[tmp_rx_first_byte];
+		tmp_rx_Tail = (tmp_rx_Tail+1) & RX3_BUFFER_MASK;
+		*data = rx3_buffer[tmp_rx_Tail];
 		
-		rx3_first_byte = tmp_rx_first_byte;
+		rx3_Tail = tmp_rx_Tail;
 		
 	#ifdef USART3_EXTEND_RX_BUFFER
 		UCSR3B_REGISTER |= (1<<RXCIE3_BIT);
@@ -4436,12 +4436,12 @@
 
 	//uint8_t uart3_AvailableBytes(void)
 	//{
-	//	return (rx3_last_byte - rx3_first_byte) & RX3_BUFFER_MASK;
+	//	return (rx3_Head - rx3_Tail) & RX3_BUFFER_MASK;
 	//}
 	
 	uint8_t uart3_peek(void)
 	{
-		return rx3_buffer[(rx3_first_byte+1) & RX3_BUFFER_MASK];
+		return rx3_buffer[(rx3_Tail+1) & RX3_BUFFER_MASK];
 	}
 #endif // NO_RX3_INTERRUPT
 
@@ -4650,24 +4650,24 @@
 /*
 	ISR(TXn_INTERRUPT) // do it in a little weird way
 	{
-		register uint8_t tmp_tx_first_byte = (txn_first_byte + 1) & TXn_BUFFER_MASK;
+		register uint8_t tmp_tx_Tail = (txn_Tail + 1) & TXn_BUFFER_MASK;
 		
-		if(tmp_tx_first_byte == txn_last_byte)
+		if(tmp_tx_Tail == txn_Head)
 			UCSRnB_REGISTER &= ~(1<<UDRIEn_BIT); // may be racing with putc insertions
 			
-		txn_first_byte = tmp_tx_first_byte; // it would create race condition if not used in isr
-		UDRn_REGISTER = txn_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+		txn_Tail = tmp_tx_Tail; // it would create race condition if not used in isr
+		UDRn_REGISTER = txn_buffer[tmp_tx_Tail]; // transmit character from the buffer
 	}
 	
 	ISR(TXn_INTERRUPT) // non racing one // not used anymore
 	{
-		register uint8_t tmp_tx_first_byte = txn_first_byte;
+		register uint8_t tmp_tx_Tail = txn_Tail;
 		
-		if(tmp_tx_first_byte != txn_last_byte)
+		if(tmp_tx_Tail != txn_Head)
 		{
-			tmp_tx_first_byte = (tmp_tx_first_byte + 1) & TXn_BUFFER_MASK;
-			txn_first_byte = tmp_tx_first_byte; // it would create race condition if not used in isr
-			UDRn_REGISTER = txn_buffer[tmp_tx_first_byte]; // transmit character from the buffer
+			tmp_tx_Tail = (tmp_tx_Tail + 1) & TXn_BUFFER_MASK;
+			txn_Tail = tmp_tx_Tail; // it would create race condition if not used in isr
+			UDRn_REGISTER = txn_buffer[tmp_tx_Tail]; // transmit character from the buffer
 		}
 		else
 			UCSRnB_REGISTER &= ~(1<<UDRIEn_BIT);
@@ -4675,7 +4675,7 @@
 
 	ISR(RXn_INTERRUPT)
 	{
-		register uint8_t tmp_rx_last_byte = (rxn_last_byte + 1) & RXn_BUFFER_MASK;
+		register uint8_t tmp_rx_Head = (rxn_Head + 1) & RXn_BUFFER_MASK;
 		register uint8_t tmp = UDRn_REGISTER;
 		
 	#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
@@ -4688,10 +4688,10 @@
 		}
 	#endif
 
-		if(rxn_first_byte != tmp_rx_last_byte)
+		if(rxn_Tail != tmp_rx_Head)
 		{
-			rxn_last_byte = tmp_rx_last_byte; // it would create race condition if not used in isr
-			rxn_buffer[tmp_rx_last_byte] = tmp;
+			rxn_Head = tmp_rx_Head; // it would create race condition if not used in isr
+			rxn_buffer[tmp_rx_Head] = tmp;
 		}
 		
 	}
@@ -4740,8 +4740,8 @@
 		
 			TX0_EVERYCAL_EVENT
 		
-			"lds	r30, (tx0_first_byte) \n\t"
-			"lds	r31, (tx0_last_byte) \n\t"
+			"lds	r30, (tx0_Tail) \n\t"
+			"lds	r31, (tx0_Head) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cp		r30, r31 \n\t"
@@ -4773,7 +4773,7 @@
 		"USART0_TX_CONTINUE: "
 		#endif
 			
-			"sts	(tx0_first_byte), r30 \n\t"
+			"sts	(tx0_Tail), r30 \n\t"
 	
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r31, 0x00 \n\t"
@@ -4937,8 +4937,8 @@
 	
 			RX0_EVERYCALL_EVENT
 	
-			"lds	r30, (rx0_last_byte) \n\t"
-			"lds	r31, (rx0_first_byte) \n\t"
+			"lds	r30, (rx0_Head) \n\t"
+			"lds	r31, (rx0_Tail) \n\t"
 		
 			"inc	r30 \n\t"
 		
@@ -4995,7 +4995,7 @@
 		"USART0_RX_CONTINUE: "
 		#endif
 			
-			"sts	(rx0_last_byte), r30 \n\t"
+			"sts	(rx0_Head), r30 \n\t"
 		
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)	// on ATtiny2313 upper byte in pointer pair is ignored
 			"ldi	r31, 0x00 \n\t"
@@ -5141,8 +5141,8 @@
 			
 			TX1_EVERYCAL_EVENT
 			
-			"lds	r30, (tx1_first_byte) \n\t"
-			"lds	r31, (tx1_last_byte) \n\t"
+			"lds	r30, (tx1_Tail) \n\t"
+			"lds	r31, (tx1_Head) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cp		r30, r31 \n\t"
@@ -5170,7 +5170,7 @@
 		"USART1_TX_CONTINUE: "
 		#endif
 		
-			"sts	(tx1_first_byte), r30 \n\t"
+			"sts	(tx1_Tail), r30 \n\t"
 		
 			"ldi	r31, 0x00 \n\t"
 			"subi	r30, lo8(-(tx1_buffer)) \n\t"
@@ -5308,8 +5308,8 @@
 			
 			RX1_EVERYCALL_EVENT
 			
-			"lds	r30, (rx1_last_byte) \n\t"
-			"lds	r31, (rx1_first_byte) \n\t"
+			"lds	r30, (rx1_Head) \n\t"
+			"lds	r31, (rx1_Tail) \n\t"
 		
 			"inc	r30 \n\t"
 		
@@ -5366,7 +5366,7 @@
 		"USART1_RX_CONTINUE: "
 		#endif
 			
-			"sts	(rx1_last_byte), r30 \n\t"
+			"sts	(rx1_Head), r30 \n\t"
 		
 			"ldi	r31, 0x00 \n\t"
 			"subi	r30, lo8(-(rx1_buffer))\n\t"
@@ -5491,8 +5491,8 @@
 		
 			TX2_EVERYCAL_EVENT
 		
-			"lds	r30, (tx2_first_byte) \n\t"
-			"lds	r31, (tx2_last_byte) \n\t"
+			"lds	r30, (tx2_Tail) \n\t"
+			"lds	r31, (tx2_Head) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cp		r30, r31 \n\t"
@@ -5516,7 +5516,7 @@
 		"USART2_TX_CONTINUE: "
 		#endif
 			
-			"sts	(tx2_first_byte), r30 \n\t"
+			"sts	(tx2_Tail), r30 \n\t"
 			
 			"ldi	r31, 0x00 \n\t"
 			"subi	r30, lo8(-(tx2_buffer)) \n\t"
@@ -5636,8 +5636,8 @@
 		
 			RX2_EVERYCALL_EVENT
 		
-			"lds	r30, (rx2_last_byte) \n\t"
-			"lds	r31, (rx2_first_byte) \n\t"
+			"lds	r30, (rx2_Head) \n\t"
+			"lds	r31, (rx2_Tail) \n\t"
 		
 			"inc	r30 \n\t"
 		
@@ -5680,7 +5680,7 @@
 		"USART2_RX_CONTINUE: "
 		#endif
 			
-			"sts	(rx2_last_byte), r30 \n\t"
+			"sts	(rx2_Head), r30 \n\t"
 		
 			"ldi	r31, 0x00 \n\t"
 			"subi	r30, lo8(-(rx2_buffer))\n\t"
@@ -5794,8 +5794,8 @@
 			
 			TX3_EVERYCAL_EVENT
 			
-			"lds	r30, (tx3_first_byte) \n\t"
-			"lds	r31, (tx3_last_byte) \n\t"
+			"lds	r30, (tx3_Tail) \n\t"
+			"lds	r31, (tx3_Head) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cp		r30, r31 \n\t"
@@ -5819,7 +5819,7 @@
 		"USART3_TX_CONTINUE: "
 		#endif
 		
-			"sts	(tx3_first_byte), r30 \n\t"
+			"sts	(tx3_Tail), r30 \n\t"
 		
 			"ldi	r31, 0x00 \n\t"
 			"subi	r30, lo8(-(tx3_buffer)) \n\t"
@@ -5939,8 +5939,8 @@
 		
 			RX3_EVERYCALL_EVENT
 		
-			"lds	r30, (rx3_last_byte) \n\t"
-			"lds	r31, (rx3_first_byte) \n\t"
+			"lds	r30, (rx3_Head) \n\t"
+			"lds	r31, (rx3_Tail) \n\t"
 		
 			"inc	r30 \n\t"
 		
@@ -5983,7 +5983,7 @@
 		"USART3_RX_CONTINUE: "
 		#endif	
 			
-			"sts	(rx3_last_byte), r30 \n\t"
+			"sts	(rx3_Head), r30 \n\t"
 			
 			"ldi	r31, 0x00 \n\t"
 			"subi	r30, lo8(-(rx3_buffer))\n\t"

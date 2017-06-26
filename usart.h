@@ -1681,8 +1681,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	
 		void uart0_flush(void); // flush tx buffer
 		
-		extern volatile uint8_t tx0_last_byte, tx0_first_byte;
-		inline uint8_t uart0_BytesToSend(void) { return (tx0_last_byte - tx0_first_byte) & TX0_BUFFER_MASK; }
+		extern volatile uint8_t tx0_Head, tx0_Tail;
+		inline uint8_t uart0_BytesToSend(void) { return (tx0_Head - tx0_Tail - 1) & TX0_BUFFER_MASK; }
 		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART0_MPCM_MODE
@@ -1760,8 +1760,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	
 		void uart1_flush(void); // flush tx buffer
 		
-		extern volatile uint8_t tx1_last_byte, tx1_first_byte;
-		inline uint8_t uart1_BytesToSend(void) { return (tx1_last_byte - tx1_first_byte) & TX1_BUFFER_MASK; }
+		extern volatile uint8_t tx1_Head, tx1_Tail;
+		inline uint8_t uart1_BytesToSend(void) { return (tx1_Head - tx1_Tail - 1) & TX1_BUFFER_MASK; }
 		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART1_MPCM_MODE
@@ -1814,8 +1814,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	
 		void uart2_flush(void); // flush tx buffer
 		
-		extern volatile uint8_t tx2_last_byte, tx2_first_byte;
-		inline uint8_t uart2_BytesToSend(void) { return (tx2_last_byte - tx2_first_byte) & TX2_BUFFER_MASK; }
+		extern volatile uint8_t tx2_Head, tx2_Tail;
+		inline uint8_t uart2_BytesToSend(void) { return (tx2_Head - tx2_Tail - 1) & TX2_BUFFER_MASK; }
 		// returns number of bytes waiting in the transmit buffer	
 	
 		#ifdef USART2_MPCM_MODE
@@ -1868,8 +1868,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	
 		void uart3_flush(void); // flush tx buffer
 		
-		extern volatile uint8_t tx3_last_byte, tx3_first_byte;
-		inline uint8_t uart3_BytesToSend(void) { return (tx3_last_byte - tx3_first_byte) & TX3_BUFFER_MASK; }
+		extern volatile uint8_t tx3_Head, tx3_Tail;
+		inline uint8_t uart3_BytesToSend(void) { return (tx3_Head - tx3_Tail - 1) & TX3_BUFFER_MASK; }
 		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART3_MPCM_MODE
@@ -1905,8 +1905,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		uint8_t uart0_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
-		extern volatile uint8_t rx0_last_byte, rx0_first_byte;
-		inline uint8_t uart0_AvailableBytes(void) { return (rx0_last_byte - rx0_first_byte) & RX0_BUFFER_MASK; }
+		extern volatile uint8_t rx0_Head, rx0_Tail;
+		inline uint8_t uart0_AvailableBytes(void) { return (rx0_Head - rx0_Tail) & RX0_BUFFER_MASK; }
 		// returns number of bytes waiting in the receiver buffer
 		
 		uint8_t uart0_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
@@ -1946,8 +1946,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		uint8_t uart1_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
-		extern volatile uint8_t rx1_last_byte, rx1_first_byte;
-		inline uint8_t uart1_AvailableBytes(void) { return (rx1_last_byte - rx1_first_byte) & RX1_BUFFER_MASK; }
+		extern volatile uint8_t rx1_Head, rx1_Tail;
+		inline uint8_t uart1_AvailableBytes(void) { return (rx1_Head - rx1_Tail) & RX1_BUFFER_MASK; }
 		// returns number of bytes waiting in the receiver buffer
 		
 		uint8_t uart1_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
@@ -1974,8 +1974,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		uint8_t uart2_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
-		extern volatile uint8_t rx2_last_byte, rx2_first_byte;
-		inline uint8_t uart2_AvailableBytes(void) { return (rx2_last_byte - rx2_first_byte) & RX2_BUFFER_MASK; }
+		extern volatile uint8_t rx2_Head, rx2_Tail;
+		inline uint8_t uart2_AvailableBytes(void) { return (rx2_Head - rx2_Tail) & RX2_BUFFER_MASK; }
 		// returns number of bytes waiting in the receiver buffer
 		
 		uint8_t uart2_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
@@ -2002,8 +2002,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		uint8_t uart3_LoadData(uint8_t *data); // reads single byte from a buffer and loads it into *data byte
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
-		extern volatile uint8_t rx3_last_byte, rx3_first_byte;
-		inline uint8_t uart3_AvailableBytes(void) { return (rx3_last_byte - rx3_first_byte) & RX3_BUFFER_MASK; }
+		extern volatile uint8_t rx3_Head, rx3_Tail;
+		inline uint8_t uart3_AvailableBytes(void) { return (rx3_Head - rx3_Tail) & RX3_BUFFER_MASK; }
 		// returns number of bytes waiting in the receiver buffer
 		
 		uint8_t uart3_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
@@ -2016,7 +2016,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
  ************************************************************************************/
 
 #if defined(USART0_USE_SOFT_CTS)&&!defined(NO_TX0_INTERRUPT)
-	extern volatile uint8_t tx0_first_byte, tx0_last_byte;
+	extern volatile uint8_t tx0_Tail, tx0_Head;
 
 	static inline void cts0_isr_handler(void) __attribute__((always_inline));
 	static inline void cts0_isr_handler(void)
@@ -2026,7 +2026,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		{
 			UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
 		}
-		else if (tx0_first_byte != tx0_last_byte)
+		else if (tx0_Tail != tx0_Head)
 		{
 			UCSR0B_REGISTER |= (1<<UDRIE0_BIT);
 		}
@@ -2036,7 +2036,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		{
 			tmp &= ~(1<<UDRIE0_BIT);
 		}
-		else if (tx0_first_byte != tx0_last_byte)
+		else if (tx0_Tail != tx0_Head)
 		{
 			tmp |= (1<<UDRIE0_BIT);
 		}
@@ -2056,8 +2056,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			
-			"lds	%B[z_save], (tx0_first_byte) \n\t"
-			"lds	%A[z_save], (tx0_last_byte) \n\t"
+			"lds	%B[z_save], (tx0_Tail) \n\t"
+			"lds	%A[z_save], (tx0_Head) \n\t"
 			"cpse	%B[z_save], %A[z_save] \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			
@@ -2065,8 +2065,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			
 			"push	r25 \n\t"
 			
-			"lds	r25, (tx0_first_byte) \n\t"
-			"lds	%[sreg_save], (tx0_last_byte) \n\t"
+			"lds	r25, (tx0_Tail) \n\t"
+			"lds	%[sreg_save], (tx0_Head) \n\t"
 			"cpse	r25, %[sreg_save] \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			
@@ -2075,8 +2075,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			"push	r24 \n\t"
 			"push	r25 \n\t"
 		
-			"lds	r25, (tx0_first_byte) \n\t"
-			"lds	r24, (tx0_last_byte) \n\t"
+			"lds	r25, (tx0_Tail) \n\t"
+			"lds	r24, (tx0_Head) \n\t"
 			"cpse	r25, r24 \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 		
@@ -2119,8 +2119,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r25 \n\t"
 		#endif
-			"lds	r24, (tx0_last_byte) \n\t"
-			"lds	r25, (tx0_first_byte) \n\t"
+			"lds	r24, (tx0_Head) \n\t"
+			"lds	r25, (tx0_Tail) \n\t"
 			"cp 	r25, r24 \n\t"
 			
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
@@ -2177,7 +2177,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif
 
 #if defined(USART1_USE_SOFT_CTS)&&!defined(NO_TX1_INTERRUPT)
-	extern volatile uint8_t tx1_first_byte, tx1_last_byte;
+	extern volatile uint8_t tx1_Tail, tx1_Head;
 
 	static inline void cts1_isr_handler(void) __attribute__((always_inline));
 	static inline void cts1_isr_handler(void)
@@ -2187,7 +2187,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		{
 			UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT);
 		}
-		else if (tx1_first_byte != tx1_last_byte)
+		else if (tx1_Tail != tx1_Head)
 		{
 			UCSR1B_REGISTER |= (1<<UDRIE1_BIT);
 		}
@@ -2197,7 +2197,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		{
 			tmp &= ~(1<<UDRIE1_BIT);
 		}
-		else if (tx1_first_byte != tx1_last_byte)
+		else if (tx1_Tail != tx1_Head)
 		{
 			tmp |= (1<<UDRIE1_BIT);
 		}
@@ -2217,8 +2217,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			
-			"lds	%B[z_save], (tx1_first_byte) \n\t"
-			"lds	%A[z_save], (tx1_last_byte) \n\t"
+			"lds	%B[z_save], (tx1_Tail) \n\t"
+			"lds	%A[z_save], (tx1_Head) \n\t"
 			"cpse	%B[z_save], %A[z_save] \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			
@@ -2226,8 +2226,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			
 			"push	r25 \n\t"
 			
-			"lds	r25, (tx1_first_byte) \n\t"
-			"lds	%[sreg_save], (tx1_last_byte) \n\t"
+			"lds	r25, (tx1_Tail) \n\t"
+			"lds	%[sreg_save], (tx1_Head) \n\t"
 			"cpse	r25, %[sreg_save] \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			
@@ -2236,8 +2236,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			"push	r24 \n\t"
 			"push	r25 \n\t"
 		
-			"lds	r25, (tx1_first_byte) \n\t"
-			"lds	r24, (tx1_last_byte) \n\t"
+			"lds	r25, (tx1_Tail) \n\t"
+			"lds	r24, (tx1_Head) \n\t"
 			"cpse	r25, r24 \n\t"
 			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 		
@@ -2270,8 +2270,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r25 \n\t"
 		#endif
-			"lds	r24, (tx1_last_byte) \n\t"
-			"lds	r25, (tx1_first_byte) \n\t"
+			"lds	r24, (tx1_Head) \n\t"
+			"lds	r25, (tx1_Tail) \n\t"
 			"cp 	r25, r24 \n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
@@ -2314,7 +2314,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif
 
 #if defined(USART2_USE_SOFT_CTS)&&!defined(NO_TX2_INTERRUPT)
-	extern volatile uint8_t tx2_first_byte, tx2_last_byte;
+	extern volatile uint8_t tx2_Tail, tx2_Head;
 
 	static inline void cts2_isr_handler(void) __attribute__((always_inline));
 	static inline void cts2_isr_handler(void)
@@ -2324,7 +2324,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		{
 			tmp &= ~(1<<UDRIE2_BIT);
 		}
-		else if (tx2_first_byte != tx2_last_byte)
+		else if (tx2_Tail != tx2_Head)
 		{
 			tmp |= (1<<UDRIE2_BIT);
 		}
@@ -2357,8 +2357,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r25 \n\t"
 		#endif
-			"lds	r24, (tx2_last_byte) \n\t"
-			"lds	r25, (tx2_first_byte) \n\t"
+			"lds	r24, (tx2_Head) \n\t"
+			"lds	r25, (tx2_Tail) \n\t"
 			"cp 	r25, r24 \n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
@@ -2399,7 +2399,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif
 
 #if defined(USART3_USE_SOFT_CTS)&&!defined(NO_TX3_INTERRUPT)
-	extern volatile uint8_t tx3_first_byte, tx3_last_byte;
+	extern volatile uint8_t tx3_Tail, tx3_Head;
 
 	static inline void cts3_isr_handler(void) __attribute__((always_inline));
 	static inline void cts3_isr_handler(void)
@@ -2409,7 +2409,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		{
 			tmp &= ~(1<<UDRIE3_BIT);
 		}
-		else if (tx3_first_byte != tx3_last_byte)
+		else if (tx3_Tail != tx3_Head)
 		{
 			tmp |= (1<<UDRIE3_BIT);
 		}
@@ -2442,8 +2442,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			"push	r25 \n\t"
 		#endif
-			"lds	r24, (tx3_last_byte) \n\t"
-			"lds	r25, (tx3_first_byte) \n\t"
+			"lds	r24, (tx3_Head) \n\t"
+			"lds	r25, (tx3_Tail) \n\t"
 			"cp 	r25, r24 \n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
