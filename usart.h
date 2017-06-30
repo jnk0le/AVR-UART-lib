@@ -11,7 +11,7 @@
 #include "usart_config.h"
 
 #ifndef F_CPU
-	#warning F_CPU is undefined, USART may not work correctly without this parametr
+	#warning F_CPU is undefined, USART may not work correctly without this
 #endif
 
 #define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating precise UBBR value
@@ -1362,6 +1362,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#endif
 #endif // USART3_CONFIG
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /************************************************************************************
  *                                   Initializers                                   *
  ************************************************************************************/
@@ -2589,5 +2593,9 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#endif
 	
 #endif // single/multi USART
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif // _USART_H_
