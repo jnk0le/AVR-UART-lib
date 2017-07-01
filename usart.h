@@ -14,9 +14,9 @@
 	#warning F_CPU is undefined, USART may not work correctly without this
 #endif
 
-#define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating precise UBBR value
+#define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating precise UBRR value
 #define BAUD_CALC_FAST(x) ((F_CPU)/(BAUD*16UL)-1) // for faster real time calculations ?
-#define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBBR value for double speed
+#define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBRR value for double speed
 
 #if !defined(__OPTIMIZE__)&&!defined(USART_NO_ABI_BREAKING_PREMATURES)
 	#warning Compiler optimizations disabled; functions from usart.h might not work as designed
@@ -1374,22 +1374,22 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	// flash memory usage (eg. if() statements routines can be executed during compilation)
 	
 #ifdef USE_USART0
-	void uart0_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
+	void uart0_reinit(uint16_t ubrr_value); // for runtime reinitialization of uart
 	
-	static inline void uart0_init(uint16_t ubbr_value) __attribute__((always_inline));
-	static inline void uart0_init(uint16_t ubbr_value) // have to be called once at startup
+	static inline void uart0_init(uint16_t ubrr_value) __attribute__((always_inline));
+	static inline void uart0_init(uint16_t ubrr_value) // have to be called once at startup
 	{
 	#ifdef USART0_RS485_MODE
 		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
 	#endif
 		
-		UBRR0L_REGISTER = (uint8_t) ubbr_value;
+		UBRR0L_REGISTER = (uint8_t) ubrr_value;
 		
-	#ifdef USART_SKIP_UBBRH_IF_ZERO
-		if(__builtin_constant_p(ubbr_value))
-			if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+	#ifdef USART_SKIP_UBRRH_IF_ZERO
+		if(__builtin_constant_p(ubrr_value))
+			if(((ubrr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
-			UBRR0H_REGISTER = (ubbr_value>>8);
+			UBRR0H_REGISTER = (ubrr_value>>8);
 		
 	#ifdef USART0_U2X_SPEED
 		#ifdef USART0_MPCM_MODE
@@ -1443,30 +1443,30 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#define uart_hardware_flow_control_init(__ctsenable, __rtsenable) uart0_hardware_flow_control_init(__ctsenable, __rtsenable)
 #endif
 	
-	#define uart_init(__ubbr) uart0_init(__ubbr)
-	#define uart_reinit(__ubbr) uart0_reinit(__ubbr)
+	#define uart_init(__ubrr) uart0_init(__ubrr)
+	#define uart_reinit(__ubrr) uart0_reinit(__ubrr)
 	#define uart_set_FrameFormat(__ucsrc) uart0_set_FrameFormat(__ucsrc)
 	#define uart_set_U2X() uart0_set_U2X()
 	#define uart_mpcm_slave_return_idle() uart0_mpcm_slave_return_idle()
 #endif // USE_USART0
 
 #ifdef USE_USART1
-	void uart1_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
+	void uart1_reinit(uint16_t ubrr_value); // for runtime reinitialization of uart
 	
-	static inline void uart1_init(uint16_t ubbr_value) __attribute__((always_inline));
-	static inline void uart1_init(uint16_t ubbr_value) // have to be called once at startup
+	static inline void uart1_init(uint16_t ubrr_value) __attribute__((always_inline));
+	static inline void uart1_init(uint16_t ubrr_value) // have to be called once at startup
 	{
 	#ifdef USART1_RS485_MODE
 		___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // default pin state is low
 	#endif
 		
-		UBRR1L_REGISTER = (uint8_t) ubbr_value;
+		UBRR1L_REGISTER = (uint8_t) ubrr_value;
 		
-	#ifdef USART_SKIP_UBBRH_IF_ZERO
-		if(__builtin_constant_p(ubbr_value))
-			if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+	#ifdef USART_SKIP_UBRRH_IF_ZERO
+		if(__builtin_constant_p(ubrr_value))
+			if(((ubrr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
-			UBRR1H_REGISTER = (ubbr_value>>8);
+			UBRR1H_REGISTER = (ubrr_value>>8);
 		
 	#ifdef USART1_U2X_SPEED
 		#ifdef USART1_MPCM_MODE
@@ -1522,22 +1522,22 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif // USE_USART1
 
 #ifdef USE_USART2
-	void uart2_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
+	void uart2_reinit(uint16_t ubrr_value); // for runtime reinitialization of uart
 	
-	static inline void uart2_init(uint16_t ubbr_value) __attribute__((always_inline));
-	static inline void uart2_init(uint16_t ubbr_value) // have to be called once at startup
+	static inline void uart2_init(uint16_t ubrr_value) __attribute__((always_inline));
+	static inline void uart2_init(uint16_t ubrr_value) // have to be called once at startup
 	{
 	#ifdef USART2_RS485_MODE
 		___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // default pin state is low
 	#endif
 		
-		UBRR2L_REGISTER = (uint8_t) ubbr_value;
+		UBRR2L_REGISTER = (uint8_t) ubrr_value;
 		
-	#ifdef USART_SKIP_UBBRH_IF_ZERO
-		if(__builtin_constant_p(ubbr_value))
-			if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+	#ifdef USART_SKIP_UBRRH_IF_ZERO
+		if(__builtin_constant_p(ubrr_value))
+			if(((ubrr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
-			UBRR2H_REGISTER = (ubbr_value>>8);
+			UBRR2H_REGISTER = (ubrr_value>>8);
 		
 	#ifdef USART2_U2X_SPEED
 		#ifdef USART2_MPCM_MODE
@@ -1579,22 +1579,22 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif // USE_USART2
 
 #ifdef USE_USART3
-	void uart3_reinit(uint16_t ubbr_value); // for runtime reinitialization of uart
+	void uart3_reinit(uint16_t ubrr_value); // for runtime reinitialization of uart
 	
-	static inline void uart3_init(uint16_t ubbr_value) __attribute__((always_inline));
-	static inline void uart3_init(uint16_t ubbr_value) // have to be called once at startup
+	static inline void uart3_init(uint16_t ubrr_value) __attribute__((always_inline));
+	static inline void uart3_init(uint16_t ubrr_value) // have to be called once at startup
 	{
 	#ifdef USART3_RS485_MODE
 		___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // default pin state is low
 	#endif
 		
-		UBRR3L_REGISTER = (uint8_t) ubbr_value;
+		UBRR3L_REGISTER = (uint8_t) ubrr_value;
 		
-	#ifdef USART_SKIP_UBBRH_IF_ZERO
-		if(__builtin_constant_p(ubbr_value))
-			if(((ubbr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
+	#ifdef USART_SKIP_UBRRH_IF_ZERO
+		if(__builtin_constant_p(ubrr_value))
+			if(((ubrr_value>>8) != 0)) // requires -Os flag - do not use in non-inline functions
 	#endif
-			UBRR3H_REGISTER = (ubbr_value>>8);
+			UBRR3H_REGISTER = (ubrr_value>>8);
 		
 	#ifdef USART3_U2X_SPEED
 		#ifdef USART3_MPCM_MODE

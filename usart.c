@@ -63,14 +63,14 @@
 
 #ifdef USE_USART0
 /*
-	void uart_init(uint16_t ubbr_value)
+	void uart_init(uint16_t ubrr_value)
 	{
 	#ifdef USART0_RS485_MODE
 		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
 	#endif
 		
-		UBRR0L_REGISTER = (uint8_t) ubbr_value;
-		UBRR0H_REGISTER = (ubbr_value>>8);
+		UBRR0L_REGISTER = (uint8_t) ubrr_value;
+		UBRR0H_REGISTER = (ubrr_value>>8);
 		
 	#ifdef USART0_U2X_SPEED
 		#ifdef USART0_MPCM_MODE
@@ -93,13 +93,13 @@
 
 //******************************************************************
 //Function  : To reinitialize USART interface (runtime speed changing).
-//Arguments : Calculated UBBR value to initialize equal speed.
+//Arguments : Calculated UBRR value to initialize equal speed.
 //Return    : none
-//Note      : Use BAUD_CALC(speed) macro to calculate UBBR value.
+//Note      : Use BAUD_CALC(speed) macro to calculate UBRR value.
 //          : All data inside UDR shift register will be lost.
 //          : U2X bit is cleared if USARTn_U2X_SPEED is not defined.
 //******************************************************************
-	void uart0_reinit(uint16_t ubbr_value)
+	void uart0_reinit(uint16_t ubrr_value)
 	{
 	#ifdef USART0_USE_SOFT_RTS
 		___PORT(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
@@ -114,8 +114,8 @@
 		
 		//(writing TXENn to zero) will not become effective until ongoing and pending transmissions are completed
 		
-		UBRR0L_REGISTER = (uint8_t) ubbr_value;
-		UBRR0H_REGISTER = (ubbr_value>>8);
+		UBRR0L_REGISTER = (uint8_t) ubrr_value;
+		UBRR0H_REGISTER = (ubrr_value>>8);
 
 	#ifdef USART0_U2X_SPEED
 		#ifdef USART0_MPCM_MODE
@@ -138,7 +138,7 @@
 #endif // USE_USART0
 
 #ifdef USE_USART1
-	void uart1_reinit(uint16_t ubbr_value)
+	void uart1_reinit(uint16_t ubrr_value)
 	{
 	#ifdef USART1_USE_SOFT_RTS
 		___PORT(RTS1_IOPORTNAME) |= (1<<RTS1_PIN);
@@ -153,8 +153,8 @@
 		
 		//(writing TXENn to zero) will not become effective until ongoing and pending transmissions are completed
 		
-		UBRR1L_REGISTER = (uint8_t) ubbr_value;
-		UBRR1H_REGISTER = (ubbr_value>>8);
+		UBRR1L_REGISTER = (uint8_t) ubrr_value;
+		UBRR1H_REGISTER = (ubrr_value>>8);
 
 	#ifdef USART1_U2X_SPEED
 		#ifdef USART1_MPCM_MODE
@@ -177,7 +177,7 @@
 #endif // USE_USART1
 
 #ifdef USE_USART2
-	void uart2_reinit(uint16_t ubbr_value)
+	void uart2_reinit(uint16_t ubrr_value)
 	{
 	#ifdef USART2_USE_SOFT_RTS
 		___PORT(RTS2_IOPORTNAME) |= (1<<RTS2_PIN);
@@ -192,8 +192,8 @@
 		
 		//(writing TXENn to zero) will not become effective until ongoing and pending transmissions are completed
 
-		UBRR2L_REGISTER = (uint8_t) ubbr_value;
-		UBRR2H_REGISTER = (ubbr_value>>8);
+		UBRR2L_REGISTER = (uint8_t) ubrr_value;
+		UBRR2H_REGISTER = (ubrr_value>>8);
 
 	#ifdef USART2_U2X_SPEED
 		#ifdef USART2_MPCM_MODE
@@ -216,7 +216,7 @@
 #endif // USE_USART2
 
 #ifdef USE_USART3
-	void uart3_reinit(uint16_t ubbr_value)
+	void uart3_reinit(uint16_t ubrr_value)
 	{
 	#ifdef USART3_USE_SOFT_RTS
 		___PORT(RTS3_IOPORTNAME) |= (1<<RTS3_PIN);
@@ -229,8 +229,8 @@
 		
 		UCSR3B_REGISTER = 0; //flush all hardware buffers
 		
-		UBRR3L_REGISTER = (uint8_t) ubbr_value;
-		UBRR3H_REGISTER = (ubbr_value>>8);
+		UBRR3L_REGISTER = (uint8_t) ubrr_value;
+		UBRR3H_REGISTER = (ubrr_value>>8);
 
 	#ifdef USART3_U2X_SPEED
 		#ifdef USART3_MPCM_MODE

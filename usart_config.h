@@ -37,7 +37,7 @@
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
-//#define USART_SKIP_UBBRH_IF_ZERO // do not generate code for writing to ubbrh if calculated value is zero // prematures out 2 bytes if ubbr is compile time constant
+//#define USART_SKIP_UBRRH_IF_ZERO // do not generate code for writing to ubrrh if calculated value is zero // prematures out 2 bytes if ubrr is compile time constant
 
 //#define USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE // prematures out 4 cycles from every isr run // requires one globally reserved lower register
 //#define USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE    // prematures out 6 cycles from every isr run // requires pair of globally reserved lower registers
@@ -47,7 +47,7 @@
 // registers r2-r7 should be used instead of the higher ones, since those are never used by gcc for eg. argument passing.
 
 	#define USART_SREG_SAVE_REG_NAME G_sreg_save // ??? // have to be redeclared under the same name if the same registers are reused in other instances (libs)
-	#define USART_SREG_SAVE_REG_NUM "r4" // register pair rn:rn+1
+	#define USART_SREG_SAVE_REG_NUM "r4"
 	
 	#define USART_Z_SAVE_REG_NAME G_z_save // ??? // have to be redeclared under the same name if the same registers are reused in other instances (libs)
 	#define USART_Z_SAVE_REG_NUM "r2" // register pair rn:rn+1
