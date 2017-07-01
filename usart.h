@@ -270,7 +270,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif
 
 #ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-	register uint8_t USART_Z_SAVE_REG_NAME asm(USART_Z_SAVE_REG_NUM); // have to be defined separately in every compilation unit
+	register uint16_t USART_Z_SAVE_REG_NAME asm(USART_Z_SAVE_REG_NUM); // have to be defined separately in every compilation unit
 #endif
 
 #if defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)&&defined(USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE)

@@ -50,7 +50,7 @@
 	#define USART_SREG_SAVE_REG_NUM "r4"
 	
 	#define USART_Z_SAVE_REG_NAME G_z_save // ??? // have to be redeclared under the same name if the same registers are reused in other instances (libs)
-	#define USART_Z_SAVE_REG_NUM "r2" // register pair rn:rn+1
+	#define USART_Z_SAVE_REG_NUM "r2" // register pair rn and rn+1 (rn+1:rn gives "invalid register name")
 
 //#define RX_BUFFER_SIZE 128 // Size of the ring buffers, must be power of 2 // default 32
 //#define TX_BUFFER_SIZE 64 // Size of the ring buffers, must be power of 2 // default 32
