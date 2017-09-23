@@ -4854,7 +4854,7 @@
 #endif	
 	{
 	#ifdef USART0_RS485_MODE
-		___PORT(RS485_CONTROL0_PORT) &= ~(1<<RS485_CONTROL0_PIN); // set low after completed transaction
+		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); // set low after completed transaction
 	#endif
 	
 		TXC0_interrupt_event();
