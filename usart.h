@@ -179,32 +179,50 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#define USART3_PUTC_FAST_INSERTIONS
 #endif
 
-#ifdef USART_USE_SOFT_CTS
-	#define USART0_USE_SOFT_CTS
-	#define USART1_USE_SOFT_CTS
-	#define USART2_USE_SOFT_CTS
-	#define USART3_USE_SOFT_CTS
-#endif
-
-#ifdef USART_USE_SOFT_RTS
-	#define USART0_USE_SOFT_RTS
-	#define USART1_USE_SOFT_RTS
-	#define USART2_USE_SOFT_RTS
-	#define USART3_USE_SOFT_RTS
-#endif
-
-#ifdef USART_RS485_MODE
-	#define USART0_RS485_MODE
-	#define USART1_RS485_MODE
-	#define USART2_RS485_MODE
-	#define USART3_RS485_MODE
-#endif
-
 #ifdef USART_MPCM_MODE
 	#define USART0_MPCM_MODE
 	#define USART1_MPCM_MODE
 	#define USART2_MPCM_MODE
 	#define USART3_MPCM_MODE
+#endif
+
+#if defined(CTS0_IOPORTNAME)&&defined(CTS0_PIN)
+	#define USART0_USE_SOFT_CTS
+#endif
+#if defined(CTS1_IOPORTNAME)&&defined(CTS1_PIN)
+	#define USART1_USE_SOFT_CTS
+#endif
+#if defined(CTS2_IOPORTNAME)&&defined(CTS2_PIN)
+	#define USART2_USE_SOFT_CTS
+#endif
+#if defined(CTS3_IOPORTNAME)&&defined(CTS3_PIN)
+	#define USART3_USE_SOFT_CTS
+#endif
+
+#if defined(RTS0_IOPORTNAME)&&defined(RTS0_PIN)
+	#define USART0_USE_SOFT_RTS
+#endif
+#if defined(RTS1_IOPORTNAME)&&defined(RTS1_PIN)
+	#define USART1_USE_SOFT_RTS
+#endif
+#if defined(RTS2_IOPORTNAME)&&defined(RTS2_PIN)
+	#define USART2_USE_SOFT_RTS
+#endif
+#if defined(RTS3_IOPORTNAME)&&defined(RTS3_PIN)
+	#define USART3_USE_SOFT_RTS
+#endif
+
+#if defined(RS485_CONTROL0_IOPORTNAME)&&defined(RS485_CONTROL0_PIN)
+	#define USART0_RS485_MODE
+#endif
+#if defined(RS485_CONTROL1_IOPORTNAME)&&defined(RS485_CONTROL1_PIN)
+	#define USART1_RS485_MODE
+#endif
+#if defined(RS485_CONTROL2_IOPORTNAME)&&defined(RS485_CONTROL2_PIN)
+	#define USART2_RS485_MODE
+#endif
+#if defined(RS485_CONTROL3_IOPORTNAME)&&defined(RS485_CONTROL3_PIN)
+	#define USART3_RS485_MODE
 #endif
 
 #ifdef USART0_USE_SOFT_RTS
@@ -427,7 +445,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 
 #endif //NO_USART1
 #endif
-
 
 #if defined(__AVR_ATtiny441__)||defined(__AVR_ATtiny841__)
 

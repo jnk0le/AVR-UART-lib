@@ -13,10 +13,6 @@
 //#define NO_USART_RX // disable all receiver code and dependencies
 //#define NO_USART_TX // disable all transmitter code and dependencies
 
-//#define USART_USE_SOFT_CTS // CTS handlers also have to be placed into INT/PCINT interrupt in the application code, see example(flow control).c
-//#define USART_USE_SOFT_RTS
-
-//#define USART_RS485_MODE // globally enable half duplex rs485 operation mode // used pin have to be initially kept in low state during boot
 //#define USART_MPCM_MODE // globally enable MPCM operation mode // 9 bit data frame only // always set frame format to 8 data bits
 
 //#define USE_DOUBLE_SPEED // enables double speed for all available USART interfaces
@@ -33,7 +29,7 @@
 //#define USART_PUTHEX_IN_UPPERCASE // use uppercase letters in uart_puthex() function
 //#define USART_EXTEND_RX_BUFFER // extend RX buffer by hardware 2/3 byte FIFO // required for hardware and software RTS
 //#define USART_PUTC_FAST_INSERTIONS // skip FIFO procedure and write directly data to the UDR register when possible // probably required for full bus utilization at highest speed (f_cpu/8)
-//#define USART_NO_LOCAL_BUFFERS // do not allocate temporary buffers on stack and use globally visible u_tmp_buff[] instead // it have to be declared in application part and have to be at least of 6-17 bytes wide (depending on what is being converted)
+//#define USART_NO_LOCAL_BUFFERS // do not allocate temporary buffers on stack for integer/float <-> asci conversions and use globally visible u_tmp_buff[] instead // it have to be declared in application part and have to be at least of 6-17 bytes wide (depending on what is being converted)
 //#define USART_UNSAFE_TX_INTERRUPT // max 19 cycles of interrupt latency // 3+PC bytes on stack // will not interrupt itself
 //#define USART_UNSAFE_RX_INTERRUPT // max 23 cycles of interrupt latency // 4+PC bytes on stack // will not interrupt itself
 //#define USART_REMAP_LAST_INTERFACE // remap hardware registers of USART1/2/3 to USART0 if only one interface is used
@@ -114,22 +110,9 @@
 //#define USART2_MPCM_MODE
 //#define USART3_MPCM_MODE
 
-//#define USART0_USE_SOFT_CTS
-//#define USART1_USE_SOFT_CTS
-//#define USART2_USE_SOFT_CTS
-//#define USART3_USE_SOFT_CTS
-
-//#define USART0_USE_SOFT_RTS
-//#define USART1_USE_SOFT_RTS
-//#define USART2_USE_SOFT_RTS
-//#define USART3_USE_SOFT_RTS
-
-//#define USART0_RS485_MODE
-//#define USART1_RS485_MODE
-//#define USART2_RS485_MODE
-//#define USART3_RS485_MODE
-
 /*****************************soft flow control config***********************************/
+// define IO instance to enable software CTS  
+// CTS handlers also have to be placed into INT/PCINT interrupt in the application code, see example(flow control).c
 
 //#define CTS0_IOPORTNAME D // A,B,C,D ... port naming
 //#define CTS0_PIN 2 // 1,2,3,4 ... pin naming
@@ -142,6 +125,8 @@
 
 //#define CTS3_IOPORTNAME
 //#define CTS3_PIN
+
+// define IO instance to enable software RTS
 
 //#define RTS0_IOPORTNAME D // A,B,C,D ... port naming
 //#define RTS0_PIN 6 // 1,2,3,4 ... pin naming
@@ -156,6 +141,7 @@
 //#define RTS3_PIN
 
 /*****************************RS 485 config***********************************/
+// define IO instance to enable half duplex rs485 operation mode // used pin should be initially kept in low state before boot
 
 //#define RS485_CONTROL0_IOPORTNAME D // A,B,C,D ... port naming - define valid destination of pin connected to DE + RE
 //#define RS485_CONTROL0_PIN 2 // 1,2,3,4 ... pin naming - define valid pin connected to DE + RE
