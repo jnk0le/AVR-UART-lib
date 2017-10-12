@@ -908,7 +908,7 @@
 	{
 	#ifdef USART0_RS485_MODE // flush UDR buffer
 		while (___PORT(RS485_CONTROL0_IOPORTNAME) & (1<<RS485_CONTROL0_PIN));
-	#else	
+	#else
 		while(tx0_Tail != tx0_Head); // just flush the ring buffer
 	#endif
 	}
@@ -4859,7 +4859,9 @@
 	
 		TXC0_interrupt_event();
 	
+	#ifndef USATR0_NO_NAKED_TXC_INTERRUPT
 		reti();
+	#endif
 	}
 	
 #endif
@@ -5244,7 +5246,9 @@
 	
 		TXC1_interrupt_event();
 	
+	#ifndef USATR1_NO_NAKED_TXC_INTERRUPT
 		reti();
+	#endif
 	}
 
 #endif // USART1_RS485_MODE
@@ -5581,7 +5585,9 @@
 	
 		TXC2_interrupt_event();
 	
+	#ifndef USATR2_NO_NAKED_TXC_INTERRUPT
 		reti();
+	#endif
 	}
 
 #endif // USART2_RS485_MODE
@@ -5884,7 +5890,9 @@
 	
 		TXC3_interrupt_event();
 	
+	#ifndef USATR3_NO_NAKED_TXC_INTERRUPT
 		reti();
+	#endif
 	}
 
 #endif // USART0_RS485_MODE	
