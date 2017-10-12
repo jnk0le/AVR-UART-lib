@@ -1057,6 +1057,10 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	
 	#ifdef USART1_HARDWARE_FLOW_CONTROL_AVAILABLE
 		#define USART0_HARDWARE_FLOW_CONTROL_AVAILABLE
+	
+		#define UCSR0D_REGISTER    UCSR1D_REGISTER
+		#define CTSEN0_BIT         CTSEN1_BIT
+		#define RTSEN0_BIT         RTSEN1_BIT
 	#endif
 	
 	#define RX0_INTERRUPT		RX1_INTERRUPT
@@ -1134,7 +1138,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif
 
 #if !defined(USE_USART0) && !defined(USE_USART1) && !defined(USE_USART2) && !defined(USE_USART3)
-	#error USART not available or unknown mcu
+	#warning "USART not available or unknown mcu"
 #endif
 
 #ifndef USE_USART0 
