@@ -14,7 +14,6 @@ buffers for receive/transmit. Designed especially for real-time or high throughp
 - printf()/scanf() streams compatibility
 - V-USB compatibility (25 cycle ISR restriction)
 - optimized as much as possible to reduce code size and execution times
-- and much more
 
 ## Notes
 - Lot of terminals sends only CR character as a newline terminator, instead of CRLF or even unix style LF
@@ -73,7 +72,7 @@ and another one if transmitter misses RTS signal (last one is stored in shift re
 | **G_Z_SAVE** | -6 | -6 | -6 | -6 | -2 |
 
 - TX best case - send byte from buffer
-- TX worst case - send byte from buffer and disable UDRIE interrupt
+- TX worst case - send byte from buffer and disable UDRIE interrupt (will not generate double shot)
 - RX best case - load byte and do nothing (buffer full)
 - RX worst case - load byte and put it into buffer
 - RX rts full - rise RTS line and disable RXCIE interrupt
