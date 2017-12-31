@@ -24,11 +24,11 @@ This behaviour can be covered by RX_NEWLINE_MODE macro, by default set to CRLF.
 	- 1 - LF
 	- 2 - CRLF (default)
 
-- In order to reinitialize uart baudrate after any traffic was occuring, function uart_reinit() have to be used. (memory FIFO buffers will not be flushed)
+- In order to reinitialize uart baudrate after any traffic was occurring, function uart_reinit() have to be used. (memory FIFO buffers will not be flushed)
 
-- Any used IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO) 
+- Any used IO pin have to be accessible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a control IO) 
 
-- In half duplex (RS485) transmission modes, the aplication code is responsible of starting transmission only when bus is idle.
+- In half duplex (RS485) transmission modes, the application code is responsible of starting transmission only when bus is idle.
 If RE and DE are shorted together additional pullup on RX pin is required.
 Pin used as a RS485 control line have to be kept in low state during boot process via a pulldown resistor or at least not driving it high even by an internall pull-up. (especially on multi node buses)
 
@@ -49,11 +49,11 @@ The legendary "noise" that causes loosing blocks of characters (not damaging) ca
 The application code should call cts_isr_handlers from interrupts corresponding to used pins. (see [example](example(flow control).c))
 If CTS line goes high during transmission (before UDRE interrupt is fired), only one additional byte will be transmitted. (due to 2 level transmit register)
 
-- soft RTS pins have to be configured as input without pullup or output in low state, before endering uart_init().
+- soft RTS pins have to be configured as input without pullup or output in low state, before entering uart_init().
 If interrupts are not missed, the receiver can accept up to 2 additional bytes after buffer is filled, one from next or ongoing transmission 
 and another one if transmitter misses RTS signal (last one is stored in shift register).
 
-- Any used IO pin have to be accesible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a flow control IO) 
+- Any used IO pin have to be accessible from bottom IO address space. (eg. few ports on mega2560 cannot be used as a flow control IO) 
 
 - For proper operation of hardware RTS, USART_EXTEND_RX_BUFFER have to be defined.
 
