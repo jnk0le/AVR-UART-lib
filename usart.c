@@ -66,7 +66,7 @@
 	void uart_init(uint16_t ubrr_value)
 	{
 	#ifdef USART0_RS485_MODE
-		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
+		RS485_CONTROL0_DDR |= (1<<RS485_CONTROL0_IONUM); // default pin state is low
 	#endif
 		
 		UBRR0L_REGISTER = (uint8_t) ubrr_value;
@@ -86,7 +86,7 @@
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART0_USE_SOFT_RTS
-		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+		RTS0_DDR |= (1<<RTS0_IONUM);
 	#endif
 	}
 */
@@ -102,12 +102,12 @@
 	void uart0_reinit(uint16_t ubrr_value)
 	{
 	#ifdef USART0_USE_SOFT_RTS
-		___PORT(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+		RTS0_PORT |= (1<<RTS0_IONUM);
 	#endif
 		
 	#ifdef USART0_RS485_MODE
-		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); //set low
-		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN);
+		RS485_CONTROL0_PORT &= ~(1<<RS485_CONTROL0_IONUM); //set low
+		RS485_CONTROL0_DDR |= (1<<RS485_CONTROL0_IONUM);
 	#endif
 		
 		UCSR0B_REGISTER = 0; //flush all hardware buffers
@@ -131,8 +131,8 @@
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART0_USE_SOFT_RTS
-		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
-		___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+		RTS0_DDR |= (1<<RTS0_IONUM);
+		RTS0_PORT &= ~(1<<RTS0_IONUM);
 	#endif
 	}
 #endif // USE_USART0
@@ -141,12 +141,12 @@
 	void uart1_reinit(uint16_t ubrr_value)
 	{
 	#ifdef USART1_USE_SOFT_RTS
-		___PORT(RTS1_IOPORTNAME) |= (1<<RTS1_PIN);
+		RTS1_PORT |= (1<<RTS1_IONUM);
 	#endif
 	
 	#ifdef USART1_RS485_MODE
-		___PORT(RS485_CONTROL1_IOPORTNAME) &= ~(1<<RS485_CONTROL1_PIN); //set low
-		___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN);
+		RS485_CONTROL1_PORT &= ~(1<<RS485_CONTROL1_IONUM); //set low
+		RS485_CONTROL1_DDR |= (1<<RS485_CONTROL1_IONUM);
 	#endif
 		
 		UCSR1B_REGISTER = 0; //flush all hardware buffers
@@ -170,8 +170,8 @@
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART1_USE_SOFT_RTS
-		___DDR(RTS1_IOPORTNAME) |= (1<<RTS1_PIN);
-		___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+		RTS1_DDR |= (1<<RTS1_IONUM);
+		RTS1_PORT &= ~(1<<RTS1_IONUM);
 	#endif
 	}
 #endif // USE_USART1
@@ -180,12 +180,12 @@
 	void uart2_reinit(uint16_t ubrr_value)
 	{
 	#ifdef USART2_USE_SOFT_RTS
-		___PORT(RTS2_IOPORTNAME) |= (1<<RTS2_PIN);
+		RTS2_PORT |= (1<<RTS2_IONUM);
 	#endif
 	
 	#ifdef USART2_RS485_MODE
-		___PORT(RS485_CONTROL2_IOPORTNAME) &= ~(1<<RS485_CONTROL2_PIN); //set low
-		___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN);
+		RS485_CONTROL2_PORT &= ~(1<<RS485_CONTROL2_IONUM); //set low
+		RS485_CONTROL2_DDR |= (1<<RS485_CONTROL2_IONUM);
 	#endif
 		
 		UCSR2B_REGISTER = 0; //flush all hardware buffers
@@ -209,8 +209,8 @@
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART2_USE_SOFT_RTS
-		___DDR(RTS2_IOPORTNAME) |= (1<<RTS2_PIN);
-		___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+		RTS2_DDR |= (1<<RTS2_IONUM);
+		RTS2_PORT &= ~(1<<RTS2_IONUM);
 	#endif
 	}
 #endif // USE_USART2
@@ -219,12 +219,12 @@
 	void uart3_reinit(uint16_t ubrr_value)
 	{
 	#ifdef USART3_USE_SOFT_RTS
-		___PORT(RTS3_IOPORTNAME) |= (1<<RTS3_PIN);
+		RTS3_PORT |= (1<<RTS3_IONUM);
 	#endif
 	
 	#ifdef USART3_RS485_MODE
-		___PORT(RS485_CONTROL3_IOPORTNAME) &= ~(1<<RS485_CONTROL3_PIN); //set low
-		___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN);
+		RS485_CONTROL3_PORT &= ~(1<<RS485_CONTROL3_IONUM); //set low
+		RS485_CONTROL3_DDR |= (1<<RS485_CONTROL3_IONUM);
 	#endif
 		
 		UCSR3B_REGISTER = 0; //flush all hardware buffers
@@ -246,8 +246,8 @@
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART3_USE_SOFT_RTS
-		___DDR(RTS3_IOPORTNAME) |= (1<<RTS3_PIN);
-		___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+		RTS3_DDR |= (1<<RTS3_IONUM);
+		RTS3_PORT &= ~(1<<RTS3_IONUM);
 	#endif
 	}
 #endif // USE_USART3
@@ -273,7 +273,7 @@
 		register uint8_t tmp_tx_Tail = tx0_Tail;
 		
 	#ifdef USART0_USE_SOFT_CTS
-		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+		if(!(CTS0_PIN & (1<<CTS0_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR0A_REGISTER & UDRE0_BIT))
 		{
@@ -300,11 +300,11 @@
 			tx0_Head = tmp_tx_Head;
 			
 		#ifdef USART0_RS485_MODE
-			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
+			RS485_CONTROL0_PORT |= (1<<RS485_CONTROL0_IONUM); //set high
 		#endif
 			
 		#ifdef USART0_USE_SOFT_CTS
-			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+			if(!(CTS0_PIN & (1<<CTS0_IONUM)))
 		#endif
 			{
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
@@ -381,8 +381,8 @@
 			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
 			: // inputs
 		#ifdef USART0_USE_SOFT_CTS
-			[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS0_IOPORTNAME))),
-			[cts_pin]       "M" (CTS0_PIN),
+			[cts_port]      "M" (_SFR_IO_ADDR(CTS0_PORT)),
+			[cts_pin]       "M" (CTS0_IONUM),
 		#endif
 			[mask]          "M" (TX0_BUFFER_MASK),
 			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
@@ -442,11 +442,11 @@
 			tx0_Head = tmp_tx_Head;
 		
 		#ifdef USART0_RS485_MODE
-			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // start transmitting
+			RS485_CONTROL0_PORT |= (1<<RS485_CONTROL0_IONUM); // start transmitting
 		#endif
 		
 		#ifdef USART0_USE_SOFT_CTS
-			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+			if(!(CTS0_PIN & (1<<CTS0_IONUM)))
 		#endif
 			{
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
@@ -494,7 +494,7 @@
 		register uint8_t tmp_tx_Tail = tx0_Tail;
 	
 	#ifdef USART0_USE_SOFT_CTS
-		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+		if(!(CTS0_PIN & (1<<CTS0_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR0A_REGISTER & UDRE0_BIT))
 		{
@@ -520,11 +520,11 @@
 			tx0_Head = tmp_tx_Head;
 		
 		#ifdef USART0_RS485_MODE
-			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); //set high
+			RS485_CONTROL0_PORT |= (1<<RS485_CONTROL0_IONUM); //set high
 		#endif
 		
 		#ifdef USART0_USE_SOFT_CTS
-			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+			if(!(CTS0_PIN & (1<<CTS0_IONUM)))
 		#endif
 			{
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
@@ -540,7 +540,7 @@
 		register uint8_t tmp_tx_Tail = tx0_Tail;
 		
 	#ifdef USART0_USE_SOFT_CTS
-		if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+		if(!(CTS0_PIN & (1<<CTS0_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR0A_REGISTER & UDRE0_BIT))
 		{
@@ -589,11 +589,11 @@
 			tx0_Head = tmp_tx_Head;
 			
 		#ifdef USART0_RS485_MODE
-			___PORT(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // start transmitting
+			RS485_CONTROL0_PORT |= (1<<RS485_CONTROL0_IONUM); // start transmitting
 		#endif
 			
 		#ifdef USART0_USE_SOFT_CTS
-			if(!(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN)))
+			if(!(CTS0_PIN & (1<<CTS0_IONUM)))
 		#endif
 			{
 				UCSR0B_REGISTER |= (1<<UDRIE0_BIT); // enable UDRE interrupt
@@ -907,7 +907,7 @@
 	void uart0_flush(void)
 	{
 	#ifdef USART0_RS485_MODE // flush UDR buffer
-		while (___PORT(RS485_CONTROL0_IOPORTNAME) & (1<<RS485_CONTROL0_PIN));
+		while (RS485_CONTROL0_PORT & (1<<RS485_CONTROL0_IONUM));
 	#else
 		while(tx0_Tail != tx0_Head); // just flush the ring buffer
 	#endif
@@ -955,7 +955,7 @@
 		register uint8_t tmp_tx_Tail = tx1_Tail;
 		
 	#ifdef USART1_USE_SOFT_CTS
-		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+		if(!(CTS1_PIN & (1<<CTS1_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR1A_REGISTER & UDRE1_BIT))
 		{
@@ -982,11 +982,11 @@
 			tx1_Head = tmp_tx_Head;
 			
 		#ifdef USART1_RS485_MODE
-			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
+			RS485_CONTROL1_PORT |= (1<<RS485_CONTROL1_IONUM); //set high
 		#endif
 			
 		#ifdef USART1_USE_SOFT_CTS
-			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+			if(!(CTS1_PIN & (1<<CTS1_IONUM)))
 		#endif
 			{
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
@@ -1060,8 +1060,8 @@
 			[dat]  "+r" (data)
 			: // inputs
 		#ifdef USART1_USE_SOFT_CTS
-			[cts_port]      "M" (_SFR_IO_ADDR(___PORT(CTS1_IOPORTNAME))),
-			[cts_pin]       "M" (CTS1_PIN),
+			[cts_port]      "M" (_SFR_IO_ADDR(CTS1_PORT)),
+			[cts_pin]       "M" (CTS1_IONUM),
 		#endif
 			[mask]          "M" (TX1_BUFFER_MASK),
 			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
@@ -1115,11 +1115,11 @@
 			tx1_Head = tmp_tx_Head;
 		
 		#ifdef USART1_RS485_MODE
-			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // start transmitting
+			RS485_CONTROL1_PORT |= (1<<RS485_CONTROL1_IONUM); // start transmitting
 		#endif
 	
 		#ifdef USART1_USE_SOFT_CTS
-			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+			if(!(CTS1_PIN & (1<<CTS1_IONUM)))
 		#endif
 			{
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
@@ -1156,7 +1156,7 @@
 		register uint8_t tmp_tx_Tail = tx1_Tail;
 	
 	#ifdef USART1_USE_SOFT_CTS
-		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+		if(!(CTS1_PIN & (1<<CTS1_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR1A_REGISTER & UDRE1_BIT))
 		{
@@ -1182,11 +1182,11 @@
 			tx1_Head = tmp_tx_Head;
 		
 		#ifdef USART1_RS485_MODE
-			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); //set high
+			RS485_CONTROL1_PORT |= (1<<RS485_CONTROL1_IONUM); //set high
 		#endif
 		
 		#ifdef USART1_USE_SOFT_CTS
-			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+			if(!(CTS1_PIN & (1<<CTS1_IONUM)))
 		#endif
 			{
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
@@ -1202,7 +1202,7 @@
 		register uint8_t tmp_tx_Tail = tx1_Tail;
 		
 	#ifdef USART1_USE_SOFT_CTS
-		if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+		if(!(CTS1_PIN & (1<<CTS1_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR1A_REGISTER & UDRE1_BIT))
 		{
@@ -1241,11 +1241,11 @@
 			tx1_Head = tmp_tx_Head;
 			
 		#ifdef USART1_RS485_MODE
-			___PORT(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // start transmitting
+			RS485_CONTROL1_PORT |= (1<<RS485_CONTROL1_IONUM); // start transmitting
 		#endif
 			
 		#ifdef USART1_USE_SOFT_CTS
-			if(!(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN)))
+			if(!(CTS1_PIN & (1<<CTS1_IONUM)))
 		#endif
 			{
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
@@ -1474,7 +1474,7 @@
 	void uart1_flush(void)
 	{
 	#ifdef USART1_RS485_MODE // flush UDR buffer
-		while (___PORT(RS485_CONTROL1_IOPORTNAME) & (1<<RS485_CONTROL1_PIN));
+		while (RS485_CONTROL1_PORT & (1<<RS485_CONTROL1_IONUM));
 	#else	
 		while(tx1_Tail != tx1_Head); // just flush the ring buffer 
 	#endif
@@ -1507,7 +1507,7 @@
 		register uint8_t tmp_tx_Tail = tx2_Tail;
 		
 	#ifdef USART2_USE_SOFT_CTS
-		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+		if(!(CTS2_PIN & (1<<CTS2_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR2A_REGISTER & UDRE2_BIT))
 		{
@@ -1534,11 +1534,11 @@
 			tx2_Head = tmp_tx_Head;
 			
 		#ifdef USART2_RS485_MODE
-			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); //set high
+			RS485_CONTROL2_PORT |= (1<<RS485_CONTROL2_IONUM); //set high
 		#endif
 			
 		#ifdef USART2_USE_SOFT_CTS
-			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+			if(!(CTS2_PIN & (1<<CTS2_IONUM)))
 		#endif
 			{
 				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
@@ -1604,8 +1604,8 @@
 			[dat]  "+r" (data)
 			: // inputs
 		#ifdef USART2_USE_SOFT_CTS
-			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS2_IOPORTNAME))),
-			[cts_pin]       "M"    (CTS2_PIN),
+			[cts_port]      "M"    (_SFR_IO_ADDR(CTS2_PORT)),
+			[cts_pin]       "M"    (CTS2_IONUM),
 		#endif
 			[mask]          "M" (TX2_BUFFER_MASK),
 			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
@@ -1659,11 +1659,11 @@
 			tx2_Head = tmp_tx_Head;
 		
 		#ifdef USART2_RS485_MODE
-			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // start transmitting
+			RS485_CONTROL2_PORT |= (1<<RS485_CONTROL2_IONUM); // start transmitting
 		#endif
 		
 		#ifdef USART2_USE_SOFT_CTS
-			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+			if(!(CTS2_PIN & (1<<CTS2_IONUM)))
 		#endif
 			{
 				asm volatile("\n\t"
@@ -1695,7 +1695,7 @@
 		register uint8_t tmp_tx_Tail = tx2_Tail;
 	
 	#ifdef USART2_USE_SOFT_CTS
-		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+		if(!(CTS2_PIN & (1<<CTS2_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR2A_REGISTER & UDRE2_BIT))
 		{
@@ -1721,11 +1721,11 @@
 			tx2_Head = tmp_tx_Head;
 		
 		#ifdef USART2_RS485_MODE
-			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); //set high
+			RS485_CONTROL2_PORT |= (1<<RS485_CONTROL2_IONUM); //set high
 		#endif
 		
 		#ifdef USART2_USE_SOFT_CTS
-			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+			if(!(CTS2_PIN & (1<<CTS2_IONUM)))
 		#endif
 			{
 				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
@@ -1741,7 +1741,7 @@
 		register uint8_t tmp_tx_Tail = tx2_Tail;
 		
 	#ifdef USART2_USE_SOFT_CTS
-		if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+		if(!(CTS2_PIN & (1<<CTS2_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR2A_REGISTER & UDRE2_BIT))
 		{
@@ -1780,11 +1780,11 @@
 			tx2_Head = tmp_tx_Head;
 			
 		#ifdef USART2_RS485_MODE
-			___PORT(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // start transmitting
+			RS485_CONTROL2_PORT |= (1<<RS485_CONTROL2_IONUM); // start transmitting
 		#endif
 			
 		#ifdef USART2_USE_SOFT_CTS
-			if(!(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN)))
+			if(!(CTS2_PIN & (1<<CTS2_IONUM)))
 		#endif
 			{
 				UCSR2B_REGISTER |= (1<<UDRIE2_BIT); // enable UDRE interrupt
@@ -2013,7 +2013,7 @@
 	void uart2_flush(void)
 	{
 	#ifdef USART2_RS485_MODE // flush UDR buffer
-		while (___PORT(RS485_CONTROL2_IOPORTNAME) & (1<<RS485_CONTROL2_PIN));
+		while (RS485_CONTROL2_PORT & (1<<RS485_CONTROL2_IONUM));
 	#else	
 		while(tx2_Tail != tx2_Head); // just flush the ring buffer 
 	#endif
@@ -2046,7 +2046,7 @@
 		register uint8_t tmp_tx_Tail = tx3_Tail;
 		
 	#ifdef USART3_USE_SOFT_CTS
-		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+		if(!(CTS3_PIN & (1<<CTS3_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR3A_REGISTER & UDRE3_BIT))
 		{
@@ -2073,11 +2073,11 @@
 			tx3_Head = tmp_tx_Head;
 			
 		#ifdef USART3_RS485_MODE
-			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); //set high
+			RS485_CONTROL3_PORT |= (1<<RS485_CONTROL3_IONUM); //set high
 		#endif
 			
 		#ifdef USART3_USE_SOFT_CTS
-			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+			if(!(CTS3_PIN & (1<<CTS3_IONUM)))
 		#endif
 			{
 				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
@@ -2143,8 +2143,8 @@
 			[dat]  "+r" (data)
 			: // inputs
 		#ifdef USART3_USE_SOFT_CTS
-			[cts_port]      "M"    (_SFR_IO_ADDR(___PORT(CTS3_IOPORTNAME))),
-			[cts_pin]       "M"    (CTS3_PIN),
+			[cts_port]      "M"    (_SFR_IO_ADDR(CTS3_PORT)),
+			[cts_pin]       "M"    (CTS3_IONUM),
 		#endif
 			[mask]          "M" (TX2_BUFFER_MASK),
 			[UCSRA_reg]     "n" (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
@@ -2198,11 +2198,11 @@
 			tx3_Head = tmp_tx_Head;
 		
 		#ifdef USART3_RS485_MODE
-			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // start transmitting
+			RS485_CONTROL3_PORT |= (1<<RS485_CONTROL3_IONUM); // start transmitting
 		#endif
 		
 		#ifdef USART3_USE_SOFT_CTS
-			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+			if(!(CTS3_PIN & (1<<CTS3_IONUM)))
 		#endif
 			{
 				asm volatile("\n\t"
@@ -2235,7 +2235,7 @@
 		register uint8_t tmp_tx_Tail = tx3_Tail;
 	
 	#ifdef USART3_USE_SOFT_CTS
-		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+		if(!(CTS3_PIN & (1<<CTS3_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR3A_REGISTER & UDRE3_BIT))
 		{
@@ -2261,11 +2261,11 @@
 			tx3_Head = tmp_tx_Head;
 		
 		#ifdef USART3_RS485_MODE
-			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); //set high
+			RS485_CONTROL3_PORT |= (1<<RS485_CONTROL3_IONUM); //set high
 		#endif
 		
 		#ifdef USART3_USE_SOFT_CTS
-			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+			if(!(CTS3_PIN & (1<<CTS3_IONUM)))
 		#endif
 			{
 				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
@@ -2281,7 +2281,7 @@
 		register uint8_t tmp_tx_Tail = tx3_Tail;
 		
 	#ifdef USART3_USE_SOFT_CTS
-		if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+		if(!(CTS3_PIN & (1<<CTS3_IONUM)))
 	#endif
 		if(tmp_tx_Tail == tmp_tx_Head && (UCSR3A_REGISTER & UDRE3_BIT))
 		{
@@ -2320,11 +2320,11 @@
 			tx3_Head = tmp_tx_Head;
 			
 		#ifdef USART3_RS485_MODE
-			___PORT(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // start transmitting
+			RS485_CONTROL3_PORT |= (1<<RS485_CONTROL3_IONUM); // start transmitting
 		#endif
 			
 		#ifdef USART3_USE_SOFT_CTS
-			if(!(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN)))
+			if(!(CTS3_PIN & (1<<CTS3_IONUM)))
 		#endif
 			{
 				UCSR3B_REGISTER |= (1<<UDRIE3_BIT); // enable UDRE interrupt
@@ -2553,7 +2553,7 @@
 	void uart3_flush(void)
 	{
 	#ifdef USART3_RS485_MODE // flush UDR buffer
-		while (___PORT(RS485_CONTROL3_IOPORTNAME) & (1<<RS485_CONTROL3_PIN));
+		while (RS485_CONTROL3_PORT & (1<<RS485_CONTROL3_IONUM));
 	#else	
 		while(tx3_Tail != tx3_Head); // just flush the ring buffer 
 	#endif
@@ -2600,9 +2600,9 @@
 	#endif
 		
 	#ifdef USART0_USE_SOFT_RTS
-		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+		if (RTS0_PORT & (1<<RTS0_IONUM))
 			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
-				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+				RTS0_PORT &= ~(1<<RTS0_IONUM);
 	#endif
 		
 	#ifdef RX0_GETC_ECHO
@@ -2665,9 +2665,9 @@
 	#endif
 	
 	#ifdef USART0_USE_SOFT_RTS
-		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+		if (RTS0_PORT & (1<<RTS0_IONUM))
 			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)		
-				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+				RTS0_PORT &= ~(1<<RTS0_IONUM);
 	#endif
 	
 	#ifdef RX0_GETC_ECHO
@@ -3023,9 +3023,9 @@
 	#endif
 	
 	#ifdef USART0_USE_SOFT_RTS
-		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+		if (RTS0_PORT & (1<<RTS0_IONUM))
 			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
-				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+				RTS0_PORT &= ~(1<<RTS0_IONUM);
 	#endif
 		
 		return tmp;
@@ -3072,9 +3072,9 @@
 	#endif
 	
 	#ifdef USART0_USE_SOFT_RTS
-		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+		if (RTS0_PORT & (1<<RTS0_IONUM))
 			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))
-				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+				RTS0_PORT &= ~(1<<RTS0_IONUM);
 	#endif
 		
 		return tmp;
@@ -3104,9 +3104,9 @@
 	#endif
 	
 	#ifdef USART0_USE_SOFT_RTS
-		if (___PORT(RTS0_IOPORTNAME) & (1<<RTS0_PIN))
+		if (RTS0_PORT & (1<<RTS0_IONUM))
 			if (!(UCSR0A_REGISTER & (1<<RXC0_BIT)))	
-				___PORT(RTS0_IOPORTNAME) &= ~(1<<RTS0_PIN);
+				RTS0_PORT &= ~(1<<RTS0_IONUM);
 	#endif
 		
 		return COMPLETED; // result = 1
@@ -3154,9 +3154,9 @@
 	#endif
 		
 	#ifdef USART1_USE_SOFT_RTS
-		if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+		if (RTS1_PORT & (1<<RTS1_IONUM))
 			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
-				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+				RTS1_PORT &= ~(1<<RTS1_IONUM);
 	#endif
 		
 	#ifdef RX1_GETC_ECHO
@@ -3210,9 +3210,9 @@
 	#endif
 	
 	#ifdef USART1_USE_SOFT_RTS
-		if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+		if (RTS1_PORT & (1<<RTS1_IONUM))
 			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)		
-				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+				RTS1_PORT &= ~(1<<RTS1_IONUM);
 	#endif
 	
 	#ifdef RX1_GETC_ECHO
@@ -3486,9 +3486,9 @@
 	#endif
 	
 	#ifdef USART1_USE_SOFT_RTS
-		if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+		if (RTS1_PORT & (1<<RTS1_IONUM))
 			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT)))
-				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+				RTS1_PORT &= ~(1<<RTS1_IONUM);
 	#endif
 		
 		return tmp;
@@ -3526,9 +3526,9 @@
 	#endif
 	
 	#ifdef USART1_USE_SOFT_RTS
-		if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+		if (RTS1_PORT & (1<<RTS1_IONUM))
 			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT)))
-				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+				RTS1_PORT &= ~(1<<RTS1_IONUM);
 	#endif
 		
 		return tmp;
@@ -3551,9 +3551,9 @@
 	#endif
 	
 	#ifdef USART1_USE_SOFT_RTS
-		if (___PORT(RTS1_IOPORTNAME) & (1<<RTS1_PIN))
+		if (RTS1_PORT & (1<<RTS1_IONUM))
 			if (!(UCSR1A_REGISTER & (1<<RXC1_BIT)))
-				___PORT(RTS1_IOPORTNAME) &= ~(1<<RTS1_PIN);
+				RTS1_PORT &= ~(1<<RTS1_IONUM);
 	#endif
 		
 		return COMPLETED; // result = 1
@@ -3591,9 +3591,9 @@
 	#endif
 		
 	#ifdef USART2_USE_SOFT_RTS
-		if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+		if (RTS2_PORT & (1<<RTS2_IONUM))
 			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
-				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+				RTS2_PORT &= ~(1<<RTS2_IONUM);
 	#endif
 		
 	#ifdef RX2_GETC_ECHO
@@ -3647,9 +3647,9 @@
 	#endif
 	
 	#ifdef USART2_USE_SOFT_RTS
-		if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+		if (RTS2_PORT & (1<<RTS2_IONUM))
 			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)		
-				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+				RTS2_PORT &= ~(1<<RTS2_IONUM);
 	#endif
 	
 	#ifdef RX2_GETC_ECHO
@@ -3923,9 +3923,9 @@
 	#endif
 	
 	#ifdef USART2_USE_SOFT_RTS
-		if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+		if (RTS2_PORT & (1<<RTS2_IONUM))
 			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT)))
-				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+				RTS2_PORT &= ~(1<<RTS2_IONUM);
 	#endif
 		
 		return tmp;
@@ -3964,9 +3964,9 @@
 	#endif
 	
 	#ifdef USART2_USE_SOFT_RTS
-		if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+		if (RTS2_PORT & (1<<RTS2_IONUM))
 			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT)))
-				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+				RTS2_PORT &= ~(1<<RTS2_IONUM);
 	#endif
 		
 		return tmp;
@@ -3989,9 +3989,9 @@
 	#endif
 	
 	#ifdef USART2_USE_SOFT_RTS
-		if (___PORT(RTS2_IOPORTNAME) & (1<<RTS2_PIN))
+		if (RTS2_PORT & (1<<RTS2_IONUM))
 			if (!(UCSR2A_REGISTER & (1<<RXC2_BIT)))
-				___PORT(RTS2_IOPORTNAME) &= ~(1<<RTS2_PIN);
+				RTS2_PORT &= ~(1<<RTS2_IONUM);
 	#endif
 		
 		return COMPLETED; // result = 1
@@ -4029,9 +4029,9 @@
 	#endif
 		
 	#ifdef USART3_USE_SOFT_RTS
-		if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+		if (RTS3_PORT & (1<<RTS3_IONUM))
 			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)
-				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+				RTS3_PORT &= ~(1<<RTS3_IONUM);
 	#endif
 		
 	#ifdef RX3_GETC_ECHO
@@ -4085,9 +4085,9 @@
 	#endif
 	
 	#ifdef USART3_USE_SOFT_RTS
-		if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+		if (RTS3_PORT & (1<<RTS3_IONUM))
 			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT))) // isr has fired so check if there is no unread data in UDR (if missed then next read will release RTS line)		
-				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+				RTS3_PORT &= ~(1<<RTS3_IONUM);
 	#endif
 	
 	#ifdef RX3_GETC_ECHO
@@ -4361,9 +4361,9 @@
 	#endif
 	
 	#ifdef USART3_USE_SOFT_RTS
-		if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+		if (RTS3_PORT & (1<<RTS3_IONUM))
 			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT)))
-				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+				RTS3_PORT &= ~(1<<RTS3_IONUM);
 	#endif
 		
 		return tmp;
@@ -4401,9 +4401,9 @@
 	#endif
 	
 	#ifdef USART3_USE_SOFT_RTS
-		if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+		if (RTS3_PORT & (1<<RTS3_IONUM))
 			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT)))
-				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+				RTS3_PORT &= ~(1<<RTS3_IONUM);
 	#endif
 		
 		return tmp;
@@ -4426,9 +4426,9 @@
 	#endif
 	
 	#ifdef USART3_USE_SOFT_RTS
-		if (___PORT(RTS3_IOPORTNAME) & (1<<RTS3_PIN))
+		if (RTS3_PORT & (1<<RTS3_IONUM))
 			if (!(UCSR3A_REGISTER & (1<<RXC3_BIT)))
-				___PORT(RTS3_IOPORTNAME) &= ~(1<<RTS3_PIN);
+				RTS3_PORT &= ~(1<<RTS3_IONUM);
 	#endif
 		
 		return COMPLETED; // result = 1
@@ -4854,7 +4854,7 @@
 #endif	
 	{
 	#ifdef USART0_RS485_MODE
-		___PORT(RS485_CONTROL0_IOPORTNAME) &= ~(1<<RS485_CONTROL0_PIN); // set low after completed transaction
+		RS485_CONTROL0_PORT &= ~(1<<RS485_CONTROL0_IONUM); // set low after completed transaction
 	#endif
 	
 		TXC0_interrupt_event();
@@ -5093,8 +5093,8 @@
 		#endif
 			[mpcm_bit]           "M" (MPCM0_BIT),
 		#ifdef USART0_USE_SOFT_RTS
-			[rts_port]           "M" (_SFR_IO_ADDR(___PORT(RTS0_IOPORTNAME))),
-			[rts_pin]            "M" (RTS0_PIN),
+			[rts_port]           "M" (_SFR_IO_ADDR(RTS0_PORT)),
+			[rts_pin]            "M" (RTS0_IONUM),
 		#endif
 			[UCSRA_reg]          "n" (_SFR_MEM_ADDR(UCSR0A_REGISTER)),
 			[UCSRA_reg_IO]       "M" (_SFR_IO_ADDR(UCSR0A_REGISTER)),
@@ -5241,7 +5241,7 @@
 #endif
 	{
 	#ifdef USART1_RS485_MODE
-		___PORT(RS485_CONTROL1_IOPORTNAME) &= ~(1<<RS485_CONTROL1_PIN); // set low after completed transaction
+		RS485_CONTROL1_PORT &= ~(1<<RS485_CONTROL1_IONUM); // set low after completed transaction
 	#endif
 	
 		TXC1_interrupt_event();
@@ -5449,8 +5449,8 @@
 		#endif
 			[mpcm_bit]           "M" (MPCM1_BIT),
 		#ifdef USART1_USE_SOFT_RTS
-			[rts_port]           "M" (_SFR_IO_ADDR(___PORT(RTS1_IOPORTNAME))),
-			[rts_pin]            "M" (RTS1_PIN),
+			[rts_port]           "M" (_SFR_IO_ADDR(RTS1_PORT)),
+			[rts_pin]            "M" (RTS1_IONUM),
 		#endif
 			[UCSRA_reg]          "n" (_SFR_MEM_ADDR(UCSR1A_REGISTER)),
 			[UCSRA_reg_IO]       "M" (_SFR_IO_ADDR(UCSR1A_REGISTER)),
@@ -5580,7 +5580,7 @@
 #endif
 	{
 	#ifdef USART2_RS485_MODE
-		___PORT(RS485_CONTROL2_IOPORTNAME) &= ~(1<<RS485_CONTROL2_PIN); // set low after completed transaction
+		RS485_CONTROL2_PORT &= ~(1<<RS485_CONTROL2_IONUM); // set low after completed transaction
 	#endif
 	
 		TXC2_interrupt_event();
@@ -5756,8 +5756,8 @@
 		#endif
 			[mpcm_bit]           "M" (MPCM2_BIT),
 		#ifdef USART2_USE_SOFT_RTS
-			[rts_port]           "M" (_SFR_IO_ADDR(___PORT(RTS2_IOPORTNAME))),
-			[rts_pin]            "M" (RTS2_PIN),
+			[rts_port]           "M" (_SFR_IO_ADDR(RTS2_PORT)),
+			[rts_pin]            "M" (RTS2_IONUM),
 		#endif
 			[UCSRA_reg]          "n" (_SFR_MEM_ADDR(UCSR2A_REGISTER)),
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
@@ -5885,7 +5885,7 @@
 #endif
 	{
 	#ifdef USART3_RS485_MODE
-		___PORT(RS485_CONTROL3_IOPORTNAME) &= ~(1<<RS485_CONTROL3_PIN); // set low after completed transaction
+		RS485_CONTROL3_PORT &= ~(1<<RS485_CONTROL3_IONUM); // set low after completed transaction
 	#endif
 	
 		TXC3_interrupt_event();
@@ -6061,8 +6061,8 @@
 		#endif
 			[mpcm_bit]           "M" (MPCM3_BIT),
 		#ifdef USART3_USE_SOFT_RTS
-			[rts_port]           "M" (_SFR_IO_ADDR(___PORT(RTS3_IOPORTNAME))),
-			[rts_pin]            "M" (RTS3_PIN),
+			[rts_port]           "M" (_SFR_IO_ADDR(RTS3_PORT)),
+			[rts_pin]            "M" (RTS3_IONUM),
 		#endif
 			[UCSRA_reg]          "n" (_SFR_MEM_ADDR(UCSR3A_REGISTER)),
 			[control_reg]        "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),

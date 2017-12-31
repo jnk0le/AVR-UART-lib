@@ -186,42 +186,42 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#define USART3_MPCM_MODE
 #endif
 
-#if defined(CTS0_IOPORTNAME)&&defined(CTS0_PIN)
+#if defined(CTS0_DDR)&&defined(CTS0_PORT)&&defined(CTS0_PPIN)&&defined(CTS0_IONUM)
 	#define USART0_USE_SOFT_CTS
 #endif
-#if defined(CTS1_IOPORTNAME)&&defined(CTS1_PIN)
+#if defined(CTS1_DDR)&&defined(CTS1_PORT)&&defined(CTS1_PPIN)&&defined(CTS1_IONUM)
 	#define USART1_USE_SOFT_CTS
 #endif
-#if defined(CTS2_IOPORTNAME)&&defined(CTS2_PIN)
+#if defined(CTS2_DDR)&&defined(CTS2_PORT)&&defined(CTS2_PPIN)&&defined(CTS2_IONUM)
 	#define USART2_USE_SOFT_CTS
 #endif
-#if defined(CTS3_IOPORTNAME)&&defined(CTS3_PIN)
+#if defined(CTS3_DDR)&&defined(CTS3_PORT)&&defined(CTS3_PPIN)&&defined(CTS3_IONUM)
 	#define USART3_USE_SOFT_CTS
 #endif
 
-#if defined(RTS0_IOPORTNAME)&&defined(RTS0_PIN)
+#if defined(RTS0_DDR)&&defined(RTS0_PORT)&&defined(RTS0_PIN)&&defined(RTS0_IONUM)
 	#define USART0_USE_SOFT_RTS
 #endif
-#if defined(RTS1_IOPORTNAME)&&defined(RTS1_PIN)
+#if defined(RTS1_DDR)&&defined(RTS1_PORT)&&defined(RTS1_PIN)&&defined(RTS1_IONUM)
 	#define USART1_USE_SOFT_RTS
 #endif
-#if defined(RTS2_IOPORTNAME)&&defined(RTS2_PIN)
+#if defined(RTS2_DDR)&&defined(RTS2_PORT)&&defined(RTS2_PIN)&&defined(RTS2_IONUM)
 	#define USART2_USE_SOFT_RTS
 #endif
-#if defined(RTS3_IOPORTNAME)&&defined(RTS3_PIN)
+#if defined(RTS3_DDR)&&defined(RTS3_PORT)&&defined(RTS3_PIN)&&defined(RTS3_IONUM)
 	#define USART3_USE_SOFT_RTS
 #endif
 
-#if defined(RS485_CONTROL0_IOPORTNAME)&&defined(RS485_CONTROL0_PIN)
+#if defined(RS485_CONTROL0_DDR)&&defined(RS485_CONTROL0_PORT)&&defined(RS485_CONTROL0_PIN)&&defined(RS485_CONTROL0_IONUM)
 	#define USART0_RS485_MODE
 #endif
-#if defined(RS485_CONTROL1_IOPORTNAME)&&defined(RS485_CONTROL1_PIN)
+#if defined(RS485_CONTROL1_DDR)&&defined(RS485_CONTROL1_PORT)&&defined(RS485_CONTROL1_PIN)&&defined(RS485_CONTROL1_IONUM)
 	#define USART1_RS485_MODE
 #endif
-#if defined(RS485_CONTROL2_IOPORTNAME)&&defined(RS485_CONTROL2_PIN)
+#if defined(RS485_CONTROL2_DDR)&&defined(RS485_CONTROL2_PORT)&&defined(RS485_CONTROL2_PIN)&&defined(RS485_CONTROL2_IONUM)
 	#define USART2_RS485_MODE
 #endif
-#if defined(RS485_CONTROL3_IOPORTNAME)&&defined(RS485_CONTROL3_PIN)
+#if defined(RS485_CONTROL3_DDR)&&defined(RS485_CONTROL3_PORT)&&defined(RS485_CONTROL3_PIN)&&defined(RS485_CONTROL3_IONUM)
 	#define USART3_RS485_MODE
 #endif
 
@@ -247,27 +247,6 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#ifndef USART3_EXTEND_RX_BUFFER
 		#define USART3_EXTEND_RX_BUFFER
 	#endif
-#endif
-
-#ifndef ___DDR
-	#define ___DDR(x) ___XDDR(x)
-#endif
-#ifndef ___XDDR
-	#define ___XDDR(x) (DDR ## x)
-#endif
-
-#ifndef ___PORT
-	#define ___PORT(x) ___XPORT(x)
-#endif
-#ifndef ___XPORT
-	#define ___XPORT(x) (PORT ## x)
-#endif
-
-#ifndef ___PIN
-	#define ___PIN(x) ___XPIN(x)
-#endif
-#ifndef ___XPIN
-	#define ___XPIN(x) (PIN ## x)
 #endif
 
 #ifdef RX_NEWLINE_MODE
@@ -1329,7 +1308,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void uart0_init(uint16_t ubrr_value) // have to be called once at startup
 	{
 	#ifdef USART0_RS485_MODE
-		___DDR(RS485_CONTROL0_IOPORTNAME) |= (1<<RS485_CONTROL0_PIN); // default pin state is low
+		RS485_CONTROL0_DDR |= (1<<RS485_CONTROL0_IONUM); // default pin state is low
 	#endif
 		
 		UBRR0L_REGISTER = (uint8_t) ubrr_value;
@@ -1354,7 +1333,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART0_USE_SOFT_RTS
-		___DDR(RTS0_IOPORTNAME) |= (1<<RTS0_PIN);
+		RTS0_DDR |= (1<<RTS0_IONUM);
 	#endif
 	}
 	
@@ -1406,7 +1385,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void uart1_init(uint16_t ubrr_value) // have to be called once at startup
 	{
 	#ifdef USART1_RS485_MODE
-		___DDR(RS485_CONTROL1_IOPORTNAME) |= (1<<RS485_CONTROL1_PIN); // default pin state is low
+		RS485_CONTROL1_DDR |= (1<<RS485_CONTROL1_IONUM); // default pin state is low
 	#endif
 		
 		UBRR1L_REGISTER = (uint8_t) ubrr_value;
@@ -1431,7 +1410,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART1_USE_SOFT_RTS
-		___DDR(RTS1_IOPORTNAME) |= (1<<RTS1_PIN);
+		RTS1_DDR |= (1<<RTS1_IONUM);
 	#endif
 	}
 
@@ -1477,7 +1456,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void uart2_init(uint16_t ubrr_value) // have to be called once at startup
 	{
 	#ifdef USART2_RS485_MODE
-		___DDR(RS485_CONTROL2_IOPORTNAME) |= (1<<RS485_CONTROL2_PIN); // default pin state is low
+		RS485_CONTROL2_DDR |= (1<<RS485_CONTROL2_IONUM); // default pin state is low
 	#endif
 		
 		UBRR2L_REGISTER = (uint8_t) ubrr_value;
@@ -1502,7 +1481,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART2_USE_SOFT_RTS
-		___DDR(RTS2_IOPORTNAME) |= (1<<RTS2_PIN);
+		RTS2_DDR |= (1<<RTS2_IONUM);
 	#endif
 	}
 
@@ -1534,7 +1513,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void uart3_init(uint16_t ubrr_value) // have to be called once at startup
 	{
 	#ifdef USART3_RS485_MODE
-		___DDR(RS485_CONTROL3_IOPORTNAME) |= (1<<RS485_CONTROL3_PIN); // default pin state is low
+		RS485_CONTROL3_DDR |= (1<<RS485_CONTROL3_IONUM); // default pin state is low
 	#endif
 		
 		UBRR3L_REGISTER = (uint8_t) ubrr_value;
@@ -1559,7 +1538,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		// 8n1 is set by default, setting UCSRC is not needed
 		
 	#ifdef USART3_USE_SOFT_RTS
-		___DDR(RTS3_IOPORTNAME) |= (1<<RTS3_PIN);
+		RTS3_DDR |= (1<<RTS3_IONUM);
 	#endif
 	}
 
@@ -1975,7 +1954,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void cts0_isr_handler(void)
 	{
 	#if defined(USART0_IN_IO_ADDRESS_SPACE)
-		if(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN))
+		if(CTS0_PIN & (1<<CTS0_IONUM))
 		{
 			UCSR0B_REGISTER &= ~(1<<UDRIE0_BIT);
 		}
@@ -1985,7 +1964,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		}
 	#else
 		uint8_t tmp = UCSR0B_REGISTER;
-		if(___PIN(CTS0_IOPORTNAME) & (1<<CTS0_PIN))
+		if(CTS0_PIN & (1<<CTS0_IONUM))
 		{
 			tmp &= ~(1<<UDRIE0_BIT);
 		}
@@ -2122,8 +2101,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR0B_REGISTER)),
 			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR0B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE0_BIT),
-			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS0_IOPORTNAME))),
-			[cts_pin]        "M" (CTS0_PIN)
+			[cts_port]       "M" (_SFR_IO_ADDR(CTS0_PIN)),
+			[cts_pin]        "M" (CTS0_IONUM)
 			: /* clobbers */
 		);
 	}
@@ -2136,7 +2115,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void cts1_isr_handler(void)
 	{
 	#if defined(USART1_IN_IO_ADDRESS_SPACE)
-		if(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN))
+		if(CTS1_PIN & (1<<CTS1_IONUM))
 		{
 			UCSR1B_REGISTER &= ~(1<<UDRIE1_BIT);
 		}
@@ -2146,7 +2125,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		}
 	#else
 		uint8_t tmp = UCSR1B_REGISTER;
-		if(___PIN(CTS1_IOPORTNAME) & (1<<CTS1_PIN))
+		if(CTS1_PIN & (1<<CTS1_IONUM))
 		{
 			tmp &= ~(1<<UDRIE1_BIT);
 		}
@@ -2259,8 +2238,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
 			[UCSRB_reg_IO]   "M" (_SFR_IO_ADDR(UCSR1B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE1_BIT),
-			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS1_IOPORTNAME))),
-			[cts_pin]        "M" (CTS1_PIN)
+			[cts_port]       "M" (_SFR_IO_ADDR(CTS1_PIN)),
+			[cts_pin]        "M" (CTS1_IONUM)
 			: /* clobbers */
 		);
 	}
@@ -2273,7 +2252,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void cts2_isr_handler(void)
 	{
 		uint8_t tmp = UCSR2B_REGISTER;
-		if(___PIN(CTS2_IOPORTNAME) & (1<<CTS2_PIN))
+		if(CTS2_PIN & (1<<CTS2_IONUM))
 		{
 			tmp &= ~(1<<UDRIE2_BIT);
 		}
@@ -2344,8 +2323,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE2_BIT),
-			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS2_IOPORTNAME))),
-			[cts_pin]        "M" (CTS2_PIN)
+			[cts_port]       "M" (_SFR_IO_ADDR(CTS2_PIN)),
+			[cts_pin]        "M" (CTS2_IONUM)
 			: /* clobbers */
 		);
 	}
@@ -2358,7 +2337,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	static inline void cts3_isr_handler(void)
 	{
 		uint8_t tmp = UCSR3B_REGISTER;
-		if(___PIN(CTS3_IOPORTNAME) & (1<<CTS3_PIN))
+		if(CTS3_PIN & (1<<CTS3_IONUM))
 		{
 			tmp &= ~(1<<UDRIE3_BIT);
 		}
@@ -2429,8 +2408,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			: /* input operands */
 			[UCSRB_reg]      "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
 			[UDRIE_bit]      "M" (UDRIE3_BIT),
-			[cts_port]       "M" (_SFR_IO_ADDR(___PIN(CTS3_IOPORTNAME))),
-			[cts_pin]        "M" (CTS3_PIN)
+			[cts_port]       "M" (_SFR_IO_ADDR(CTS3_PIN)),
+			[cts_pin]        "M" (CTS3_IONUM)
 			: /* clobbers */
 		);
 	}

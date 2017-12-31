@@ -114,46 +114,70 @@
 // define IO instance to enable software CTS  
 // CTS handlers also have to be placed into INT/PCINT interrupt in the application code, see example(flow control).c
 
-//#define CTS0_IOPORTNAME D // A,B,C,D ... port naming
-//#define CTS0_PIN 2 // 1,2,3,4 ... pin naming
+//#define CTS0_DDR // DDRB
+//#define CTS0_PORT // PORTB
+//#define CTS0_PIN // PINB
+//#define CTS0_IONUM // 0 // pin number
 
-//#define CTS1_IOPORTNAME
+//#define CTS1_DDR
+//#define CTS1_PORT
 //#define CTS1_PIN
+//#define CTS1_IONUM
 
-//#define CTS2_IOPORTNAME
+//#define CTS2_DDR
+//#define CTS2_PORT
 //#define CTS2_PIN
+//#define CTS2_IONUM
 
-//#define CTS3_IOPORTNAME
+//#define CTS3_DDR
+//#define CTS3_PORT
 //#define CTS3_PIN
+//#define CTS3_IONUM
 
 // define IO instance to enable software RTS
 
-//#define RTS0_IOPORTNAME D // A,B,C,D ... port naming
-//#define RTS0_PIN 6 // 1,2,3,4 ... pin naming
+//#define RTS0_DDR // DDRB
+//#define RTS0_PORT // PORTB
+//#define RTS0_PIN // PINB
+//#define RTS0_IONUM // 1 // pin number
 
-//#define RTS1_IOPORTNAME
+//#define RTS1_DDR
+//#define RTS1_PORT
 //#define RTS1_PIN
+//#define RTS1_IONUM
 
-//#define RTS2_IOPORTNAME
+//#define RTS2_DDR
+//#define RTS2_PORT
 //#define RTS2_PIN
+//#define RTS2_IONUM
 
-//#define RTS3_IOPORTNAME
+//#define RTS3_DDR
+//#define RTS3_PORT
 //#define RTS3_PIN
+//#define RTS3_IONUM
 
 /*****************************RS 485 config***********************************/
 // define IO instance to enable half duplex rs485 operation mode // used pin should be initially kept in low state before boot
 
-//#define RS485_CONTROL0_IOPORTNAME D // A,B,C,D ... port naming - define valid destination of pin connected to DE + RE
-//#define RS485_CONTROL0_PIN 2 // 1,2,3,4 ... pin naming - define valid pin connected to DE + RE
+//#define RS485_CONTROL0_DDR // DDRB
+//#define RS485_CONTROL0_PORT // PORTB
+//#define RS485_CONTROL0_PIN // PINB
+//#define RS485_CONTROL0_IONUM // 2 // pin number
 
-//#define RS485_CONTROL1_IOPORTNAME
+//#define RS485_CONTROL1_DDR
+//#define RS485_CONTROL1_PORT
 //#define RS485_CONTROL1_PIN
+//#define RS485_CONTROL1_IONUM
 
-//#define RS485_CONTROL2_IOPORTNAME
+//#define RS485_CONTROL2_DDR
+//#define RS485_CONTROL2_PORT
 //#define RS485_CONTROL2_PIN
+//#define RS485_CONTROL2_IONUM
 
-//#define RS485_CONTROL3_IOPORTNAME
+//#define RS485_CONTROL3_DDR
+//#define RS485_CONTROL3_PORT
 //#define RS485_CONTROL3_PIN
+//#define RS485_CONTROL3_IONUM
 
 /*****************************MPCM config***********************************/
 
