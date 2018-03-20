@@ -3,10 +3,10 @@ An interrupt-driven USART (RS232) library for AVR microcontrollers, with support
 buffers for receive/transmit. Designed especially for real-time or high throughput applications, with narrow resource limits.
 
 ## Features
-- easy to use
-- intuitive frame format settings
 - selectable support for up to 4 USART's
 - up to 255 byte FIFOs
+- only 2 (+1 wasted slot) byte memory footprint except actual buffer
+- no dynamic memory allocations
 - extremly light interrupts 
 - software(RTS/CTS) and hardware flow control support (DCE naming)
 - RS 485 compatibility
