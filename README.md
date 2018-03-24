@@ -5,7 +5,7 @@ buffers for receive/transmit. Designed especially for real-time or high throughp
 ## Features
 - selectable support for up to 4 USART's
 - up to 255 byte FIFOs
-- only 2 (+1 wasted slot) byte memory footprint except actual buffer
+- only 2 (+1 wasted slot) byte memory footprint except actual buffer for every implemented RX or TX path
 - no dynamic memory allocations
 - extremly light interrupts 
 - software(RTS/CTS) and hardware flow control support (DCE naming)
