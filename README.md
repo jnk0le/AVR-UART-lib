@@ -7,7 +7,7 @@ buffers for receive/transmit. Designed especially for real-time or high throughp
 - up to 255 byte FIFOs
 - only 2 (+1 wasted slot) byte memory footprint except actual buffer for every implemented RX or TX path
 - no dynamic memory allocations
-- extremly light interrupts 
+- extremly light interrupts
 - software(RTS/CTS) and hardware flow control support (DCE naming)
 - RS 485 compatibility
 - MPCM master and slave mode support

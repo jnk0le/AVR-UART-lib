@@ -9,7 +9,7 @@
 
 const char foo_string[] PROGMEM = "Unluckily gcc string polling doesn't work for PROGMEM/PSTR() strings";
 
-void main(void)
+int main(void)
 {
 	//uart0_set_FrameFormat(USART_8BIT_DATA|USART_1STOP_BIT|USART_NO_PARITY|USART_ASYNC_MODE); // default settings
 	uart0_init(BAUD_CALC(19200)); // 8n1 transmission is set as default 
