@@ -1589,9 +1589,12 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 			#define uart0_puts(str) uart0_putstr(str)
 		#endif
 			// for deprecated usage only (wastes SRAM data memory to keep all string constants), instead of this try to use puts_P
-
+	#ifdef	__cplusplus
+		void uart0_puts_p(const char *string); // send string from flash memory
+	#else
 		void uart0_puts_p(const __flash char *string); // send string from flash memory
-			#define uart0_puts_P(__strP) uart0_puts_p(PSTR(__strP))
+	#endif
+		#define uart0_puts_P(__strP) uart0_puts_p(PSTR(__strP))
 			// macro to automatically put a string constant into flash
 	
 		void uart0_putint(int16_t data);
