@@ -7,6 +7,9 @@
 
 #include "usart.h"
 
+
+#define BUFF_SIZE   25
+
 const char foo_string[] PROGMEM = "Unluckily gcc string polling doesn't work for PROGMEM/PSTR() strings";
 
 int main(void)
@@ -27,8 +30,8 @@ int main(void)
 	
 	printf("hello from printf\n");
 
-	char buffer[25];
-	uart_gets(buffer, 25); // read at most 24 bytes from buffer (CR,LF will not be cut)
+	char buffer[BUFF_SIZE];
+	uart_gets(buffer, BUFF_SIZE); // read at most 24 bytes from buffer (CR,LF will not be cut)
 	
 	int a;
 	
@@ -43,7 +46,7 @@ int main(void)
 	{
 		uart_puts("bytes waiting in receiver buffer : ");
 		uart_putint(uart_AvailableBytes()); // ask for bytes waiting in receiver buffer
-		uart_getln(buffer, 25); // read 24 bytes or one line from usart buffer 
+		uart_getln(buffer, BUFF_SIZE); // read 24 bytes or one line from usart buffer 
 		
 		if (!strcmp(buffer, "people who annoy you"))
 		{

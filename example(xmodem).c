@@ -4,12 +4,12 @@
 
 #include "usart.h"
 
-#define SETUP_RETRIES_DELAY 1000 // in ms
+#define SETUP_RETRIES_DELAY 1000 /* in ms */
 #define SETUP_CRC_RETRIES_TO_FALLBACK 15
 #define SETUP_CKSUM_RETRIES_TO_GIVE_UP 2
 
-#define PACKET_RETRY_DELAY 1000 // in ms // timeouts if nothing is received or packet is too short
-#define PACKET_MAX_TIMEOUT_RETRANSMITS 15 // 0-255 
+#define PACKET_RETRY_DELAY 1000 /* in ms / timeouts if nothing is received or packet is too short */
+#define PACKET_MAX_TIMEOUT_RETRANSMITS 15 /* 0-255 */
 
 #define SOH 0x01
 #define EOT 0x04
