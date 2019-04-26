@@ -1,0 +1,7 @@
+
+# object files
+*.[oa]
+
+# AVR executables
+*.elf
+*.hex
