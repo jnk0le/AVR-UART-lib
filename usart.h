@@ -15,13 +15,13 @@
 #endif
 
 #define BAUD_CALC(x) ((F_CPU+(x)*8UL) / (16UL*(x))-1UL) // macro calculating precise UBRR value
-#define BAUD_CALC_FAST(x) ((F_CPU)/(BAUD*16UL)-1) // for faster real time calculations ?
+#define BAUD_CALC_FAST(x) ((F_CPU)/((x)*16UL)-1) // for faster real time calculations ? // not recommended
 #define DOUBLE_BAUD_CALC(x) ((F_CPU+(x)*4UL) / (8UL*(x))-1UL) // macro calculating UBRR value for double speed
 
 #if !defined(__OPTIMIZE__)&&!defined(USART_NO_ABI_BREAKING_PREMATURES)
 	#warning Compiler optimizations disabled; functions from usart.h might not work as designed
 #endif
-	
+
 #ifdef DEBUG
 	#define USART_NO_ABI_BREAKING_PREMATURES
 #endif
