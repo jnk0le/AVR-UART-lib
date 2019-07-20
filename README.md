@@ -78,11 +78,3 @@ and another one if transmitter misses RTS signal (last one is stored in shift re
 - RX rts full - rise RTS line and disable RXCIE interrupt
 - RX rts normal - load byte and put it into buffer if there is available space
 
-## todo
-- 100% flush
-- cts naked handler timmings
-- modbus
-- document code/functions
-- xmega, tiny817
-
-
