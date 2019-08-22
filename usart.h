@@ -186,16 +186,16 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#define USART3_MPCM_MODE
 #endif
 
-#if defined(CTS0_DDR)&&defined(CTS0_PORT)&&defined(CTS0_PPIN)&&defined(CTS0_IONUM)
+#if defined(CTS0_DDR)&&defined(CTS0_PORT)&&defined(CTS0_PIN)&&defined(CTS0_IONUM)
 	#define USART0_USE_SOFT_CTS
 #endif
-#if defined(CTS1_DDR)&&defined(CTS1_PORT)&&defined(CTS1_PPIN)&&defined(CTS1_IONUM)
+#if defined(CTS1_DDR)&&defined(CTS1_PORT)&&defined(CTS1_PIN)&&defined(CTS1_IONUM)
 	#define USART1_USE_SOFT_CTS
 #endif
-#if defined(CTS2_DDR)&&defined(CTS2_PORT)&&defined(CTS2_PPIN)&&defined(CTS2_IONUM)
+#if defined(CTS2_DDR)&&defined(CTS2_PORT)&&defined(CTS2_PIN)&&defined(CTS2_IONUM)
 	#define USART2_USE_SOFT_CTS
 #endif
-#if defined(CTS3_DDR)&&defined(CTS3_PORT)&&defined(CTS3_PPIN)&&defined(CTS3_IONUM)
+#if defined(CTS3_DDR)&&defined(CTS3_PORT)&&defined(CTS3_PIN)&&defined(CTS3_IONUM)
 	#define USART3_USE_SOFT_CTS
 #endif
 
