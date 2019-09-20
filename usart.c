@@ -19,42 +19,42 @@
 
 #ifndef NO_TX0_INTERRUPT
 	volatile uint8_t tx0_Tail, tx0_Head;
-	char tx0_buffer[TX0_BUFFER_SIZE];
+	char tx0_buffer[TX0_BUFFER_SIZE] __attribute__ ((used));
 #endif
 
 #ifndef NO_RX0_INTERRUPT
 	volatile uint8_t rx0_Tail, rx0_Head;
-	char rx0_buffer[RX0_BUFFER_SIZE];
+	char rx0_buffer[RX0_BUFFER_SIZE] __attribute__ ((used));
 #endif
 
 #ifndef NO_TX1_INTERRUPT
 	volatile uint8_t tx1_Tail, tx1_Head;
-	char tx1_buffer[TX1_BUFFER_SIZE];
+	char tx1_buffer[TX1_BUFFER_SIZE] __attribute__ ((used));
 #endif
 
 #ifndef NO_RX1_INTERRUPT
 	volatile uint8_t rx1_Tail, rx1_Head;
-	char rx1_buffer[RX1_BUFFER_SIZE];
+	char rx1_buffer[RX1_BUFFER_SIZE] __attribute__ ((used));
 #endif
 
 #ifndef NO_TX2_INTERRUPT
 	volatile uint8_t tx2_Tail, tx2_Head;
-	char tx2_buffer[TX2_BUFFER_SIZE];
+	char tx2_buffer[TX2_BUFFER_SIZE] __attribute__ ((used));
 #endif
 
 #ifndef NO_RX2_INTERRUPT
 	volatile uint8_t rx2_Tail, rx2_Head;
-	char rx2_buffer[RX2_BUFFER_SIZE];
+	char rx2_buffer[RX2_BUFFER_SIZE] __attribute__ ((used));
 #endif
 
 #ifndef NO_TX3_INTERRUPT
 	volatile uint8_t tx3_Tail, tx3_Head;
-	char tx3_buffer[TX3_BUFFER_SIZE];
+	char tx3_buffer[TX3_BUFFER_SIZE] __attribute__ ((used));
 #endif
 
 #ifndef NO_RX3_INTERRUPT
 	volatile uint8_t rx3_Tail, rx3_Head;
-	char rx3_buffer[RX3_BUFFER_SIZE];
+	char rx3_buffer[RX3_BUFFER_SIZE] __attribute__ ((used));
 #endif
 
 #ifdef USART_NO_LOCAL_BUFFERS
