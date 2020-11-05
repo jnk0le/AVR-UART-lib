@@ -61,9 +61,9 @@ int main(void)
 		uart1_puts("\r\n");
 		uart1_putstr(buffer); // write array string to usart buffer 
 		
-		fprintf(uart1_io, "Say my name: ");
-		fscanf(uart1_io, "%s", buffer);
-		fprintf(uart1_io, "So it's %s, You are damn' right.\n", buffer);
+		fprintf(&uart1_io, "Say my name: ");
+		fscanf(&uart1_io, "%s", buffer);
+		fprintf(&uart1_io, "So it's %s, You are damn' right.\n", buffer);
 		
 		_delay_ms(5000);
 	}
