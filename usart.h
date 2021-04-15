@@ -1435,8 +1435,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 #endif
 
 #ifdef USART1_HARDWARE_FLOW_CONTROL_AVAILABLE
-	void uart1_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) __attribute__((always_inline));
-	void uart1_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) // pass true to enable
+	static inline void uart1_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) __attribute__((always_inline));
+	static inline void uart1_hardware_flow_control_init(uint8_t ctsenable, uint8_t rtsenable) // pass true to enable
 	{
 		if(ctsenable && rtsenable) // -Os dependent, do not use in non-inline functions 
 			UCSR1D_REGISTER = (1<<CTSEN1_BIT)|(1<<RTSEN1_BIT);
