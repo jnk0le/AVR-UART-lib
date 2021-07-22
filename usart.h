@@ -1998,38 +1998,38 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		asm volatile("\n\t"
 		
 		#if defined(USART0_IN_IO_ADDRESS_SPACE)
-			"cbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
-			"sbic	%M[cts_port], %M[cts_pin] \n\t"
+			"cbi %M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"sbic %M[cts_port], %M[cts_pin] \n\t"
 			"reti \n\t"
 			
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			
-			"lds	%B[z_save], (tx0_Tail) \n\t"
-			"lds	%A[z_save], (tx0_Head) \n\t"
-			"cpse	%B[z_save], %A[z_save] \n\t"
-			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"lds %B[z_save], (tx0_Tail) \n\t"
+			"lds %A[z_save], (tx0_Head) \n\t"
+			"cpse %B[z_save], %A[z_save] \n\t"
+			"sbi %M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			
 		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)
 			
-			"push	r25 \n\t"
+			"push r25 \n\t"
 			
-			"lds	r25, (tx0_Tail) \n\t"
-			"lds	%[sreg_save], (tx0_Head) \n\t"
-			"cpse	r25, %[sreg_save] \n\t"
-			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"lds r25, (tx0_Tail) \n\t"
+			"lds %[sreg_save], (tx0_Head) \n\t"
+			"cpse r25, %[sreg_save] \n\t"
+			"sbi %M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 		#else
-			"push	r24 \n\t"
-			"push	r25 \n\t"
+			"push r24 \n\t"
+			"push r25 \n\t"
 		
-			"lds	r25, (tx0_Tail) \n\t"
-			"lds	r24, (tx0_Head) \n\t"
-			"cpse	r25, r24 \n\t"
-			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"lds r25, (tx0_Tail) \n\t"
+			"lds r24, (tx0_Head) \n\t"
+			"cpse r25, r24 \n\t"
+			"sbi %M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 		
-			"pop	r25 \n\t"
-			"pop	r24 \n\t"
+			"pop r25 \n\t"
+			"pop r24 \n\t"
 		#endif
 
 			"reti \n\t"
@@ -2037,76 +2037,76 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		#else // USART not in IO
 			
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#else
-			"push	r16 \n\t"
-			"in		r16,__SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16,__SREG__ \n\t"
 		#endif
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			#ifdef __AVR_HAVE_MOVW__
-				"movw	%[z_save], r24 \n\t"
+				"movw %[z_save], r24 \n\t"
 			#else // in this case only 4 cycles are prematured out
-				"mov	%A[z_save], r24 \n\t"
-				"mov	%B[z_save], r25 \n\t"
+				"mov %A[z_save], r24 \n\t"
+				"mov %B[z_save], r25 \n\t"
 			#endif
 		#else
-			"push	r24 \n\t"
+			"push r24 \n\t"
 		#endif
 		
 		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
-			"in 	r24, %M[UCSRB_reg_IO] \n\t"
+			"in r24, %M[UCSRB_reg_IO] \n\t"
 		#else
-			"lds	r24, %M[UCSRB_reg] \n\t"
+			"lds r24, %M[UCSRB_reg] \n\t"
 		#endif
 			
-			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
-			"sbic	%M[cts_port], %M[cts_pin]\n\t"
-			"rjmp	cts_apply_%= \n\t"
+			"andi r24, ~(1<<%M[UDRIE_bit]) \n\t"
+			"sbic %M[cts_port], %M[cts_pin]\n\t"
+			"rjmp cts_apply_%= \n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"push	r25 \n\t"
+			"push r25 \n\t"
 		#endif
-			"lds	r24, (tx0_Head) \n\t"
-			"lds	r25, (tx0_Tail) \n\t"
-			"cp 	r25, r24 \n\t"
+			"lds r24, (tx0_Head) \n\t"
+			"lds r25, (tx0_Tail) \n\t"
+			"cp r25, r24 \n\t"
 			
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r25 \n\t" // branch after poping
+			"pop r25 \n\t" // branch after poping
 		#endif
-			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
+			"breq cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 		
 		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
-			"in 	r24, %M[UCSRB_reg_IO] \n\t"
+			"in r24, %M[UCSRB_reg_IO] \n\t"
 		#else
-			"lds	r24, %M[UCSRB_reg] \n\t"
+			"lds r24, %M[UCSRB_reg] \n\t"
 		#endif
-			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
+			"ori r24, (1<<%M[UDRIE_bit]) \n\t"
 			
 		"cts_apply_%=:"	
 		#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
-			"out	%M[UCSRB_reg_IO], r24 \n\t"
+			"out %M[UCSRB_reg_IO], r24 \n\t"
 		#else
-			"sts	%M[UCSRB_reg], r24 \n\t"
+			"sts %M[UCSRB_reg], r24 \n\t"
 		#endif
 		
 		"cts_exit_%=:"
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			#ifdef __AVR_HAVE_MOVW__
-				"movw	r24, %[z_save] \n\t"
+				"movw r24, %[z_save] \n\t"
 			#else // in this case only 4 cycles are prematured out
-				"mov	r25, %B[z_save] \n\t"
-				"mov	r24, %A[z_save] \n\t"
+				"mov r25, %B[z_save] \n\t"
+				"mov r24, %A[z_save] \n\t"
 			#endif
 		#else
-			"pop	r24 \n\t"
+			"pop r24 \n\t"
 		#endif
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#else
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#endif
 		
 			"reti \n\t"
@@ -2159,38 +2159,38 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		asm volatile("\n\t"
 		
 		#if defined(USART1_IN_IO_ADDRESS_SPACE)
-			"cbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
-			"sbic	%M[cts_port], %M[cts_pin] \n\t"
+			"cbi %M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"sbic %M[cts_port], %M[cts_pin] \n\t"
 			"reti \n\t"
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
 			
-			"lds	%B[z_save], (tx1_Tail) \n\t"
-			"lds	%A[z_save], (tx1_Head) \n\t"
-			"cpse	%B[z_save], %A[z_save] \n\t"
-			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"lds %B[z_save], (tx1_Tail) \n\t"
+			"lds %A[z_save], (tx1_Head) \n\t"
+			"cpse %B[z_save], %A[z_save] \n\t"
+			"sbi %M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			
 		#elif defined(USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE)
 			
-			"push	r25 \n\t"
+			"push r25 \n\t"
 			
-			"lds	r25, (tx1_Tail) \n\t"
-			"lds	%[sreg_save], (tx1_Head) \n\t"
-			"cpse	r25, %[sreg_save] \n\t"
-			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"lds r25, (tx1_Tail) \n\t"
+			"lds %[sreg_save], (tx1_Head) \n\t"
+			"cpse r25, %[sreg_save] \n\t"
+			"sbi %M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 			
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 		#else
-			"push	r24 \n\t"
-			"push	r25 \n\t"
+			"push r24 \n\t"
+			"push r25 \n\t"
 		
-			"lds	r25, (tx1_Tail) \n\t"
-			"lds	r24, (tx1_Head) \n\t"
-			"cpse	r25, r24 \n\t"
-			"sbi	%M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
+			"lds r25, (tx1_Tail) \n\t"
+			"lds r24, (tx1_Head) \n\t"
+			"cpse r25, r24 \n\t"
+			"sbi %M[UCSRB_reg_IO], %M[UDRIE_bit] \n\t"
 		
-			"pop	r25 \n\t"
-			"pop	r24 \n\t"
+			"pop r25 \n\t"
+			"pop r24 \n\t"
 		#endif
 		
 			"reti \n\t"
@@ -2198,52 +2198,52 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		#else // USART not in IO
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#else
-			"push	r16 \n\t"
-			"in		r16,__SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16,__SREG__ \n\t"
 		#endif
 			
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"movw	%[z_save], r24 \n\t"
+			"movw %[z_save], r24 \n\t"
 		#else
-			"push	r24 \n\t"
+			"push r24 \n\t"
 		#endif
 			
-			"lds	r24, %M[UCSRB_reg] \n\t"
-			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
-			"sbic	%M[cts_port], %M[cts_pin]\n\t"
-			"rjmp	cts_apply_%= \n\t"
+			"lds r24, %M[UCSRB_reg] \n\t"
+			"andi r24, ~(1<<%M[UDRIE_bit]) \n\t"
+			"sbic %M[cts_port], %M[cts_pin]\n\t"
+			"rjmp cts_apply_%= \n\t"
 			
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"push	r25 \n\t"
+			"push r25 \n\t"
 		#endif
-			"lds	r24, (tx1_Head) \n\t"
-			"lds	r25, (tx1_Tail) \n\t"
-			"cp 	r25, r24 \n\t"
+			"lds r24, (tx1_Head) \n\t"
+			"lds r25, (tx1_Tail) \n\t"
+			"cp r25, r24 \n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 		#endif
-			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
+			"breq cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
-			"lds	r24, %M[UCSRB_reg] \n\t"
-			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
+			"lds r24, %M[UCSRB_reg] \n\t"
+			"ori r24, (1<<%M[UDRIE_bit]) \n\t"
 		"cts_apply_%=:"	
-			"sts	%M[UCSRB_reg], r24 \n\t"
+			"sts %M[UCSRB_reg], r24 \n\t"
 		
 		"cts_exit_%=:"
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE	
-			"movw	r24, %[z_save] \n\t"
+			"movw r24, %[z_save] \n\t"
 		#else
-			"pop	r24 \n\t"
+			"pop r24 \n\t"
 		#endif
 			
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#else
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#endif
 
 			"reti \n\t"
@@ -2285,52 +2285,52 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		asm volatile("\n\t"
 			
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#else
-			"push	r16 \n\t"
-			"in		r16,__SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16,__SREG__ \n\t"
 		#endif
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"movw	%[z_save], r24 \n\t"
+			"movw %[z_save], r24 \n\t"
 		#else
-			"push	r24 \n\t"
+			"push r24 \n\t"
 		#endif
 		
-			"lds	r24, %M[UCSRB_reg] \n\t"
-			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
-			"sbic	%M[cts_port], %M[cts_pin]\n\t"
-			"rjmp	cts_apply_%= \n\t"
+			"lds r24, %M[UCSRB_reg] \n\t"
+			"andi r24, ~(1<<%M[UDRIE_bit]) \n\t"
+			"sbic %M[cts_port], %M[cts_pin]\n\t"
+			"rjmp cts_apply_%= \n\t"
 			
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"push	r25 \n\t"
+			"push r25 \n\t"
 		#endif
-			"lds	r24, (tx2_Head) \n\t"
-			"lds	r25, (tx2_Tail) \n\t"
-			"cp 	r25, r24 \n\t"
+			"lds r24, (tx2_Head) \n\t"
+			"lds r25, (tx2_Tail) \n\t"
+			"cp r25, r24 \n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 		#endif
-			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
+			"breq cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
-			"lds	r24, %M[UCSRB_reg] \n\t"
-			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
+			"lds r24, %M[UCSRB_reg] \n\t"
+			"ori r24, (1<<%M[UDRIE_bit]) \n\t"
 		"cts_apply_%=:"	
-			"sts	%M[UCSRB_reg], r24 \n\t"
+			"sts %M[UCSRB_reg], r24 \n\t"
 		
 		"cts_exit_%=:"
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE	
-			"movw	r24, %[z_save] \n\t"
+			"movw r24, %[z_save] \n\t"
 		#else
-			"pop	r24 \n\t"
+			"pop r24 \n\t"
 		#endif
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#else
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#endif
 
 			"reti \n\t"
@@ -2370,52 +2370,52 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		asm volatile("\n\t"
 			
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#else
-			"push	r16 \n\t"
-			"in		r16,__SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16,__SREG__ \n\t"
 		#endif
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"movw	%[z_save], r24 \n\t"
+			"movw %[z_save], r24 \n\t"
 		#else
-			"push	r24 \n\t"
+			"push r24 \n\t"
 		#endif
 		
-			"lds	r24, %M[UCSRB_reg] \n\t"
-			"andi	r24, ~(1<<%M[UDRIE_bit]) \n\t"
-			"sbic	%M[cts_port], %M[cts_pin]\n\t"
-			"rjmp	cts_apply_%= \n\t"
+			"lds r24, %M[UCSRB_reg] \n\t"
+			"andi r24, ~(1<<%M[UDRIE_bit]) \n\t"
+			"sbic %M[cts_port], %M[cts_pin]\n\t"
+			"rjmp cts_apply_%= \n\t"
 			
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"push	r25 \n\t"
+			"push r25 \n\t"
 		#endif
-			"lds	r24, (tx3_Head) \n\t"
-			"lds	r25, (tx3_Tail) \n\t"
-			"cp 	r25, r24 \n\t"
+			"lds r24, (tx3_Head) \n\t"
+			"lds r25, (tx3_Tail) \n\t"
+			"cp r25, r24 \n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 		#endif
-			"breq	cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
+			"breq cts_exit_%= \n\t" // UDRIE should be disabled in this case - no need to clear it
 			
-			"lds	r24, %M[UCSRB_reg] \n\t"
-			"ori	r24, (1<<%M[UDRIE_bit]) \n\t"
+			"lds r24, %M[UCSRB_reg] \n\t"
+			"ori r24, (1<<%M[UDRIE_bit]) \n\t"
 		"cts_apply_%=:"	
-			"sts	%M[UCSRB_reg], r24 \n\t"
+			"sts %M[UCSRB_reg], r24 \n\t"
 		
 		"cts_exit_%=:"
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE	
-			"movw	r24, %[z_save] \n\t"
+			"movw r24, %[z_save] \n\t"
 		#else
-			"pop	r24 \n\t"
+			"pop r24 \n\t"
 		#endif
 		
 		#ifdef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#else
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#endif
 
 			"reti \n\t"

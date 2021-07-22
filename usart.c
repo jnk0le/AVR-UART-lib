@@ -318,12 +318,12 @@
 		
 	#ifdef PUTC0_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
-			"cpi	%[dat], '\n' \n\t"
-			"brne	skip_recursive_%=\n\t"
-			"push	%[dat] \n\t"
-			"ldi	%[dat], '\r' \n\t"
-			"rcall	uart0_putc \n\t"
-			"pop	%[dat] \n\t"
+			"cpi %[dat], '\n' \n\t"
+			"brne skip_recursive_%=\n\t"
+			"push %[dat] \n\t"
+			"ldi %[dat], '\r' \n\t"
+			"rcall uart0_putc \n\t"
+			"pop %[dat] \n\t"
 		"skip_recursive_%=:"
 			: // outputs
 			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
@@ -335,46 +335,46 @@
 	#ifdef USART0_PUTC_FAST_INSERTIONS
 		
 		asm volatile("\n\t"
-			"lds	%[head], (tx0_Head) \n\t"
+			"lds %[head], (tx0_Head) \n\t"
 			
 		#ifdef USART0_USE_SOFT_CTS
-			"sbic	%M[cts_port], %M[cts_pin] \n\t"
-			"rjmp	normal_insert_%= \n\t"  
+			"sbic %M[cts_port], %M[cts_pin] \n\t"
+			"rjmp normal_insert_%= \n\t"  
 		#endif
 				
-			"lds	r27, (tx0_Tail) \n\t"
-			"cpse	r27, %[head] \n\t"
-			"rjmp	normal_insert_%= \n\t"
+			"lds r27, (tx0_Tail) \n\t"
+			"cpse r27, %[head] \n\t"
+			"rjmp normal_insert_%= \n\t"
 				
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
+			"sbis %M[UCSRA_reg_IO], %M[udre_bit] \n\t"
 		#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-			"in 	r26, %M[UCSRA_reg_IO] \n\t"
-			"sbrs	r26, %M[udre_bit] \n\t"
+			"in r26, %M[UCSRA_reg_IO] \n\t"
+			"sbrs r26, %M[udre_bit] \n\t"
 		#else
-			"lds	r26, %M[UCSRA_reg] \n\t"
-			"sbrs	r26, %M[udre_bit] \n\t"
+			"lds r26, %M[UCSRA_reg] \n\t"
+			"sbrs r26, %M[udre_bit] \n\t"
 		#endif
-			"rjmp	normal_insert_%= \n\t"
+			"rjmp normal_insert_%= \n\t"
 				
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"out	%M[UDR_reg], %[dat] \n\t"
+			"out %M[UDR_reg], %[dat] \n\t"
 		#else
-			"sts	%M[UDR_reg], %[dat] \n\t"
+			"sts %M[UDR_reg], %[dat] \n\t"
 		#endif
-			"ret	\n\t"
-				
+			"ret \n\t"
+			
 		"normal_insert_%=:"
-			"inc	%[head] \n\t"
+			"inc %[head] \n\t"
 			
 		#if (TX0_BUFFER_MASK != 0xff)
-			"andi	%[head], %M[mask] \n\t"
+			"andi %[head], %M[mask] \n\t"
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx0_Tail) \n\t"
-			"cp		r27, %[head] \n\t"
-			"breq	waitforspace_%= \n\t"
+			"lds r27, (tx0_Tail) \n\t"
+			"cp r27, %[head] \n\t"
+			"breq waitforspace_%= \n\t"
 				
 			: // outputs
 			[head] "=r" (tmp_tx_Head),
@@ -395,17 +395,17 @@
 		);
 	#else
 		asm volatile("\n\t"
-			"lds	%[head], (tx0_Head) \n\t"
-			"inc	%[head] \n\t"
+			"lds %[head], (tx0_Head) \n\t"
+			"inc %[head] \n\t"
 			
 		#if (TX0_BUFFER_MASK != 0xff)
-			"andi	%[head], %M[mask] \n\t"
+			"andi %[head], %M[mask] \n\t"
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx0_Tail) \n\t"
-			"cp		r27, %[head] \n\t"
-			"breq	waitforspace_%= \n\t"
+			"lds r27, (tx0_Tail) \n\t"
+			"cp r27, %[head] \n\t"
+			"breq waitforspace_%= \n\t"
 				
 			: // outputs
 			[head] "=r" (tmp_tx_Head)
@@ -417,17 +417,17 @@
 	#endif
 		
 		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
+			"mov r26, %[index]  \n\t"
 		
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
-			"ldi	r27, 0x00 \n\t"
+			"ldi r27, 0x00 \n\t"
 		#endif
-			"subi	r26, lo8(-(tx0_buffer)) \n\t"
+			"subi r26, lo8(-(tx0_buffer)) \n\t"
 		
 		#ifndef USART_USE_TINY_MEMORY_MODEL
-			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
+			"sbci r27, hi8(-(tx0_buffer)) \n\t"
 		#endif
-			"st		X, %[dat] \n\t"
+			"st X, %[dat] \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_tx_Head), // will be used later, do not let the compiler to do anything weird
@@ -454,13 +454,13 @@
 			#else
 				asm volatile("\n\t"
 				#ifdef USART0_IN_UPPER_IO_ADDRESS_SPACE
-					"in   r25, %M[control_reg_IO] \n\t"
-					"ori  r25, (1<<%M[udrie_bit]) \n\t"
-					"out   %M[control_reg_IO], r25\n\t"
+					"in r25, %M[control_reg_IO] \n\t"
+					"ori r25, (1<<%M[udrie_bit]) \n\t"
+					"out %M[control_reg_IO], r25\n\t"
 				#else 
-					"lds   r25, %M[control_reg] \n\t"
-					"ori  r25, (1<<%M[udrie_bit]) \n\t"
-					"sts   %M[control_reg], r25 \n\t"
+					"lds r25, %M[control_reg] \n\t"
+					"ori r25, (1<<%M[udrie_bit]) \n\t"
+					"sts %M[control_reg], r25 \n\t"
 				#endif
 					: // outputs
 					: // inputs
@@ -560,17 +560,17 @@
 	#endif
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
+			"mov r26, %[index]  \n\t"
 		
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
-			"ldi	r27, 0x00 \n\t"
+			"ldi r27, 0x00 \n\t"
 		#endif
-			"subi	r26, lo8(-(tx0_buffer)) \n\t"
+			"subi r26, lo8(-(tx0_buffer)) \n\t"
 		
 		#ifndef USART_USE_TINY_MEMORY_MODEL
-			"sbci	r27, hi8(-(tx0_buffer)) \n\t"
+			"sbci r27, hi8(-(tx0_buffer)) \n\t"
 		#endif
-			"st		X, %[dat] \n\t"
+			"st X, %[dat] \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_tx_Head), // will be used later, do not let the compiler to do anything weird
@@ -620,11 +620,11 @@
 		asm volatile("\n\t"
 		
 		"load_loop_%=:"
-			"ld 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart0_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"ld r24, Z+ \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq skip_loop_%= \n\t"
+			"rcall uart0_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -653,13 +653,13 @@
 	void uart0_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
-			"add	%[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
+			"add %[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp 	%[counter], r30\n\t"
-			"breq	skip_loop_%= \n\t"
-			"ld 	r24, Z+ \n\t"
-			"rcall	uart0_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"cp %[counter], r30\n\t"
+			"breq skip_loop_%= \n\t"
+			"ld r24, Z+ \n\t"
+			"rcall uart0_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -693,11 +693,11 @@
 		asm volatile("\n\t"
 		
 		"load_loop_%=:"
-			"lpm 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart0_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"lpm r24, Z+ \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq skip_loop_%= \n\t"
+			"rcall uart0_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -1000,12 +1000,12 @@
 		
 	#ifdef PUTC1_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
-			"cpi	%[dat], '\n' \n\t"
-			"brne	skip_recursive_%=\n\t"
-			"push	%[dat] \n\t"
-			"ldi	%[dat], '\r' \n\t"
-			"rcall	uart1_putc \n\t"
-			"pop	%[dat] \n\t"
+			"cpi %[dat], '\n' \n\t"
+			"brne skip_recursive_%=\n\t"
+			"push %[dat] \n\t"
+			"ldi %[dat], '\r' \n\t"
+			"rcall uart1_putc \n\t"
+			"pop %[dat] \n\t"
 		"skip_recursive_%=:"
 			: // outputs
 			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
@@ -1017,43 +1017,43 @@
 	#ifdef USART1_PUTC_FAST_INSERTIONS
 		
 		asm volatile("\n\t"
-			"lds	%[head], (tx1_Head) \n\t"
+			"lds %[head], (tx1_Head) \n\t"
 			
 		#ifdef USART1_USE_SOFT_CTS
-			"sbic	%M[cts_port], %M[cts_pin] \n\t"
-			"rjmp	normal_insert_%= \n\t"  
+			"sbic %M[cts_port], %M[cts_pin] \n\t"
+			"rjmp normal_insert_%= \n\t"  
 		#endif
 				
-			"lds	r27, (tx1_Tail) \n\t"
-			"cpse	r27, %[head] \n\t"
-			"rjmp	normal_insert_%= \n\t"
-				
-		#ifdef USART1_IN_IO_ADDRESS_SPACE
-			"sbis	%M[UCSRA_reg_IO], %M[udre_bit] \n\t"
-		#else
-			"lds	r26, %M[UCSRA_reg] \n\t"
-			"sbrs	r26, %M[udre_bit] \n\t"
-		#endif
-			"rjmp	normal_insert_%= \n\t"
+			"lds r27, (tx1_Tail) \n\t"
+			"cpse r27, %[head] \n\t"
+			"rjmp normal_insert_%= \n\t"
 				
 		#ifdef USART1_IN_IO_ADDRESS_SPACE
-			"out	%M[UDR_reg], %[dat] \n\t"
+			"sbis %M[UCSRA_reg_IO], %M[udre_bit] \n\t"
 		#else
-			"sts	%M[UDR_reg], %[dat] \n\t"
+			"lds r26, %M[UCSRA_reg] \n\t"
+			"sbrs r26, %M[udre_bit] \n\t"
 		#endif
-			"ret	\n\t"
+			"rjmp normal_insert_%= \n\t"
+				
+		#ifdef USART1_IN_IO_ADDRESS_SPACE
+			"out %M[UDR_reg], %[dat] \n\t"
+		#else
+			"sts %M[UDR_reg], %[dat] \n\t"
+		#endif
+			"ret \n\t"
 				
 		"normal_insert_%=:"
-			"inc	%[head] \n\t"
+			"inc %[head] \n\t"
 			
 		#if (TX1_BUFFER_MASK != 0xff)
-			"andi	%[head], %M[mask] \n\t"
+			"andi %[head], %M[mask] \n\t"
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx1_Tail) \n\t"
-			"cp		r27, %[head] \n\t"
-			"breq	waitforspace_%= \n\t"
+			"lds r27, (tx1_Tail) \n\t"
+			"cp r27, %[head] \n\t"
+			"breq waitforspace_%= \n\t"
 				
 			: // outputs
 			[head] "=r" (tmp_tx_Head),
@@ -1074,17 +1074,17 @@
 		);
 	#else
 		asm volatile("\n\t"
-			"lds	%[head], (tx1_Head) \n\t"
-			"inc	%[head] \n\t"
+			"lds %[head], (tx1_Head) \n\t"
+			"inc %[head] \n\t"
 			
 		#if (TX1_BUFFER_MASK != 0xff)
-			"andi	%[head], %M[mask] \n\t"
+			"andi %[head], %M[mask] \n\t"
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx1_Tail) \n\t"
-			"cp		r27, %[head] \n\t"
-			"breq	waitforspace_%= \n\t"
+			"lds r27, (tx1_Tail) \n\t"
+			"cp r27, %[head] \n\t"
+			"breq waitforspace_%= \n\t"
 				
 			: // outputs
 			[head] "=r" (tmp_tx_Head)
@@ -1096,11 +1096,11 @@
 	#endif
 		
 		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(tx1_buffer)) \n\t"
-			"sbci	r27, hi8(-(tx1_buffer)) \n\t"
-			"st		X, %[dat] \n\t"
+			"mov r26, %[index]  \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(tx1_buffer)) \n\t"
+			"sbci r27, hi8(-(tx1_buffer)) \n\t"
+			"st X, %[dat] \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_tx_Head),
@@ -1126,9 +1126,9 @@
 				UCSR1B_REGISTER |= (1<<UDRIE1_BIT); // enable UDRE interrupt
 			#else
 				asm volatile("\n\t"
-					"lds   r25, %M[control_reg] \n\t"
-					"ori  r25, (1<<%M[udrie_bit]) \n\t"
-					"sts   %M[control_reg], r25 \n\t"
+					"lds r25, %M[control_reg] \n\t"
+					"ori r25, (1<<%M[udrie_bit]) \n\t"
+					"sts %M[control_reg], r25 \n\t"
 					: // outputs
 					: // inputs
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR1B_REGISTER)),
@@ -1222,11 +1222,11 @@
 	#endif
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(tx1_buffer)) \n\t"
-			"sbci	r27, hi8(-(tx1_buffer)) \n\t"
-			"st		X, %[dat] \n\t"
+			"mov r26, %[index]  \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(tx1_buffer)) \n\t"
+			"sbci r27, hi8(-(tx1_buffer)) \n\t"
+			"st X, %[dat] \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_tx_Head),
@@ -1267,11 +1267,11 @@
 		asm volatile("\n\t"
 		
 		"load_loop_%=:"
-			"ld 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart1_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"ld r24, Z+ \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq skip_loop_%= \n\t"
+			"rcall uart1_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -1294,13 +1294,13 @@
 	void uart1_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
-			"add	%[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
+			"add %[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp 	%[counter], r30\n\t"
-			"breq	skip_loop_%= \n\t"
-			"ld 	r24, Z+ \n\t"
-			"rcall	uart1_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"cp %[counter], r30\n\t"
+			"breq skip_loop_%= \n\t"
+			"ld r24, Z+ \n\t"
+			"rcall uart1_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -1326,11 +1326,11 @@
 		asm volatile("\n\t"
 		
 		"load_loop_%=:"
-			"lpm 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart1_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"lpm r24, Z+ \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq skip_loop_%= \n\t"
+			"rcall uart1_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
 			: // outputs
@@ -1552,12 +1552,12 @@
 		
 	#ifdef PUTC2_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
-			"cpi	%[dat], '\n' \n\t"
-			"brne	skip_recursive_%=\n\t"
-			"push	%[dat] \n\t"
-			"ldi	%[dat], '\r' \n\t"
-			"rcall	uart2_putc \n\t"
-			"pop	%[dat] \n\t"
+			"cpi %[dat], '\n' \n\t"
+			"brne skip_recursive_%=\n\t"
+			"push %[dat] \n\t"
+			"ldi %[dat], '\r' \n\t"
+			"rcall uart2_putc \n\t"
+			"pop %[dat] \n\t"
 		"skip_recursive_%=:"
 			: // outputs
 			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
@@ -1569,35 +1569,35 @@
 	#ifdef USART2_PUTC_FAST_INSERTIONS
 			
 		asm volatile("\n\t"
-			"lds	%[head], (tx2_Head) \n\t"
+			"lds %[head], (tx2_Head) \n\t"
 			
 		#ifdef USART2_USE_SOFT_CTS
-			"sbic	%M[cts_port], %M[cts_pin] \n\t"
-			"rjmp	normal_insert_%= \n\t"  
+			"sbic %M[cts_port], %M[cts_pin] \n\t"
+			"rjmp normal_insert_%= \n\t"  
 		#endif
 				
-			"lds	r27, (tx2_Tail) \n\t"
-			"cpse	r27, %[head] \n\t"
-			"rjmp	normal_insert_%= \n\t"
+			"lds r27, (tx2_Tail) \n\t"
+			"cpse r27, %[head] \n\t"
+			"rjmp normal_insert_%= \n\t"
 			
-			"lds	r26, %M[UCSRA_reg] \n\t"
-			"sbrs	r26, %M[udre_bit] \n\t"
-			"rjmp	normal_insert_%= \n\t"
+			"lds r26, %M[UCSRA_reg] \n\t"
+			"sbrs r26, %M[udre_bit] \n\t"
+			"rjmp normal_insert_%= \n\t"
 				
-			"sts	%M[UDR_reg], %[dat] \n\t"
-			"ret	\n\t"
+			"sts %M[UDR_reg], %[dat] \n\t"
+			"ret \n\t"
 				
 		"normal_insert_%=:"
-			"inc	%[head] \n\t"
+			"inc %[head] \n\t"
 			
 		#if (TX2_BUFFER_MASK != 0xff)
-			"andi	%[head], %M[mask] \n\t"
+			"andi %[head], %M[mask] \n\t"
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx2_Tail) \n\t"
-			"cp		r27, %[head] \n\t"
-			"breq	waitforspace_%= \n\t"
+			"lds r27, (tx2_Tail) \n\t"
+			"cp r27, %[head] \n\t"
+			"breq waitforspace_%= \n\t"
 				
 			: // outputs
 			[head] "=r" (tmp_tx_Head),
@@ -1618,17 +1618,17 @@
 		);
 	#else
 		asm volatile("\n\t"
-			"lds	%[head], (tx2_Head) \n\t"
-			"inc	%[head] \n\t"
+			"lds %[head], (tx2_Head) \n\t"
+			"inc %[head] \n\t"
 			
 		#if (TX2_BUFFER_MASK != 0xff)
-			"andi	%[head], %M[mask] \n\t"
+			"andi %[head], %M[mask] \n\t"
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx2_Tail) \n\t"
-			"cp		r27, %[head] \n\t"
-			"breq	waitforspace_%= \n\t"
+			"lds r27, (tx2_Tail) \n\t"
+			"cp r27, %[head] \n\t"
+			"breq waitforspace_%= \n\t"
 				
 			: // outputs
 			[head] "=r" (tmp_tx_Head)
@@ -1640,11 +1640,11 @@
 	#endif
 		
 		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(tx2_buffer)) \n\t"
-			"sbci	r27, hi8(-(tx2_buffer)) \n\t"
-			"st		X, %[dat] \n\t"
+			"mov r26, %[index]  \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(tx2_buffer)) \n\t"
+			"sbci r27, hi8(-(tx2_buffer)) \n\t"
+			"st X, %[dat] \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_tx_Head),
@@ -1667,9 +1667,9 @@
 		#endif
 			{
 				asm volatile("\n\t"
-					"lds   r25, %M[control_reg] \n\t"
-					"ori  r25, (1<<%M[udrie_bit]) \n\t"
-					"sts   %M[control_reg], r25 \n\t"
+					"lds r25, %M[control_reg] \n\t"
+					"ori r25, (1<<%M[udrie_bit]) \n\t"
+					"sts %M[control_reg], r25 \n\t"
 					: // outputs
 					: // inputs
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR2B_REGISTER)),
@@ -1761,11 +1761,11 @@
 	#endif
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(tx2_buffer)) \n\t"
-			"sbci	r27, hi8(-(tx2_buffer)) \n\t"
-			"st		X, %[dat] \n\t"
+			"mov r26, %[index]  \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(tx2_buffer)) \n\t"
+			"sbci r27, hi8(-(tx2_buffer)) \n\t"
+			"st X, %[dat] \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_tx_Head),
@@ -1806,11 +1806,11 @@
 		asm volatile("\n\t"
 			
 		"load_loop_%=:"
-			"ld 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart2_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"ld r24, Z+ \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq skip_loop_%= \n\t"
+			"rcall uart2_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -1833,13 +1833,13 @@
 	void uart2_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
-			"add	%[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
+			"add %[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp 	%[counter], r30\n\t"
-			"breq	skip_loop_%= \n\t"
-			"ld 	r24, Z+ \n\t"
-			"rcall	uart2_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"cp %[counter], r30\n\t"
+			"breq skip_loop_%= \n\t"
+			"ld r24, Z+ \n\t"
+			"rcall uart2_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -1865,11 +1865,11 @@
 		asm volatile("\n\t"
 		
 		"load_loop_%=:"
-			"lpm 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart2_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"lpm r24, Z+ \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq skip_loop_%= \n\t"
+			"rcall uart2_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
 			: // outputs
@@ -2091,12 +2091,12 @@
 		
 	#ifdef PUTC3_CONVERT_LF_TO_CRLF
 		asm volatile("\n\t"
-			"cpi	%[dat], '\n' \n\t"
-			"brne	skip_recursive_%=\n\t"
-			"push	%[dat] \n\t"
-			"ldi	%[dat], '\r' \n\t"
-			"rcall	uart3_putc \n\t"
-			"pop	%[dat] \n\t"
+			"cpi %[dat], '\n' \n\t"
+			"brne skip_recursive_%=\n\t"
+			"push %[dat] \n\t"
+			"ldi %[dat], '\r' \n\t"
+			"rcall uart3_putc \n\t"
+			"pop %[dat] \n\t"
 		"skip_recursive_%=:"
 			: // outputs
 			[dat]  "+r" (data) // will be used later, do not let the compiler to do anything weird
@@ -2108,35 +2108,35 @@
 	#ifdef USART3_PUTC_FAST_INSERTIONS
 		
 		asm volatile("\n\t"
-			"lds	%[head], (tx3_Head) \n\t"
+			"lds %[head], (tx3_Head) \n\t"
 			
 		#ifdef USART3_USE_SOFT_CTS
-			"sbic	%M[cts_port], %M[cts_pin] \n\t"
-			"rjmp	normal_insert_%= \n\t"  
+			"sbic %M[cts_port], %M[cts_pin] \n\t"
+			"rjmp normal_insert_%= \n\t"  
 		#endif
 				
-			"lds	r27, (tx3_Tail) \n\t"
-			"cpse	r27, %[head] \n\t"
-			"rjmp	normal_insert_%= \n\t"
+			"lds r27, (tx3_Tail) \n\t"
+			"cpse r27, %[head] \n\t"
+			"rjmp normal_insert_%= \n\t"
 			
-			"lds	r26, %M[UCSRA_reg] \n\t"
-			"sbrs	r26, %M[udre_bit] \n\t"
-			"rjmp	normal_insert_%= \n\t"
+			"lds r26, %M[UCSRA_reg] \n\t"
+			"sbrs r26, %M[udre_bit] \n\t"
+			"rjmp normal_insert_%= \n\t"
 				
-			"sts	%M[UDR_reg], %[dat] \n\t"
-			"ret	\n\t"
+			"sts %M[UDR_reg], %[dat] \n\t"
+			"ret \n\t"
 				
 		"normal_insert_%=:"
-			"inc	%[head] \n\t"
+			"inc %[head] \n\t"
 			
 		#if (TX3_BUFFER_MASK != 0xff)
-			"andi	%[head], %M[mask] \n\t"
+			"andi %[head], %M[mask] \n\t"
 		#endif
 				
 		"waitforspace_%=:"
-			"lds	r27, (tx3_Tail) \n\t"
-			"cp		r27, %[head] \n\t"
-			"breq	waitforspace_%= \n\t"
+			"lds r27, (tx3_Tail) \n\t"
+			"cp r27, %[head] \n\t"
+			"breq waitforspace_%= \n\t"
 				
 			: // outputs
 			[head] "=r" (tmp_tx_Head),
@@ -2157,17 +2157,17 @@
 		);
 	#else
 			asm volatile("\n\t"
-				"lds	%[head], (tx3_Head) \n\t"
-				"inc	%[head] \n\t"
+				"lds %[head], (tx3_Head) \n\t"
+				"inc %[head] \n\t"
 			
 			#if (TX3_BUFFER_MASK != 0xff)
-				"andi	%[head], %M[mask] \n\t"
+				"andi %[head], %M[mask] \n\t"
 			#endif
 				
 			"waitforspace_%=:"
-				"lds	r27, (tx3_Tail) \n\t"
-				"cp		r27, %[head] \n\t"
-				"breq	waitforspace_%= \n\t"
+				"lds r27, (tx3_Tail) \n\t"
+				"cp r27, %[head] \n\t"
+				"breq waitforspace_%= \n\t"
 				
 				: // outputs
 				[head] "=r" (tmp_tx_Head)
@@ -2179,11 +2179,11 @@
 	#endif
 		
 		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(tx3_buffer)) \n\t"
-			"sbci	r27, hi8(-(tx3_buffer)) \n\t"
-			"st		X, %[dat] \n\t"
+			"mov r26, %[index]  \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(tx3_buffer)) \n\t"
+			"sbci r27, hi8(-(tx3_buffer)) \n\t"
+			"st X, %[dat] \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_tx_Head),
@@ -2206,9 +2206,9 @@
 		#endif
 			{
 				asm volatile("\n\t"
-					"lds   r25, %M[control_reg] \n\t"
-					"ori  r25, (1<<%M[udrie_bit]) \n\t"
-					"sts   %M[control_reg], r25 \n\t"
+					"lds r25, %M[control_reg] \n\t"
+					"ori r25, (1<<%M[udrie_bit]) \n\t"
+					"sts %M[control_reg], r25 \n\t"
 					: // outputs
 					: // inputs
 					[control_reg] "n" (_SFR_MEM_ADDR(UCSR3B_REGISTER)),
@@ -2301,11 +2301,11 @@
 	#endif
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index]  \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(tx3_buffer)) \n\t"
-			"sbci	r27, hi8(-(tx3_buffer)) \n\t"
-			"st		X, %[dat] \n\t"
+			"mov r26, %[index]  \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(tx3_buffer)) \n\t"
+			"sbci r27, hi8(-(tx3_buffer)) \n\t"
+			"st X, %[dat] \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_tx_Head),
@@ -2346,11 +2346,11 @@
 		asm volatile("\n\t"
 		
 		"load_loop_%=:"
-			"ld 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart3_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"ld r24, Z+ \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq skip_loop_%= \n\t"
+			"rcall uart3_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -2373,13 +2373,13 @@
 	void uart3_putstrl(char *string, uint8_t BytesToWrite)
 	{
 		asm volatile("\n\t"
-			"add	%[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
+			"add %[counter], r30 \n\t" // add ZL to a counter to compare against current pointer (8 bit length, doesn't care if overflow)
 		"load_loop_%=:"
-			"cp 	%[counter], r30\n\t"
-			"breq	skip_loop_%= \n\t"
-			"ld 	r24, Z+ \n\t"
-			"rcall	uart3_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"cp %[counter], r30\n\t"
+			"breq skip_loop_%= \n\t"
+			"ld r24, Z+ \n\t"
+			"rcall uart3_putc \n\t" // counter and Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 		
 			: // outputs
@@ -2405,11 +2405,11 @@
 		asm volatile("\n\t"
 			
 		"load_loop_%=:"
-			"lpm 	r24, Z+ \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	skip_loop_%= \n\t"
-			"rcall	uart3_putc \n\t" // Z pointer will not be affected in uart_putc()
-			"rjmp	load_loop_%= \n\t"
+			"lpm r24, Z+ \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq skip_loop_%= \n\t"
+			"rcall uart3_putc \n\t" // Z pointer will not be affected in uart_putc()
+			"rjmp load_loop_%= \n\t"
 		"skip_loop_%=:"
 	
 			: // outputs
@@ -2635,17 +2635,17 @@
 		tmp_rx_Tail = (tmp_rx_Tail+1) & RX0_BUFFER_MASK;
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
+			"mov r26, %[index] \n\t"
 		
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
-			"ldi	r27, 0x00 \n\t"
+			"ldi r27, 0x00 \n\t"
 		#endif
-			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+			"subi r26, lo8(-(rx0_buffer)) \n\t"
 		
 		#ifndef USART_USE_TINY_MEMORY_MODEL
-			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+			"sbci r27, hi8(-(rx0_buffer)) \n\t"
 		#endif
-			"ld 	%[temp], X \n\t"
+			"ld %[temp], X \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_rx_Tail),
@@ -2727,14 +2727,14 @@
 		asm volatile("\n\t"
 		
 		"loop_%=:"
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"st 	Z+, r24 \n\t"
-			"cpse	r24, __zero_reg__ \n\t"
-			"rjmp	loop_%= \n\t"
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"rcall uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"st Z+, r24 \n\t"
+			"cpse r24, __zero_reg__ \n\t"
+			"rjmp loop_%= \n\t"
 		"store_NULL_%=:"
-			"st 	Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -2787,36 +2787,36 @@
 		asm volatile("\n\t"
 		
 		"loop_%=:"
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
+			"rcall uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
+			"cpi r24, '\n' \n\t"
 		#else
-			"cpi	r24, '\r' \n\t"
+			"cpi r24, '\r' \n\t"
 		#endif
 
 		#ifdef RX_NEWLINE_MODE_RN
-			"breq	wait_loop2_%= \n\t"
+			"breq wait_loop2_%= \n\t"
 		#else
-			"breq	store_NULL_%= \n\t"
+			"breq store_NULL_%= \n\t"
 		#endif
 			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%= \n\t"
+			"st Z+, r24 \n\t"
+			"rjmp loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
-			"rcall	uart0_getc \n\t"
-			"and	r24, r24 \n\t"
-			"breq	wait_loop2_%= \n\t"
+			"rcall uart0_getc \n\t"
+			"and r24, r24 \n\t"
+			"breq wait_loop2_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -2879,47 +2879,47 @@
 		asm volatile("\n\t"
 		
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart0_getc \n\t" // counter and Z pointer will not be affected in uart0_getc()
-			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
-			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
-			"st		Z+, r24 \n\t"
-			"dec	%[limit] \n\t"
+			"rcall uart0_getc \n\t" // counter and Z pointer will not be affected in uart0_getc()
+			"cpi r24, 0x21\n\t" // if(tmp <= 32)
+			"brcs skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
+			"st Z+, r24 \n\t"
+			"dec %[limit] \n\t"
 		
 		"loop_%=:"	
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
+			"rcall uart0_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq wait_loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
+			"cpi r24, '\n' \n\t"
 		#else
-			"cpi	r24, '\r' \n\t"
+			"cpi r24, '\r' \n\t"
 		#endif
 		
 		#ifdef RX_NEWLINE_MODE_RN
-			"breq	exit_wait_loop_%= \n\t"
+			"breq exit_wait_loop_%= \n\t"
 		#else
-			"breq	store_NULL_%= \n\t"
+			"breq store_NULL_%= \n\t"
 		#endif
 			
-			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
-			"brcs	store_NULL_%= \n\t" // whitespace means end of this function, quit loop
+			"cpi r24, 0x21 \n\t" // if(tmp <= 32)
+			"brcs store_NULL_%= \n\t" // whitespace means end of this function, quit loop
 			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%=\n\t"
+			"st Z+, r24 \n\t"
+			"rjmp loop_%=\n\t"
 			
 		#ifdef RX_NEWLINE_MODE_RN
 		"exit_wait_loop_%=:"
-			"rcall	uart0_getc \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	exit_wait_loop_%= \n\t"
+			"rcall uart0_getc \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq exit_wait_loop_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -3042,17 +3042,17 @@
 		tmp_rx_Tail = (tmp_rx_Tail+1) & RX0_BUFFER_MASK;
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
+			"mov r26, %[index] \n\t"
 		
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
-			"ldi	r27, 0x00 \n\t"
+			"ldi r27, 0x00 \n\t"
 		#endif
-			"subi	r26, lo8(-(rx0_buffer)) \n\t"
+			"subi r26, lo8(-(rx0_buffer)) \n\t"
 		
 		#ifndef USART_USE_TINY_MEMORY_MODEL
-			"sbci	r27, hi8(-(rx0_buffer)) \n\t"
+			"sbci r27, hi8(-(rx0_buffer)) \n\t"
 		#endif
-			"ld 	%[temp], X \n\t"
+			"ld %[temp], X \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_rx_Tail),
@@ -3189,11 +3189,11 @@
 		tmp_rx_Tail = (tmp_rx_Tail+1) & RX1_BUFFER_MASK;
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx1_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
+			"mov r26, %[index] \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(rx1_buffer)) \n\t"
+			"sbci r27, hi8(-(rx1_buffer)) \n\t"
+			"ld %[temp], X \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_rx_Tail),
@@ -3250,14 +3250,14 @@
 		asm volatile("\n\t"
 		
 		"loop_%=:"
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"st 	Z+, r24 \n\t"
-			"cpse	r24, __zero_reg__ \n\t"
-			"rjmp	loop_%= \n\t"
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"rcall uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"st Z+, r24 \n\t"
+			"cpse r24, __zero_reg__ \n\t"
+			"rjmp loop_%= \n\t"
 		"store_NULL_%=:"
-			"st 	Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -3300,36 +3300,36 @@
 		asm volatile("\n\t"
 		
 		"loop_%=:"
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
+			"rcall uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
+			"cpi r24, '\n' \n\t"
 		#else
-			"cpi	r24, '\r' \n\t"
+			"cpi r24, '\r' \n\t"
 		#endif
 
 		#ifdef RX_NEWLINE_MODE_RN
-			"breq	wait_loop2_%= \n\t"
+			"breq wait_loop2_%= \n\t"
 		#else
-			"breq	store_NULL_%= \n\t"
+			"breq store_NULL_%= \n\t"
 		#endif
 			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%= \n\t"
+			"st Z+, r24 \n\t"
+			"rjmp loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
-			"rcall	uart1_getc \n\t"
-			"and	r24, r24 \n\t"
-			"breq	wait_loop2_%= \n\t"
+			"rcall uart1_getc \n\t"
+			"and r24, r24 \n\t"
+			"breq wait_loop2_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -3382,47 +3382,47 @@
 		asm volatile("\n\t"
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
-			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
-			"st		Z+, r24 \n\t"
-			"dec	%[limit] \n\t"
+			"rcall uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"cpi r24, 0x21\n\t" // if(tmp <= 32)
+			"brcs skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
+			"st Z+, r24 \n\t"
+			"dec %[limit] \n\t"
 		
 		"loop_%=:"	
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
+			"rcall uart1_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq wait_loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
+			"cpi r24, '\n' \n\t"
 		#else
-			"cpi	r24, '\r' \n\t"
+			"cpi r24, '\r' \n\t"
 		#endif
 		
 		#ifdef RX_NEWLINE_MODE_RN
-			"breq	exit_wait_loop_%= \n\t"
+			"breq exit_wait_loop_%= \n\t"
 		#else
-			"breq	store_NULL_%= \n\t"
+			"breq store_NULL_%= \n\t"
 		#endif
 			
-			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
-			"brcs	store_NULL_%= \n\t" // whitespace means end of this function, quit loop
+			"cpi r24, 0x21 \n\t" // if(tmp <= 32)
+			"brcs store_NULL_%= \n\t" // whitespace means end of this function, quit loop
 			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%=\n\t"
+			"st Z+, r24 \n\t"
+			"rjmp loop_%=\n\t"
 			
 		#ifdef RX_NEWLINE_MODE_RN
 		"exit_wait_loop_%=:"
-			"rcall	uart1_getc \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	exit_wait_loop_%= \n\t"
+			"rcall uart1_getc \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq exit_wait_loop_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -3505,11 +3505,11 @@
 		tmp_rx_Tail = (tmp_rx_Tail+1) & RX1_BUFFER_MASK;
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx1_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx1_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
+			"mov r26, %[index] \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(rx1_buffer)) \n\t"
+			"sbci r27, hi8(-(rx1_buffer)) \n\t"
+			"ld %[temp], X \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_rx_Tail),
@@ -3626,11 +3626,11 @@
 		tmp_rx_Tail = (tmp_rx_Tail+1) & RX2_BUFFER_MASK;
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx2_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx2_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
+			"mov r26, %[index] \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(rx2_buffer)) \n\t"
+			"sbci r27, hi8(-(rx2_buffer)) \n\t"
+			"ld %[temp], X \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_rx_Tail),
@@ -3687,14 +3687,14 @@
 		asm volatile("\n\t"
 		
 		"loop_%=:"
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"st 	Z+, r24 \n\t"
-			"cpse	r24, __zero_reg__ \n\t"
-			"rjmp	loop_%= \n\t"
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"rcall uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"st Z+, r24 \n\t"
+			"cpse r24, __zero_reg__ \n\t"
+			"rjmp loop_%= \n\t"
 		"store_NULL_%=:"
-			"st 	Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -3737,36 +3737,36 @@
 		asm volatile("\n\t"
 			
 		"loop_%=:"
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
+			"rcall uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
+			"cpi r24, '\n' \n\t"
 		#else
-			"cpi	r24, '\r' \n\t"
+			"cpi r24, '\r' \n\t"
 		#endif
 
 		#ifdef RX_NEWLINE_MODE_RN
-			"breq	wait_loop2_%= \n\t"
+			"breq wait_loop2_%= \n\t"
 		#else
-			"breq	store_NULL_%= \n\t"
+			"breq store_NULL_%= \n\t"
 		#endif
 			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%= \n\t"
+			"st Z+, r24 \n\t"
+			"rjmp loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
-			"rcall	uart2_getc \n\t"
-			"and	r24, r24 \n\t"
-			"breq	wait_loop2_%= \n\t"
+			"rcall uart2_getc \n\t"
+			"and r24, r24 \n\t"
+			"breq wait_loop2_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -3819,47 +3819,47 @@
 		asm volatile("\n\t"
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
-			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
-			"st		Z+, r24 \n\t"
-			"dec	%[limit] \n\t"
+			"rcall uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"cpi r24, 0x21\n\t" // if(tmp <= 32)
+			"brcs skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
+			"st Z+, r24 \n\t"
+			"dec %[limit] \n\t"
 		
 		"loop_%=:"	
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
+			"rcall uart2_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq wait_loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
+			"cpi r24, '\n' \n\t"
 		#else
-			"cpi	r24, '\r' \n\t"
+			"cpi r24, '\r' \n\t"
 		#endif
 		
 		#ifdef RX_NEWLINE_MODE_RN
-			"breq	exit_wait_loop_%= \n\t"
+			"breq exit_wait_loop_%= \n\t"
 		#else
-			"breq	store_NULL_%= \n\t"
+			"breq store_NULL_%= \n\t"
 		#endif
 			
-			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
-			"brcs	store_NULL_%= \n\t" // whitespace means end of this function, quit loop
+			"cpi r24, 0x21 \n\t" // if(tmp <= 32)
+			"brcs store_NULL_%= \n\t" // whitespace means end of this function, quit loop
 			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%=\n\t"
+			"st Z+, r24 \n\t"
+			"rjmp loop_%=\n\t"
 			
 		#ifdef RX_NEWLINE_MODE_RN
 		"exit_wait_loop_%=:"
-			"rcall	uart2_getc \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	exit_wait_loop_%= \n\t"
+			"rcall uart2_getc \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq exit_wait_loop_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -3943,11 +3943,11 @@
 		tmp_rx_Tail = (tmp_rx_Tail+1) & RX2_BUFFER_MASK;
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx2_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx2_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
+			"mov r26, %[index] \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(rx2_buffer)) \n\t"
+			"sbci r27, hi8(-(rx2_buffer)) \n\t"
+			"ld %[temp], X \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_rx_Tail),
@@ -4064,11 +4064,11 @@
 		tmp_rx_Tail = (tmp_rx_Tail+1) & RX3_BUFFER_MASK;
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx3_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx3_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
+			"mov r26, %[index] \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(rx3_buffer)) \n\t"
+			"sbci r27, hi8(-(rx3_buffer)) \n\t"
+			"ld %[temp], X \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_rx_Tail),
@@ -4125,14 +4125,14 @@
 		asm volatile("\n\t"
 		
 		"loop_%=:"
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
-			"rcall	uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"st 	Z+, r24 \n\t"
-			"cpse	r24, __zero_reg__ \n\t"
-			"rjmp	loop_%= \n\t"
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"rcall uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"st Z+, r24 \n\t"
+			"cpse r24, __zero_reg__ \n\t"
+			"rjmp loop_%= \n\t"
 		"store_NULL_%=:"
-			"st 	Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -4175,36 +4175,36 @@
 		asm volatile("\n\t"
 			
 		"loop_%=:"
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
+			"rcall uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq wait_loop_%= \n\t"
 		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
+			"cpi r24, '\n' \n\t"
 		#else
-			"cpi	r24, '\r' \n\t"
+			"cpi r24, '\r' \n\t"
 		#endif
 
 		#ifdef RX_NEWLINE_MODE_RN
-			"breq	wait_loop2_%= \n\t"
+			"breq wait_loop2_%= \n\t"
 		#else
-			"breq	store_NULL_%= \n\t"
+			"breq store_NULL_%= \n\t"
 		#endif
 			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%= \n\t"
+			"st Z+, r24 \n\t"
+			"rjmp loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_RN
 		"wait_loop2_%=:"
-			"rcall	uart3_getc \n\t"
-			"and	r24, r24 \n\t"
-			"breq	wait_loop2_%= \n\t"
+			"rcall uart3_getc \n\t"
+			"and r24, r24 \n\t"
+			"breq wait_loop2_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -4257,47 +4257,47 @@
 		asm volatile("\n\t"
 			
 		"skip_whitespaces_loop_%=:"
-			"rcall	uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"cpi	r24, 0x21\n\t" // if(tmp <= 32)
-			"brcs	skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
-			"st		Z+, r24 \n\t"
-			"dec	%[limit] \n\t"
+			"rcall uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"cpi r24, 0x21\n\t" // if(tmp <= 32)
+			"brcs skip_whitespaces_loop_%= \n\t" // skip all received whitespaces
+			"st Z+, r24 \n\t"
+			"dec %[limit] \n\t"
 		
 		"loop_%=:"	
-			"dec	%[limit] \n\t"
-			"breq	store_NULL_%= \n\t" // buffer limit hit, quit loop
+			"dec %[limit] \n\t"
+			"breq store_NULL_%= \n\t" // buffer limit hit, quit loop
 		"wait_loop_%=:"
-			"rcall	uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	wait_loop_%= \n\t"
+			"rcall uart3_getc \n\t" // counter and Z pointer will not be affected in uart_getc()
+			"and r24, r24 \n\t" // test for NULL
+			"breq wait_loop_%= \n\t"
 		
 		#ifdef RX_NEWLINE_MODE_N
-			"cpi	r24, '\n' \n\t"
+			"cpi r24, '\n' \n\t"
 		#else
-			"cpi	r24, '\r' \n\t"
+			"cpi r24, '\r' \n\t"
 		#endif
 		
 		#ifdef RX_NEWLINE_MODE_RN
-			"breq	exit_wait_loop_%= \n\t"
+			"breq exit_wait_loop_%= \n\t"
 		#else
-			"breq	store_NULL_%= \n\t"
+			"breq store_NULL_%= \n\t"
 		#endif
 			
-			"cpi	r24, 0x21 \n\t" // if(tmp <= 32)
-			"brcs	store_NULL_%= \n\t" // whitespace means end of this function, quit loop
+			"cpi r24, 0x21 \n\t" // if(tmp <= 32)
+			"brcs store_NULL_%= \n\t" // whitespace means end of this function, quit loop
 			
-			"st		Z+, r24 \n\t"
-			"rjmp	loop_%=\n\t"
+			"st Z+, r24 \n\t"
+			"rjmp loop_%=\n\t"
 			
 		#ifdef RX_NEWLINE_MODE_RN
 		"exit_wait_loop_%=:"
-			"rcall	uart3_getc \n\t"
-			"and	r24, r24 \n\t" // test for NULL
-			"breq	exit_wait_loop_%= \n\t"
+			"rcall uart3_getc \n\t"
+			"and r24, r24 \n\t" // test for NULL
+			"breq exit_wait_loop_%= \n\t"
 		#endif
 		
 		"store_NULL_%=:"
-			"st		Z, __zero_reg__ \n\t"
+			"st Z, __zero_reg__ \n\t"
 		
 			: // outputs
 			: // inputs
@@ -4380,11 +4380,11 @@
 		tmp_rx_Tail = (tmp_rx_Tail+1) & RX3_BUFFER_MASK;
 	
 		asm volatile("\n\t"
-			"mov	r26, %[index] \n\t"
-			"ldi	r27, 0x00 \n\t"
-			"subi	r26, lo8(-(rx3_buffer)) \n\t"
-			"sbci	r27, hi8(-(rx3_buffer)) \n\t"
-			"ld 	%[temp], X \n\t"
+			"mov r26, %[index] \n\t"
+			"ldi r27, 0x00 \n\t"
+			"subi r26, lo8(-(rx3_buffer)) \n\t"
+			"sbci r27, hi8(-(rx3_buffer)) \n\t"
+			"ld %[temp], X \n\t"
 			
 			: // outputs
 			[index] "+r" (tmp_rx_Tail),
@@ -4704,35 +4704,35 @@
 		asm volatile("\n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"push	r16 \n\t"
-			"in		r16, __SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16, __SREG__ \n\t"
 		#else
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#endif
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			"push r30 \n\t"
+			"push r31 \n\t"
 		#else
 			#ifdef __AVR_HAVE_MOVW__
-				"movw	%[z_save], r30 \n\t"
+				"movw %[z_save], r30 \n\t"
 			#else // in this case only 4 cycles are prematured out
-				"mov	%A[z_save], r30 \n\t"
-				"mov	%B[z_save], r31 \n\t"
+				"mov %A[z_save], r30 \n\t"
+				"mov %B[z_save], r31 \n\t"
 			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
+				"cbi %M[control_reg_IO], %M[udrie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-				"out	%M[control_reg_IO], r31\n\t"
+				"in r31, %M[control_reg_IO] \n\t"
+				"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+				"out %M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 			
 			"sei \n\t"
@@ -4740,55 +4740,55 @@
 		
 			TX0_EVERYCAL_EVENT
 		
-			"lds	r30, (tx0_Tail) \n\t"
-			"lds	r31, (tx0_Head) \n\t"
+			"lds r30, (tx0_Tail) \n\t"
+			"lds r31, (tx0_Head) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
-			"cp		r30, r31 \n\t"
-			"breq	USART0_TX_EXIT \n\t"
+			"cp r30, r31 \n\t"
+			"breq USART0_TX_EXIT \n\t"
 		#endif
 		
-			"inc	r30 \n\t"
+			"inc r30 \n\t"
 	
 		#if (TX0_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"
+			"andi r30, %M[mask]\n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cpse	r30, r31 \n\t"
-			"rjmp	USART0_TX_CONTINUE \n\t"
+			"cpse r30, r31 \n\t"
+			"rjmp USART0_TX_CONTINUE \n\t"
 			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
+				"cbi %M[control_reg_IO], %M[udrie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-				"out	%M[control_reg_IO], r31\n\t"
+				"in r31, %M[control_reg_IO] \n\t"
+				"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+				"out %M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 			
 		"USART0_TX_CONTINUE: "
 		#endif
 			
-			"sts	(tx0_Tail), r30 \n\t"
+			"sts (tx0_Tail), r30 \n\t"
 	
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__) // on ATtiny2313 upper byte in pointer pair is ignored
-			"ldi	r31, 0x00 \n\t"
+			"ldi r31, 0x00 \n\t"
 		#endif
-			"subi	r30, lo8(-(tx0_buffer)) \n\t"
+			"subi r30, lo8(-(tx0_buffer)) \n\t"
 		
 		#ifndef USART_USE_TINY_MEMORY_MODEL
-			"sbci	r31, hi8(-(tx0_buffer)) \n\t"
+			"sbci r31, hi8(-(tx0_buffer)) \n\t"
 		#endif
-			"ld		r30, Z \n\t"
+			"ld r30, Z \n\t"
 		
 		#ifdef USART0_IN_IO_ADDRESS_SPACE
-			"out	%M[UDR_reg_IO], r30 \n\t"
+			"out %M[UDR_reg_IO], r30 \n\t"
 		#else
-			"sts	%M[UDR_reg], r30 \n\t"
+			"sts %M[UDR_reg], r30 \n\t"
 		#endif
 			
 			TX0_TRANSMIT_EVENT
@@ -4796,36 +4796,36 @@
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"sbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
+				"sbi %M[control_reg_IO], %M[udrie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)	
-				"in		r31, %M[control_reg_IO] \n\t"
-				"ori	r31, (1<<%M[udrie_bit]) \n\t"
-				"out	%M[control_reg_IO], r31\n\t"
+				"in r31, %M[control_reg_IO] \n\t"
+				"ori r31, (1<<%M[udrie_bit]) \n\t"
+				"out %M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"ori	r31, (1<<%M[udrie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"ori r31, (1<<%M[udrie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 		#endif
 			
 		"USART0_TX_EXIT: "
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r31 \n\t"
-			"pop	r30 \n\t"
+			"pop r31 \n\t"
+			"pop r30 \n\t"
 		#else
 			#ifdef __AVR_HAVE_MOVW__
-				"movw	r30, %[z_save] \n\t"
+				"movw r30, %[z_save] \n\t"
 			#else
-				"mov	r31, %B[z_save] \n\t"
-				"mov	r30, %A[z_save] \n\t"
+				"mov r31, %B[z_save] \n\t"
+				"mov r30, %A[z_save] \n\t"
 			#endif
 		#endif
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#else
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#endif
 		
 			"reti \n\t"
@@ -4875,24 +4875,24 @@
 		asm volatile("\n\t"
 
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"push	r16 \n\t"
-			"in		r16, __SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16, __SREG__ \n\t"
 		#else
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#endif
 		
-			"push	r25 \n\t"
+			"push r25 \n\t"
 			
 		#ifdef USART0_PUSH_BEFORE_RX
 			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-				"push	r30 \n\t"
-				"push	r31 \n\t"
+				"push r30 \n\t"
+				"push r31 \n\t"
 			#else
 				#ifdef __AVR_HAVE_MOVW__
-					"movw	%[z_save], r30 \n\t"
+					"movw %[z_save], r30 \n\t"
 				#else // in this case only 4 cycles are prematured out
-					"mov	%A[z_save], r30\n\t"
-					"mov	%B[z_save], r31\n\t"
+					"mov %A[z_save], r30\n\t"
+					"mov %B[z_save], r31\n\t"
 				#endif
 			#endif
 		#endif
@@ -4901,37 +4901,37 @@
 			RX0_FRAMING_EVENT
 			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"in		r25, %M[UDR_reg_IO] \n\t"
+				"in r25, %M[UDR_reg_IO] \n\t"
 			#else
-				"lds	r25, %M[UDR_reg] \n\t"
+				"lds r25, %M[UDR_reg] \n\t"
 			#endif
 		#endif
 			
 		#ifndef USART0_PUSH_BEFORE_RX
 			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-				"push	r30 \n\t"
-				"push	r31 \n\t"
+				"push r30 \n\t"
+				"push r31 \n\t"
 			#else
 				#ifdef __AVR_HAVE_MOVW__
-					"movw	%[z_save], r30 \n\t"
+					"movw %[z_save], r30 \n\t"
 				#else // in this case only 4 cycles are prematured out
-					"mov	%A[z_save], r30\n\t"
-					"mov	%B[z_save], r31\n\t"
+					"mov %A[z_save], r30\n\t"
+					"mov %B[z_save], r31\n\t"
 				#endif
 			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
+				"cbi %M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-				"out	%M[control_reg_IO], r31\n\t"
+				"in r31, %M[control_reg_IO] \n\t"
+				"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"out %M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 			
 			"sei \n\t"
@@ -4939,31 +4939,31 @@
 	
 			RX0_EVERYCALL_EVENT
 	
-			"lds	r30, (rx0_Head) \n\t"
-			"lds	r31, (rx0_Tail) \n\t"
+			"lds r30, (rx0_Head) \n\t"
+			"lds r31, (rx0_Tail) \n\t"
 		
-			"inc	r30 \n\t"
+			"inc r30 \n\t"
 		
 		#if (RX0_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"
+			"andi r30, %M[mask]\n\t"
 		#endif
 		
-			"cp		r31, r30 \n\t"
+			"cp r31, r30 \n\t"
 		#if defined(USART0_USE_SOFT_RTS)||(defined(USART0_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
-			"breq	USART0_DISABLE_RXCIE \n\t"
+			"breq USART0_DISABLE_RXCIE \n\t"
 		#elif defined(USART0_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
-			"breq	USART0_RX_EXIT_SKIP \n\t"
+			"breq USART0_RX_EXIT_SKIP \n\t"
 		#else
-			"breq	USART0_RX_EXIT \n\t"
+			"breq USART0_RX_EXIT \n\t"
 		#endif
 		
 		#ifdef USART0_EXTEND_RX_BUFFER
 			RX0_FRAMING_EVENT
 			
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"in		r25, %M[UDR_reg_IO] \n\t"
+				"in r25, %M[UDR_reg_IO] \n\t"
 			#else
-				"lds	r25, %M[UDR_reg] \n\t"
+				"lds r25, %M[UDR_reg] \n\t"
 			#endif
 		#endif
 		
@@ -4972,42 +4972,42 @@
 		#if defined(USART0_MPCM_MODE)&&!defined(MPCM0_MASTER_ONLY)
 
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"in 	r31, %M[UCSRA_reg_IO] \n\t"
+				"in r31, %M[UCSRA_reg_IO] \n\t"
 			#else
-				"lds	r31, %M[UCSRA_reg] \n\t"
+				"lds r31, %M[UCSRA_reg] \n\t"
 			#endif
 
-				"sbrs	r31, %M[mpcm_bit] \n\t"
-				"rjmp	USART0_RX_CONTINUE \n\t"
-				"cpi	r25, %M[mpcm_address] \n\t"
+				"sbrs r31, %M[mpcm_bit] \n\t"
+				"rjmp USART0_RX_CONTINUE \n\t"
+				"cpi r25, %M[mpcm_address] \n\t"
 			#ifdef MPCM0_GCALL_ADDRESS
-				"breq	p_%= \n\t"
-				"cpi	r25, %M[mpcm_gcall_address] \n\t"
+				"breq p_%= \n\t"
+				"cpi r25, %M[mpcm_gcall_address] \n\t"
 			#endif
-				"brne	USART0_RX_EXIT \n\t"
+				"brne USART0_RX_EXIT \n\t"
 			"p_%=: "
-				"andi	r31, ~(1<<%M[mpcm_bit]) \n\t"
+				"andi r31, ~(1<<%M[mpcm_bit]) \n\t"
 
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"out	%M[UCSRA_reg_IO], r31 \n\t"
+				"out %M[UCSRA_reg_IO], r31 \n\t"
 			#else
-				"sts	%M[UCSRA_reg], r31 \n\t"
+				"sts %M[UCSRA_reg], r31 \n\t"
 			#endif
 
 		"USART0_RX_CONTINUE: "
 		#endif
 			
-			"sts	(rx0_Head), r30 \n\t"
+			"sts (rx0_Head), r30 \n\t"
 		
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)	// on ATtiny2313 upper byte in pointer pair is ignored
-			"ldi	r31, 0x00 \n\t"
+			"ldi r31, 0x00 \n\t"
 		#endif
-			"subi	r30, lo8(-(rx0_buffer))\n\t"
+			"subi r30, lo8(-(rx0_buffer))\n\t"
 		
 		#ifndef USART_USE_TINY_MEMORY_MODEL
-			"sbci	r31, hi8(-(rx0_buffer))\n\t"
+			"sbci r31, hi8(-(rx0_buffer))\n\t"
 		#endif	
-			"st		Z, r25 \n\t"
+			"st Z, r25 \n\t"
 		
 			RX0_LATE_RECEIVE_EVENT
 			
@@ -5015,39 +5015,39 @@
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			"cli \n\t"
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"sbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
+				"sbi %M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"
-				"ori	r31, (1<<%M[rxcie_bit]) \n\t"
-				"out	%M[control_reg_IO], r31\n\t"
+				"in r31, %M[control_reg_IO] \n\t"
+				"ori r31, (1<<%M[rxcie_bit]) \n\t"
+				"out %M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"ori	r31, (1<<%M[rxcie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"ori r31, (1<<%M[rxcie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 			
 		"USART0_RX_EXIT_SKIP: "
 		#endif
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r31 \n\t"
-			"pop	r30 \n\t"
+			"pop r31 \n\t"
+			"pop r30 \n\t"
 		#else
 			#ifdef __AVR_HAVE_MOVW__
-				"movw	r30, %[z_save] \n\t"
+				"movw r30, %[z_save] \n\t"
 			#else
-				"mov	r31, %B[z_save] \n\t"
-				"mov	r30, %A[z_save] \n\t"
+				"mov r31, %B[z_save] \n\t"
+				"mov r30, %A[z_save] \n\t"
 			#endif
 		#endif
 		
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#else
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#endif
 
 			"reti \n\t"
@@ -5056,27 +5056,27 @@
 		"USART0_DISABLE_RXCIE: "
 		
 		#ifdef USART0_USE_SOFT_RTS
-			"sbi	%M[rts_port], %M[rts_pin] \n\t"
+			"sbi %M[rts_port], %M[rts_pin] \n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART0_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
+				"cbi %M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#elif defined(USART0_IN_UPPER_IO_ADDRESS_SPACE)
-				"in		r31, %M[control_reg_IO] \n\t"
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-				"out	%M[control_reg_IO], r31\n\t"
+				"in r31, %M[control_reg_IO] \n\t"
+				"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"out %M[control_reg_IO], r31\n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 		#endif
 			
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"rjmp	USART0_RX_EXIT_SKIP \n\t"
+			"rjmp USART0_RX_EXIT_SKIP \n\t"
 		#else
-			"rjmp	USART0_RX_EXIT \n\t"
+			"rjmp USART0_RX_EXIT \n\t"
 		#endif
 		#endif
 			: // output operands
@@ -5116,26 +5116,26 @@
 		asm volatile("\n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"push	r16 \n\t"
-			"in		r16, __SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16, __SREG__ \n\t"
 		#else
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#endif
 
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			"push r30 \n\t"
+			"push r31 \n\t"
 		#else
-			"movw	%[z_save], r30 \n\t"
+			"movw %[z_save], r30 \n\t"
 		#endif
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
+				"cbi %M[control_reg_IO], %M[udrie_bit] \n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 		
 			"sei \n\t"
@@ -5143,47 +5143,47 @@
 			
 			TX1_EVERYCAL_EVENT
 			
-			"lds	r30, (tx1_Tail) \n\t"
-			"lds	r31, (tx1_Head) \n\t"
+			"lds r30, (tx1_Tail) \n\t"
+			"lds r31, (tx1_Head) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
-			"cp		r30, r31 \n\t"
-			"breq	USART1_TX_EXIT \n\t"
+			"cp r30, r31 \n\t"
+			"breq USART1_TX_EXIT \n\t"
 		#endif
 		
-			"inc	r30 \n\t"
+			"inc r30 \n\t"
 		
 		#if (TX1_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"
+			"andi r30, %M[mask]\n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cpse	r30, r31 \n\t"
-			"rjmp	USART1_TX_CONTINUE \n\t"
+			"cpse r30, r31 \n\t"
+			"rjmp USART1_TX_CONTINUE \n\t"
 			
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
+				"cbi %M[control_reg_IO], %M[udrie_bit] \n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 			
 		"USART1_TX_CONTINUE: "
 		#endif
 		
-			"sts	(tx1_Tail), r30 \n\t"
+			"sts (tx1_Tail), r30 \n\t"
 		
-			"ldi	r31, 0x00 \n\t"
-			"subi	r30, lo8(-(tx1_buffer)) \n\t"
-			"sbci	r31, hi8(-(tx1_buffer)) \n\t"
+			"ldi r31, 0x00 \n\t"
+			"subi r30, lo8(-(tx1_buffer)) \n\t"
+			"sbci r31, hi8(-(tx1_buffer)) \n\t"
 			
-			"ld		r30, Z \n\t"
+			"ld r30, Z \n\t"
 		
 		#ifdef USART1_IN_IO_ADDRESS_SPACE
-			"out	%M[UDR_reg_IO], r30 \n\t"
+			"out %M[UDR_reg_IO], r30 \n\t"
 		#else
-			"sts	%M[UDR_reg], r30 \n\t"
+			"sts %M[UDR_reg], r30 \n\t"
 		#endif
 		
 			TX1_TRANSMIT_EVENT
@@ -5191,27 +5191,27 @@
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"sbi	%M[control_reg_IO], %M[udrie_bit] \n\t"
+				"sbi %M[control_reg_IO], %M[udrie_bit] \n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"ori	r31, (1<<%M[udrie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"ori r31, (1<<%M[udrie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 		#endif
 		
 		"USART1_TX_EXIT: "
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r31 \n\t"
-			"pop	r30 \n\t"
+			"pop r31 \n\t"
+			"pop r30 \n\t"
 		#else
-			"movw	r30, %[z_save] \n\t"
+			"movw r30, %[z_save] \n\t"
 		#endif
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#else
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#endif
 
 			"reti \n\t"
@@ -5262,20 +5262,20 @@
 		asm volatile("\n\t"
 	
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"push	r16 \n\t"
-			"in		r16, __SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16, __SREG__ \n\t"
 		#else
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#endif
 	
-			"push	r25 \n\t"
+			"push r25 \n\t"
 		
 		#ifdef USART1_PUSH_BEFORE_RX
 			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-				"push	r30 \n\t"
-				"push	r31 \n\t"
+				"push r30 \n\t"
+				"push r31 \n\t"
 			#else
-				"movw	%[z_save], r30 \n\t"
+				"movw %[z_save], r30 \n\t"
 			#endif
 		#endif
 		
@@ -5283,28 +5283,28 @@
 			RX1_FRAMING_EVENT
 		
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"in		r25, %M[UDR_reg_IO] \n\t"
+				"in r25, %M[UDR_reg_IO] \n\t"
 			#else
-				"lds	r25, %M[UDR_reg] \n\t"
+				"lds r25, %M[UDR_reg] \n\t"
 			#endif
 		#endif
 			
 		#ifndef USART1_PUSH_BEFORE_RX
 			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-				"push	r30 \n\t"
-				"push	r31 \n\t"
+				"push r30 \n\t"
+				"push r31 \n\t"
 			#else
-				"movw	%[z_save], r30 \n\t"
+				"movw %[z_save], r30 \n\t"
 			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
+				"cbi %M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 		
 			"sei \n\t"
@@ -5312,31 +5312,31 @@
 			
 			RX1_EVERYCALL_EVENT
 			
-			"lds	r30, (rx1_Head) \n\t"
-			"lds	r31, (rx1_Tail) \n\t"
+			"lds r30, (rx1_Head) \n\t"
+			"lds r31, (rx1_Tail) \n\t"
 		
-			"inc	r30 \n\t"
+			"inc r30 \n\t"
 		
 		#if (RX1_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"
+			"andi r30, %M[mask]\n\t"
 		#endif
 		
-			"cp		r31, r30 \n\t"
+			"cp r31, r30 \n\t"
 		#if defined(USART1_USE_SOFT_RTS)||(defined(USART1_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
-			"breq	USART1_DISABLE_RXCIE \n\t"           
+			"breq USART1_DISABLE_RXCIE \n\t"           
 		#elif defined(USART1_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
-			"breq	USART1_RX_EXIT_SKIP \n\t"          
+			"breq USART1_RX_EXIT_SKIP \n\t"          
 		#else
-			"breq	USART1_RX_EXIT \n\t"           
+			"breq USART1_RX_EXIT \n\t"           
 		#endif
 			
 		#ifdef USART1_EXTEND_RX_BUFFER
 			RX1_FRAMING_EVENT
 			
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"in		r25, %M[UDR_reg_IO] \n\t"
+				"in r25, %M[UDR_reg_IO] \n\t"
 			#else
-				"lds	r25, %M[UDR_reg] \n\t"
+				"lds r25, %M[UDR_reg] \n\t"
 			#endif
 		#endif
 			
@@ -5345,37 +5345,37 @@
 		#if defined(USART1_MPCM_MODE)&&!defined(MPCM1_MASTER_ONLY)
 		
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"in		r31, %M[UCSRA_reg_IO] \n\t"
+				"in r31, %M[UCSRA_reg_IO] \n\t"
 			#else
-				"lds	r31, %M[UCSRA_reg] \n\t"
+				"lds r31, %M[UCSRA_reg] \n\t"
 			#endif
 		
-				"sbrs	r31, %M[mpcm_bit] \n\t"
-				"rjmp	USART1_RX_CONTINUE \n\t"
-				"cpi	r25, %M[mpcm_address] \n\t"
+				"sbrs r31, %M[mpcm_bit] \n\t"
+				"rjmp USART1_RX_CONTINUE \n\t"
+				"cpi r25, %M[mpcm_address] \n\t"
 			#ifdef MPCM1_GCALL_ADDRESS
-				"breq	p_%= \n\t"
-				"cpi	r25, %M[mpcm_gcall_address] \n\t"
+				"breq p_%= \n\t"
+				"cpi r25, %M[mpcm_gcall_address] \n\t"
 			#endif
-				"brne	USART1_RX_EXIT \n\t"
+				"brne USART1_RX_EXIT \n\t"
 			"p_%=: "
-				"andi	r31, ~(1<<%M[mpcm_bit]) \n\t"
+				"andi r31, ~(1<<%M[mpcm_bit]) \n\t"
 		
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"out	%M[UCSRA_reg_IO], r31 \n\t"
+				"out %M[UCSRA_reg_IO], r31 \n\t"
 			#else
-				"sts	%M[UCSRA_reg], r31 \n\t"
+				"sts %M[UCSRA_reg], r31 \n\t"
 			#endif
 		
 		"USART1_RX_CONTINUE: "
 		#endif
 			
-			"sts	(rx1_Head), r30 \n\t"
+			"sts (rx1_Head), r30 \n\t"
 		
-			"ldi	r31, 0x00 \n\t"
-			"subi	r30, lo8(-(rx1_buffer))\n\t"
-			"sbci	r31, hi8(-(rx1_buffer))\n\t"
-			"st		Z, r25 \n\t"
+			"ldi r31, 0x00 \n\t"
+			"subi r30, lo8(-(rx1_buffer))\n\t"
+			"sbci r31, hi8(-(rx1_buffer))\n\t"
+			"st Z, r25 \n\t"
 		
 			RX1_LATE_RECEIVE_EVENT
 		
@@ -5384,30 +5384,30 @@
 			"cli \n\t"
 			
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"sbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
+				"sbi %M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"ori	r31, (1<<%M[rxcie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"ori r31, (1<<%M[rxcie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 			
 		"USART1_RX_EXIT_SKIP: "
 		#endif
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r31 \n\t"
-			"pop	r30 \n\t"
+			"pop r31 \n\t"
+			"pop r30 \n\t"
 		#else
-			"movw	r30, %[z_save] \n\t"
+			"movw r30, %[z_save] \n\t"
 		#endif
 		
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#else
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#endif
 
 			"reti \n\t"
@@ -5416,23 +5416,23 @@
 		"USART1_DISABLE_RXCIE: "
 		
 		#ifdef USART1_USE_SOFT_RTS
-			"sbi	%M[rts_port], %M[rts_pin] \n\t"
+			"sbi %M[rts_port], %M[rts_pin] \n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_RX_INTERRUPT
 			#ifdef USART1_IN_IO_ADDRESS_SPACE
-				"cbi	%M[control_reg_IO], %M[rxcie_bit] \n\t"
+				"cbi %M[control_reg_IO], %M[rxcie_bit] \n\t"
 			#else
-				"lds	r31, %M[control_reg] \n\t"
-				"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-				"sts	%M[control_reg], r31 \n\t"
+				"lds r31, %M[control_reg] \n\t"
+				"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+				"sts %M[control_reg], r31 \n\t"
 			#endif
 		#endif
 			
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"rjmp	USART1_RX_EXIT_SKIP \n\t"
+			"rjmp USART1_RX_EXIT_SKIP \n\t"
 		#else
-			"rjmp	USART1_RX_EXIT \n\t"
+			"rjmp USART1_RX_EXIT \n\t"
 		#endif
 		#endif
 			: // output operands
@@ -5472,87 +5472,87 @@
 		asm volatile("\n\t"
 	
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"push	r16 \n\t"
-			"in		r16, __SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16, __SREG__ \n\t"
 		#else
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#endif
 	
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			"push r30 \n\t"
+			"push r31 \n\t"
 		#else
-			"movw	%[z_save], r30 \n\t"
+			"movw %[z_save], r30 \n\t"
 		#endif
 	
 		#ifdef USART_UNSAFE_TX_INTERRUPT
-			"lds	r31, %M[control_reg] \n\t"
-			"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		
 			"sei \n\t"
 		#endif
 		
 			TX2_EVERYCAL_EVENT
 		
-			"lds	r30, (tx2_Tail) \n\t"
-			"lds	r31, (tx2_Head) \n\t"
+			"lds r30, (tx2_Tail) \n\t"
+			"lds r31, (tx2_Head) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
-			"cp		r30, r31 \n\t"
-			"breq	USART2_TX_EXIT \n\t"
+			"cp r30, r31 \n\t"
+			"breq USART2_TX_EXIT \n\t"
 		#endif
 		
-			"inc	r30 \n\t"
+			"inc r30 \n\t"
 		
 		#if (TX2_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"
+			"andi r30, %M[mask]\n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cpse	r30, r31 \n\t"
-			"rjmp	USART2_TX_CONTINUE \n\t"
+			"cpse r30, r31 \n\t"
+			"rjmp USART2_TX_CONTINUE \n\t"
 			
-			"lds	r31, %M[control_reg] \n\t"
-			"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 			
 		"USART2_TX_CONTINUE: "
 		#endif
 			
-			"sts	(tx2_Tail), r30 \n\t"
+			"sts (tx2_Tail), r30 \n\t"
 			
-			"ldi	r31, 0x00 \n\t"
-			"subi	r30, lo8(-(tx2_buffer)) \n\t"
-			"sbci	r31, hi8(-(tx2_buffer)) \n\t"
+			"ldi r31, 0x00 \n\t"
+			"subi r30, lo8(-(tx2_buffer)) \n\t"
+			"sbci r31, hi8(-(tx2_buffer)) \n\t"
 			
-			"ld		r30, Z \n\t"
+			"ld r30, Z \n\t"
 			
-			"sts	%M[UDR_reg], r30 \n\t"
+			"sts %M[UDR_reg], r30 \n\t"
 
 			TX2_TRANSMIT_EVENT
 
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"
 			
-			"lds	r31, %M[control_reg] \n\t"
-			"ori	r31, (1<<%M[udrie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"ori r31, (1<<%M[udrie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		#endif
 
 		"USART2_TX_EXIT: "
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r31 \n\t"
-			"pop	r30 \n\t"
+			"pop r31 \n\t"
+			"pop r30 \n\t"
 		#else
-			"movw	r30, %[z_save] \n\t"
+			"movw r30, %[z_save] \n\t"
 		#endif
 			
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#else
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#endif
 
 			"reti \n\t"
@@ -5601,97 +5601,97 @@
 		asm volatile("\n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"push	r16 \n\t"
-			"in		r16, __SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16, __SREG__ \n\t"
 		#else
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#endif
 
-			"push	r25 \n\t"
+			"push r25 \n\t"
 			
 		#ifdef USART2_PUSH_BEFORE_RX
 			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-				"push	r30 \n\t"
-				"push	r31 \n\t"
+				"push r30 \n\t"
+				"push r31 \n\t"
 			#else
-				"movw	%[z_save], r30 \n\t"
+				"movw %[z_save], r30 \n\t"
 			#endif
 		#endif	
 			
 		#ifndef USART2_EXTEND_RX_BUFFER
 			RX2_FRAMING_EVENT
-			"lds	r25, %M[UDR_reg] \n\t"
+			"lds r25, %M[UDR_reg] \n\t"
 		#endif
 			
 		#ifndef USART2_PUSH_BEFORE_RX
 			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-				"push	r30 \n\t"
-				"push	r31 \n\t"
+				"push r30 \n\t"
+				"push r31 \n\t"
 			#else
-				"movw	%[z_save], r30 \n\t"
+				"movw %[z_save], r30 \n\t"
 			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"lds	r31, %M[control_reg] \n\t"
-			"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 			
 			"sei \n\t"
 		#endif
 		
 			RX2_EVERYCALL_EVENT
 		
-			"lds	r30, (rx2_Head) \n\t"
-			"lds	r31, (rx2_Tail) \n\t"
+			"lds r30, (rx2_Head) \n\t"
+			"lds r31, (rx2_Tail) \n\t"
 		
-			"inc	r30 \n\t"
+			"inc r30 \n\t"
 		
 		#if (RX2_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"
+			"andi r30, %M[mask]\n\t"
 		#endif
 		
-			"cp		r31, r30 \n\t"
+			"cp r31, r30 \n\t"
 		#if defined(USART2_USE_SOFT_RTS)||(defined(USART2_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
-			"breq	USART2_DISABLE_RXCIE \n\t"           
+			"breq USART2_DISABLE_RXCIE \n\t"           
 		#elif defined(USART2_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
-			"breq	USART2_RX_EXIT_SKIP \n\t"          
+			"breq USART2_RX_EXIT_SKIP \n\t"          
 		#else
-			"breq	USART2_RX_EXIT \n\t"           
+			"breq USART2_RX_EXIT \n\t"           
 		#endif
 		
 		#ifdef USART2_EXTEND_RX_BUFFER
 			RX2_FRAMING_EVENT
-			"lds	r25, %M[UDR_reg] \n\t"
+			"lds r25, %M[UDR_reg] \n\t"
 		#endif
 		
 			RX2_EARLY_RECEIVE_EVENT
 		
 		#if defined(USART2_MPCM_MODE)&&!defined(MPCM2_MASTER_ONLY)
-			"lds	r31, %M[UCSRA_reg] \n\t"
+			"lds r31, %M[UCSRA_reg] \n\t"
 		
-			"sbrs	r31, %M[mpcm_bit] \n\t"
-			"rjmp	USART2_RX_CONTINUE \n\t"
-			"cpi	r25, %M[mpcm_address] \n\t"
+			"sbrs r31, %M[mpcm_bit] \n\t"
+			"rjmp USART2_RX_CONTINUE \n\t"
+			"cpi r25, %M[mpcm_address] \n\t"
 		#ifdef MPCM2_GCALL_ADDRESS
-			"breq	p_%= \n\t"
-			"cpi	r25, %M[mpcm_gcall_address] \n\t"
+			"breq p_%= \n\t"
+			"cpi r25, %M[mpcm_gcall_address] \n\t"
 		#endif
-			"brne	USART2_RX_EXIT \n\t"
+			"brne USART2_RX_EXIT \n\t"
 		"p_%=: "
-			"andi	r31, ~(1<<%M[mpcm_bit]) \n\t"
+			"andi r31, ~(1<<%M[mpcm_bit]) \n\t"
 		
-			"sts	%M[UCSRA_reg], r31 \n\t"
+			"sts %M[UCSRA_reg], r31 \n\t"
 		
 		"USART2_RX_CONTINUE: "
 		#endif
 			
-			"sts	(rx2_Head), r30 \n\t"
+			"sts (rx2_Head), r30 \n\t"
 		
-			"ldi	r31, 0x00 \n\t"
-			"subi	r30, lo8(-(rx2_buffer))\n\t"
-			"sbci	r31, hi8(-(rx2_buffer))\n\t"
-			"st		Z, r25 \n\t"
+			"ldi r31, 0x00 \n\t"
+			"subi r30, lo8(-(rx2_buffer))\n\t"
+			"sbci r31, hi8(-(rx2_buffer))\n\t"
+			"st Z, r25 \n\t"
 		
 			RX2_LATE_RECEIVE_EVENT
 		
@@ -5699,27 +5699,27 @@
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			"cli \n\t"
 			
-			"lds	r31, %M[control_reg] \n\t"
-			"ori	r31, (1<<%M[rxcie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"ori r31, (1<<%M[rxcie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		
 		"USART2_RX_EXIT_SKIP: "
 		#endif
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r31 \n\t"
-			"pop	r30 \n\t"
+			"pop r31 \n\t"
+			"pop r30 \n\t"
 		#else
-			"movw	r30, %[z_save] \n\t"
+			"movw r30, %[z_save] \n\t"
 		#endif
 			
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 	
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#else
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#endif
 
 			"reti \n\t"
@@ -5728,19 +5728,19 @@
 		"USART2_DISABLE_RXCIE: "
 		
 		#ifdef USART3_USE_SOFT_RTS
-			"sbi	%M[rts_port], %M[rts_pin] \n\t"
+			"sbi %M[rts_port], %M[rts_pin] \n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_RX_INTERRUPT
-			"lds	r31, %M[control_reg] \n\t"
-			"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		#endif
 			
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"rjmp	USART2_RX_EXIT_SKIP \n\t"
+			"rjmp USART2_RX_EXIT_SKIP \n\t"
 		#else
-			"rjmp	USART2_RX_EXIT \n\t"
+			"rjmp USART2_RX_EXIT \n\t"
 		#endif
 		#endif
 			: // output operands
@@ -5777,87 +5777,87 @@
 		asm volatile("\n\t"
 	
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"push	r16 \n\t"
-			"in		r16, __SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16, __SREG__ \n\t"
 		#else
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#endif
 	
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"push	r30 \n\t"
-			"push	r31 \n\t"
+			"push r30 \n\t"
+			"push r31 \n\t"
 		#else
-			"movw	%[z_save], r30 \n\t"
+			"movw %[z_save], r30 \n\t"
 		#endif
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
-			"lds	r31, %M[control_reg] \n\t"
-			"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		
 			"sei \n\t"
 		#endif
 			
 			TX3_EVERYCAL_EVENT
 			
-			"lds	r30, (tx3_Tail) \n\t"
-			"lds	r31, (tx3_Head) \n\t"
+			"lds r30, (tx3_Tail) \n\t"
+			"lds r31, (tx3_Head) \n\t"
 		
 		#ifdef USART_UNSAFE_TX_INTERRUPT
-			"cp		r30, r31 \n\t"
-			"breq	USART3_TX_EXIT \n\t"
+			"cp r30, r31 \n\t"
+			"breq USART3_TX_EXIT \n\t"
 		#endif
 		
-			"inc	r30 \n\t"
+			"inc r30 \n\t"
 		
 		#if (TX3_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"
+			"andi r30, %M[mask]\n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_TX_INTERRUPT
-			"cpse	r30, r31 \n\t"
-			"rjmp	USART3_TX_CONTINUE \n\t"
+			"cpse r30, r31 \n\t"
+			"rjmp USART3_TX_CONTINUE \n\t"
 			
-			"lds	r31, %M[control_reg] \n\t"
-			"andi	r31, ~(1<<%M[udrie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"andi r31, ~(1<<%M[udrie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		
 		"USART3_TX_CONTINUE: "
 		#endif
 		
-			"sts	(tx3_Tail), r30 \n\t"
+			"sts (tx3_Tail), r30 \n\t"
 		
-			"ldi	r31, 0x00 \n\t"
-			"subi	r30, lo8(-(tx3_buffer)) \n\t"
-			"sbci	r31, hi8(-(tx3_buffer)) \n\t"
+			"ldi r31, 0x00 \n\t"
+			"subi r30, lo8(-(tx3_buffer)) \n\t"
+			"sbci r31, hi8(-(tx3_buffer)) \n\t"
 			
-			"ld		r30, Z \n\t"
+			"ld r30, Z \n\t"
 		
-			"sts	%M[UDR_reg], r30 \n\t"
+			"sts %M[UDR_reg], r30 \n\t"
 			
 			TX3_TRANSMIT_EVENT
 			
 		#ifdef USART_UNSAFE_TX_INTERRUPT
 			"cli \n\t"
 			
-			"lds	r31, %M[control_reg] \n\t"
-			"ori	r31, (1<<%M[udrie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"ori r31, (1<<%M[udrie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		#endif
 			
 		"USART3_TX_EXIT: "
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r31 \n\t"
-			"pop	r30 \n\t"
+			"pop r31 \n\t"
+			"pop r30 \n\t"
 		#else
-			"movw	r30, %[z_save] \n\t"
+			"movw r30, %[z_save] \n\t"
 		#endif
 			
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#else
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#endif
 
 			"reti \n\t"
@@ -5906,97 +5906,97 @@
 		asm volatile("\n\t"
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"push	r16 \n\t"
-			"in		r16, __SREG__ \n\t"
+			"push r16 \n\t"
+			"in r16, __SREG__ \n\t"
 		#else
-			"in		%[sreg_save], __SREG__ \n\t"
+			"in %[sreg_save], __SREG__ \n\t"
 		#endif
 	
-			"push	r25 \n\t"
+			"push r25 \n\t"
 		
 		#ifdef USART3_PUSH_BEFORE_RX
 			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-				"push	r30 \n\t"
-				"push	r31 \n\t"
+				"push r30 \n\t"
+				"push r31 \n\t"
 			#else
-				"movw	%[z_save], r30 \n\t"
+				"movw %[z_save], r30 \n\t"
 			#endif
 		#endif
 				
 		#ifndef USART3_EXTEND_RX_BUFFER
 			RX3_FRAMING_EVENT
-			"lds	r25, %M[UDR_reg] \n\t"
+			"lds r25, %M[UDR_reg] \n\t"
 		#endif
 			
 		#ifndef USART3_PUSH_BEFORE_RX
 			#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-				"push	r30 \n\t"
-				"push	r31 \n\t"
+				"push r30 \n\t"
+				"push r31 \n\t"
 			#else
-				"movw	%[z_save], r30 \n\t"
+				"movw %[z_save], r30 \n\t"
 			#endif
 		#endif
 		
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"lds	r31, %M[control_reg] \n\t"
-			"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		
 			"sei \n\t"
 		#endif
 		
 			RX3_EVERYCALL_EVENT
 		
-			"lds	r30, (rx3_Head) \n\t"
-			"lds	r31, (rx3_Tail) \n\t"
+			"lds r30, (rx3_Head) \n\t"
+			"lds r31, (rx3_Tail) \n\t"
 		
-			"inc	r30 \n\t"
+			"inc r30 \n\t"
 		
 		#if (RX3_BUFFER_MASK != 0xff)
-			"andi	r30, %M[mask]\n\t"
+			"andi r30, %M[mask]\n\t"
 		#endif
 		
-			"cp		r31, r30 \n\t"
+			"cp r31, r30 \n\t"
 		#if defined(USART3_USE_SOFT_RTS)||(defined(USART3_EXTEND_RX_BUFFER)&&!defined(USART_UNSAFE_RX_INTERRUPT))
-			"breq	USART3_DISABLE_RXCIE \n\t"
+			"breq USART3_DISABLE_RXCIE \n\t"
 		#elif defined(USART3_EXTEND_RX_BUFFER)&&defined(USART_UNSAFE_RX_INTERRUPT)
-			"breq	USART3_RX_EXIT_SKIP \n\t"
+			"breq USART3_RX_EXIT_SKIP \n\t"
 		#else
-			"breq	USART3_RX_EXIT \n\t"
+			"breq USART3_RX_EXIT \n\t"
 		#endif
 		
 		#ifdef USART3_EXTEND_RX_BUFFER
 			RX3_FRAMING_EVENT
-			"lds	r25, %M[UDR_reg] \n\t"
+			"lds r25, %M[UDR_reg] \n\t"
 		#endif
 			
 			RX3_EARLY_RECEIVE_EVENT
 			
 		#if defined(USART3_MPCM_MODE)&&!defined(MPCM3_MASTER_ONLY)
-			"lds	r31, %M[UCSRA_reg] \n\t"
+			"lds r31, %M[UCSRA_reg] \n\t"
 
-			"sbrs	r31, %M[mpcm_bit] \n\t"
-			"rjmp	USART3_RX_CONTINUE \n\t"
-			"cpi	r25, %M[mpcm_address] \n\t"
+			"sbrs r31, %M[mpcm_bit] \n\t"
+			"rjmp USART3_RX_CONTINUE \n\t"
+			"cpi r25, %M[mpcm_address] \n\t"
 		#ifdef MPCM3_GCALL_ADDRESS
-			"breq	p_%= \n\t"
-			"cpi	r25, %M[mpcm_gcall_address] \n\t"
+			"breq p_%= \n\t"
+			"cpi r25, %M[mpcm_gcall_address] \n\t"
 		#endif
-			"brne	USART3_RX_EXIT \n\t"
+			"brne USART3_RX_EXIT \n\t"
 		"p_%=: "
-			"andi	r31, ~(1<<%M[mpcm_bit]) \n\t"
+			"andi r31, ~(1<<%M[mpcm_bit]) \n\t"
 
-			"sts	%M[UCSRA_reg], r31 \n\t"
+			"sts %M[UCSRA_reg], r31 \n\t"
 
 		"USART3_RX_CONTINUE: "
 		#endif	
 			
-			"sts	(rx3_Head), r30 \n\t"
+			"sts (rx3_Head), r30 \n\t"
 			
-			"ldi	r31, 0x00 \n\t"
-			"subi	r30, lo8(-(rx3_buffer))\n\t"
-			"sbci	r31, hi8(-(rx3_buffer))\n\t"
-			"st		Z, r25 \n\t"
+			"ldi r31, 0x00 \n\t"
+			"subi r30, lo8(-(rx3_buffer))\n\t"
+			"sbci r31, hi8(-(rx3_buffer))\n\t"
+			"st Z, r25 \n\t"
 		
 			RX3_LATE_RECEIVE_EVENT
 		
@@ -6004,27 +6004,27 @@
 		#ifdef USART_UNSAFE_RX_INTERRUPT
 			"cli \n\t"
 			
-			"lds	r31, %M[control_reg] \n\t"
-			"ori	r31, (1<<%M[rxcie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"ori r31, (1<<%M[rxcie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 			
 		"USART3_RX_EXIT_SKIP: "
 		#endif
 		
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_Z_SAVE
-			"pop	r31 \n\t"
-			"pop	r30 \n\t"
+			"pop r31 \n\t"
+			"pop r30 \n\t"
 		#else
-			"movw	r30, %[z_save] \n\t"
+			"movw r30, %[z_save] \n\t"
 		#endif
 		
-			"pop	r25 \n\t"
+			"pop r25 \n\t"
 	
 		#ifndef USART_USE_GLOBALLY_RESERVED_ISR_SREG_SAVE
-			"out	__SREG__, r16 \n\t"
-			"pop	r16 \n\t"
+			"out __SREG__, r16 \n\t"
+			"pop r16 \n\t"
 		#else
-			"out	__SREG__, %[sreg_save] \n\t"
+			"out __SREG__, %[sreg_save] \n\t"
 		#endif
 
 			"reti \n\t"
@@ -6033,19 +6033,19 @@
 		"USART3_DISABLE_RXCIE: "
 		
 		#ifdef USART3_USE_SOFT_RTS
-			"sbi	%M[rts_port], %M[rts_pin] \n\t"
+			"sbi %M[rts_port], %M[rts_pin] \n\t"
 		#endif
 		
 		#ifndef USART_UNSAFE_RX_INTERRUPT
-			"lds	r31, %M[control_reg] \n\t"
-			"andi	r31, ~(1<<%M[rxcie_bit]) \n\t"
-			"sts	%M[control_reg], r31 \n\t"
+			"lds r31, %M[control_reg] \n\t"
+			"andi r31, ~(1<<%M[rxcie_bit]) \n\t"
+			"sts %M[control_reg], r31 \n\t"
 		#endif
 			
 		#ifdef USART_UNSAFE_RX_INTERRUPT
-			"rjmp	USART3_RX_EXIT_SKIP \n\t"
+			"rjmp USART3_RX_EXIT_SKIP \n\t"
 		#else
-			"rjmp	USART3_RX_EXIT \n\t"
+			"rjmp USART3_RX_EXIT \n\t"
 		#endif
 		#endif
 			: // output operands
