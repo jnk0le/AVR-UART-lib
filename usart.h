@@ -1,11 +1,12 @@
+/*!
+ * \brief
+ *
+ * \author Jan Oleksiewicz <jnk0le@hotmail.com>
+ * \license SPDX-License-Identifier: MIT
+ */
+
 #ifndef _USART_H_
 #define _USART_H_
-
-/************************************************************************************
- *  Author: jnk0le@hotmail.com                                                      *
- *  https://github.com/jnk0le                                                       *
- *  This library is distributed under MIT license terms                             *
- ************************************************************************************/
 
 #include <avr/io.h> // for inline func
 #include "usart_config.h"

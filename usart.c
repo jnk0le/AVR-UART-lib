@@ -1,11 +1,9 @@
-//**************************************************************
-// ****** FUNCTIONS FOR AVR USART COMMUNICATION *******
-//**************************************************************
-//Compiler          : AVR-GCC (c99/gnu99)
-//Author            : jnk0le@hotmail.com
-//                    https://github.com/jnk0le
-//License           : MIT
-//**************************************************************
+/*!
+ * \brief
+ *
+ * \author Jan Oleksiewicz <jnk0le@hotmail.com>
+ * \license SPDX-License-Identifier: MIT
+ */
 
 #include <avr/io.h>
 #include <util/delay.h>

@@ -1,11 +1,12 @@
+/*!
+ * \brief
+ *
+ * \author Jan Oleksiewicz <jnk0le@hotmail.com>
+ * \license SPDX-License-Identifier: MIT
+ */
+
 #ifndef USART_CONFIG_H_
 #define USART_CONFIG_H_
-
-/************************************************************************************
- *  Author: jnk0le@hotmail.com                                                      *
- *  https://github.com/jnk0le                                                       *
- *  This library is distributed under MIT license terms                             *
- ************************************************************************************/
 
 // DO NOT DEFINE F_CPU, BUFFERS SIZES OR ANY OTHER SHARED MACROS IN 'main.c' CODE
 // instead of this, define it in makefile (-D flag) or "Project Properties -> AVR C Compiler -> Symbols"

@@ -1,3 +1,10 @@
+/*!
+ * \brief
+ *
+ * \author Jan Oleksiewicz <jnk0le@hotmail.com>
+ * \license SPDX-License-Identifier: MIT
+ */
+
 #include <avr/io.h>
 #include <util/delay.h>
 #include <util/crc16.h>
