@@ -1855,7 +1855,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx0_Head, rx0_Tail;
-		inline uint8_t uart0_AvailableBytes(void) { return (rx0_Head - rx0_Tail) & RX0_BUFFER_MASK; }
+		static inline uint8_t uart0_AvailableBytes(void) { return (rx0_Head - rx0_Tail) & RX0_BUFFER_MASK; }
 		// returns number of bytes waiting in the receiver buffer
 		
 		uint8_t uart0_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
@@ -1896,7 +1896,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx1_Head, rx1_Tail;
-		inline uint8_t uart1_AvailableBytes(void) { return (rx1_Head - rx1_Tail) & RX1_BUFFER_MASK; }
+		static inline uint8_t uart1_AvailableBytes(void) { return (rx1_Head - rx1_Tail) & RX1_BUFFER_MASK; }
 		// returns number of bytes waiting in the receiver buffer
 		
 		uint8_t uart1_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
@@ -1924,7 +1924,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx2_Head, rx2_Tail;
-		inline uint8_t uart2_AvailableBytes(void) { return (rx2_Head - rx2_Tail) & RX2_BUFFER_MASK; }
+		static inline uint8_t uart2_AvailableBytes(void) { return (rx2_Head - rx2_Tail) & RX2_BUFFER_MASK; }
 		// returns number of bytes waiting in the receiver buffer
 		
 		uint8_t uart2_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
@@ -1952,7 +1952,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		// in case of empty buffers returned flag is set to BUFFER_EMPTY - NULL
 		
 		extern volatile uint8_t rx3_Head, rx3_Tail;
-		inline uint8_t uart3_AvailableBytes(void) { return (rx3_Head - rx3_Tail) & RX3_BUFFER_MASK; }
+		static inline uint8_t uart3_AvailableBytes(void) { return (rx3_Head - rx3_Tail) & RX3_BUFFER_MASK; }
 		// returns number of bytes waiting in the receiver buffer
 		
 		uint8_t uart3_peek(void); // returns next byte from buffer // returned byte is invalid if there is nothing to read
