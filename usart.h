@@ -1572,8 +1572,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#ifndef NO_TX0_INTERRUPT
 		#ifdef USART_NO_ABI_BREAKING_PREMATURES
 			void uart0_putc(char data);
-			inline char uart0_putc_(char data) __attribute__ ((always_inline));
-			inline char uart0_putc_(char data) { uart0_putc(data); return data; }
+			static inline char uart0_putc_(char data) __attribute__ ((always_inline));
+			static inline char uart0_putc_(char data) { uart0_putc(data); return data; }
 		#else
 			void uart0_putc(char data) __attribute__ ((naked, noinline));
 			char uart0_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
@@ -1619,7 +1619,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		void uart0_flush(void); // flush tx buffer
 		
 		extern volatile uint8_t tx0_Head, tx0_Tail;
-		inline uint8_t uart0_BytesToSend(void) { return (tx0_Head - tx0_Tail - 1) & TX0_BUFFER_MASK; }
+		static inline uint8_t uart0_BytesToSend(void) { return (tx0_Head - tx0_Tail - 1) & TX0_BUFFER_MASK; }
 		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART0_MPCM_MODE
@@ -1655,8 +1655,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#ifndef NO_TX1_INTERRUPT
 		#ifdef USART_NO_ABI_BREAKING_PREMATURES
 			void uart1_putc(char data);
-			inline char uart1_putc_(char data) __attribute__ ((always_inline));
-			inline char uart1_putc_(char data) { uart1_putc(data); return data; }
+			static inline char uart1_putc_(char data) __attribute__ ((always_inline));
+			static inline char uart1_putc_(char data) { uart1_putc(data); return data; }
 		#else
 			void uart1_putc(char data) __attribute__ ((naked, noinline));
 			char uart1_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
@@ -1702,7 +1702,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		void uart1_flush(void); // flush tx buffer
 		
 		extern volatile uint8_t tx1_Head, tx1_Tail;
-		inline uint8_t uart1_BytesToSend(void) { return (tx1_Head - tx1_Tail - 1) & TX1_BUFFER_MASK; }
+		static inline uint8_t uart1_BytesToSend(void) { return (tx1_Head - tx1_Tail - 1) & TX1_BUFFER_MASK; }
 		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART1_MPCM_MODE
@@ -1713,8 +1713,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#ifndef NO_TX2_INTERRUPT
 		#ifdef USART_NO_ABI_BREAKING_PREMATURES
 			void uart2_putc(char data);
-			inline char uart2_putc_(char data) __attribute__ ((always_inline));
-			inline char uart2_putc_(char data) { uart2_putc(data); return data; }
+			static inline char uart2_putc_(char data) __attribute__ ((always_inline));
+			static inline char uart2_putc_(char data) { uart2_putc(data); return data; }
 		#else
 			void uart2_putc(char data) __attribute__ ((naked, noinline));
 			char uart2_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
@@ -1760,7 +1760,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		void uart2_flush(void); // flush tx buffer
 		
 		extern volatile uint8_t tx2_Head, tx2_Tail;
-		inline uint8_t uart2_BytesToSend(void) { return (tx2_Head - tx2_Tail - 1) & TX2_BUFFER_MASK; }
+		static inline uint8_t uart2_BytesToSend(void) { return (tx2_Head - tx2_Tail - 1) & TX2_BUFFER_MASK; }
 		// returns number of bytes waiting in the transmit buffer	
 	
 		#ifdef USART2_MPCM_MODE
@@ -1771,8 +1771,8 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 	#ifndef NO_TX3_INTERRUPT
 		#ifdef USART_NO_ABI_BREAKING_PREMATURES
 			void uart3_putc(char data);
-			inline char uart3_putc_(char data) __attribute__ ((always_inline));
-			inline char uart3_putc_(char data) { uart3_putc(data); return data; }
+			static inline char uart3_putc_(char data) __attribute__ ((always_inline));
+			static inline char uart3_putc_(char data) { uart3_putc(data); return data; }
 		#else
 			void uart3_putc(char data) __attribute__ ((naked, noinline));
 			char uart3_putc_(char data) __attribute__ ((noinline)); // alias for uart_putc that returns passed argument unaffected by omitting any existent rule
@@ -1818,7 +1818,7 @@ enum {COMPLETED = 1, BUFFER_EMPTY = 0, BUFFER_FULL = 0};
 		void uart3_flush(void); // flush tx buffer
 		
 		extern volatile uint8_t tx3_Head, tx3_Tail;
-		inline uint8_t uart3_BytesToSend(void) { return (tx3_Head - tx3_Tail - 1) & TX3_BUFFER_MASK; }
+		static inline uint8_t uart3_BytesToSend(void) { return (tx3_Head - tx3_Tail - 1) & TX3_BUFFER_MASK; }
 		// returns number of bytes waiting in the transmit buffer
 	
 		#ifdef USART3_MPCM_MODE
