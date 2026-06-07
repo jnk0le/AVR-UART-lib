@@ -630,7 +630,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -666,7 +667,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -703,7 +705,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	#endif
 	}
@@ -1277,7 +1280,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -1307,7 +1311,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -1336,7 +1341,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -1816,7 +1822,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -1846,7 +1853,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -1875,7 +1883,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -2356,7 +2365,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -2386,7 +2396,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -2415,7 +2426,8 @@
 			"z" (string)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_putc()
+			"r25","r26","r27", // uart_putc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -2653,7 +2665,8 @@
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)
 			"r27",
 		#endif
-			"r26"
+			"r26",
+			"memory"
 		);
 	
 		rx0_Tail = tmp_rx_Tail;
@@ -3060,7 +3073,8 @@
 		#if !defined(__AVR_ATtiny2313__)&&!defined(__AVR_ATtiny2313A__)	
 			"r27",
 		#endif
-			"r26"
+			"r26",
+			"memory"
 		);
 		
 		rx0_Tail = tmp_rx_Tail;
@@ -3198,7 +3212,8 @@
 			[temp] "=r" (tmp)
 			: // inputs
 			: // clobbers
-			"r26","r27"
+			"r26","r27",
+			"memory"
 		);
 	
 		rx1_Tail = tmp_rx_Tail;
@@ -3514,7 +3529,8 @@
 			[temp]  "=r" (tmp)
 			: // inputs
 			: // clobbers
-			"r26","r27"
+			"r26","r27",
+			"memory"
 		);
 		
 		rx1_Tail = tmp_rx_Tail;
@@ -3635,7 +3651,8 @@
 			[temp]  "=r" (tmp)
 			: // inputs
 			: // clobbers
-			"r26","r27"
+			"r26","r27",
+			"memory"
 		);
 	
 		rx2_Tail = tmp_rx_Tail;
@@ -3952,7 +3969,8 @@
 			[temp] "=r" (tmp)
 			: // inputs
 			: // clobbers
-			"r26","r27"
+			"r26","r27",
+			"memory"
 		);
 		
 		rx2_Tail = tmp_rx_Tail;
@@ -4073,7 +4091,8 @@
 			[temp]  "=r" (tmp)
 			: // inputs
 			: // clobbers
-			"r26","r27"
+			"r26","r27",
+			"memory"
 		);
 	
 		rx3_Tail = tmp_rx_Tail;
@@ -4389,7 +4408,8 @@
 			[temp] "=r" (tmp)
 			: // inputs
 			: // clobbers
-			"r26","r27"
+			"r26","r27",
+			"memory"
 		);
 		
 		rx3_Tail = tmp_rx_Tail;
