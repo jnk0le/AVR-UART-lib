@@ -2753,7 +2753,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -2834,7 +2835,9 @@
 			"z" (buffer),
 			[limit] "r" (bufferlimit)
 			: // clobbers
-			"r24"
+			"r24",
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -2938,7 +2941,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -3278,7 +3282,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -3350,7 +3355,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -3443,7 +3449,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -3717,7 +3724,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -3789,7 +3797,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -3882,7 +3891,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -4157,7 +4167,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -4229,7 +4240,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
@@ -4322,7 +4334,8 @@
 			[limit] "r" (bufferlimit)
 			: // clobbers
 			"r24",
-			"r25","r26","r27" // uart_getc()
+			"r25","r26","r27", // uart_getc()
+			"memory"
 		);
 	}
 #endif // USART_NO_ABI_BREAKING_PREMATURES
